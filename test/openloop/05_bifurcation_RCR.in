@@ -1,0 +1,197 @@
+# ==========
+# MODEL CARD
+# ==========
+# - Name of the model (string)
+
+MODEL Bifurcation_RCR_
+
+
+# ==========
+# NODE CARD
+# ==========
+# - Node Name (double)
+# - Node X Coordinate (double)
+# - Node Y Coordinate (double)
+# - Node Z Coordinate (double)
+
+NODE 0 0.0 0.0 0.0
+NODE 1 0.0 0.0 -17.670671
+NODE 2 0.0 6.498730 -40.182934
+NODE 3 4.595296 4.595296 -40.182934 
+
+
+# ==========
+# JOINT CARD
+# ==========
+# - Joint Name (string)
+# - Joint Node (double)
+# - Joint Inlet Name (string)
+# - Joint Outlet Name (string)
+
+
+# ================================
+# JOINTINLET AND JOINTOUTLET CARDS
+# ================================
+# - Inlet/Outlet Name (string)
+# - Total Number of segments (int)
+# - List of segments (list of int)
+
+JOINT AbdomBifurcJ 1 INSEGS OUTSEGS
+JOINTINLET INSEGS 1 0
+JOINTOUTLET OUTSEGS 2 1 2
+
+
+# ============
+# SEGMENT CARD
+# ============
+# - Segment Name (string)
+# - Segment ID (int)
+# - Segment Length (double)
+# - Total Finite Elements in Segment (int)
+# - Segment Inlet Node (int)
+# - Segment Outlet Node (int)
+# - Segment Inlet Area (double)
+# - Segment Outlet Area (double)
+# - Segment Inflow Value (double)
+# - Segment Material (string)
+# - Type of Loss (string - 'NONE','STENOSIS','BRANCH_THROUGH_DIVIDING','BRANCH_SIDE_DIVIDING','BRANCH_THROUGH_CONVERGING',
+#                          'BRANCH_SIDE_CONVERGING','BIFURCATION_BRANCH')
+# - Branch Angle (double)
+# - Upstream Segment ID (int)
+# - Branch Segment ID (int)
+# - Boundary Condition Type (string - 'NOBOUND','PRESSURE','AREA','FLOW','RESISTANCE','RESISTANCE_TIME','PRESSURE_WAVE',
+#                                     'WAVE','RCR','CORONARY','IMPEDANCE','PULMONARY')
+# - Data Table Name (string)
+
+SEGMENT Aorta 0 17.670671 50 0 1 5.027254990390394 1.6068894493599328 0.0 MAT1 NONE 0.0 0 0 NOBOUND NONE
+SEGMENT iliacR 1 12.997461 50 1 3 1.55 0.3525652531134944 0.0 MAT1 NONE 0.0 0 0 RCR RCR_VALS
+SEGMENT iliacL 2 12.997461 50 1 2 1.55 0.3525652531134944 0.0 MAT1 NONE 0.0 0 0 RCR RCR_VALS
+
+
+# ==============
+# DATATABLE CARD
+# ==============
+# - Data Table Name (string)
+# - Data Table Type (string - 'LIST','IMPEDANCE','RCRIMPEDANCE','MORPHIMPEDANCE','ADMITTANCE','RCRADMITTANCE','MORPHADMITTANCE'
+#   - LIST OPTION - List of times and Values (e.g., 'time0 value0 time1 value1 ...' list of alternating times and values)
+#   - IMPEDANCE and ADMITTANCE OPTIONS - Number of time steps, Length to Radius Ratio, Radius at Root, Period, Scale Factor, Number of Fourier modes
+#   - RCRIMPEDANCE and RCRADMITTANCE OPTIONS - Number of time steps, RCR distal resistance, RCR proximal resistance, Period, RCR capacitance, Scale factor, Number of Fourier modes
+#   - MORPHIMPEDANCE and MORPHADMITTANCE OPTIONS - Number of time steps, Min vessel order, Radius at Root, Period, Number of Fourier modes
+# - ENDDATATABLE - Keyword for termination of table data
+
+DATATABLE RCR_VALS LIST
+0.0 90 
+0.0 0.0008 
+0.0 1200
+ENDDATATABLE
+
+DATATABLE AORTAFLOW LIST
+0 34.8
+0.01406 35.75183
+0.02813 36.62183
+0.04219 36.85225
+0.05625 38.93465
+0.07031 41.76
+0.08438 45.97649
+0.09844 50.73564
+0.1125 55.24931
+0.12656 60.63297
+0.14062 66.01663
+0.15469 70.51522
+0.16845 74.55297
+0.18281 76.94763
+0.19687 80.61282
+0.21094 81.08874
+0.225 81.12535
+0.23906 80.64943
+0.25312 79.30352
+0.26719 75.5328
+0.28125 70.67673
+0.29531 65.27154
+0.30938 59.03941
+0.32344 52.64361
+0.3375 44.90406
+0.35156 42.0421
+0.36563 38.18094
+0.37969 31.45136
+0.39375 28.71
+0.40781 28.71
+0.42188 26.97
+0.43594 26.13661
+0.45 26.97
+0.46406 27.84
+0.47813 28.36114
+0.49219 29.96116
+0.50625 33.99891
+0.52031 35.87889
+0.53438 37.2248
+0.54844 38.86144
+0.5625 41.55327
+0.57656 42.13255
+0.59063 42.63
+0.60469 43.08438
+0.61875 43.5
+0.63281 43.5
+0.64687 42.4878
+0.66094 41.76
+0.675 41.53604
+0.68906 40.19012
+0.70312 39.15
+0.71719 37.58658
+0.73125 36.92762
+0.74531 35.68292
+0.75938 34.3305
+0.77344 33.93
+0.7875 33.37871
+0.80156 33.2172
+0.81563 33.93
+0.82969 33.69097
+0.84375 33.77495
+0.85781 33.38087
+0.87188 34.726
+0.88594 35.2027
+0.9 34.8
+ENDDATATABLE
+
+
+# =============
+# MATERIAL CARD
+# =============
+# - Material Name (string)
+# - Material Type (string - 'LINEAR','OLUFSEN')
+# - Material Density (double)
+# - Material Viscosity (double)
+# - Referemce Pressure (double, CGS units)
+# - Material Exponent (double)
+# - Material Parameter 1 (double)
+# - Material Parameter 2 (double, unused for LINEAR type)
+# - Material Parameter 3 (double, unused for LINEAR type)
+
+# Ref Pressure 1333.22*85 where 85 is in mmHg
+MATERIAL MAT1 OLUFSEN 1.06 0.04 113324.0 1.0 2.0e7 -22.5267 8.65e5
+
+
+# ==================
+# SOLVEROPTIONS CARD
+# ==================
+# - Solver Time Step (double), 
+# - Steps Between Saves (int), 
+# - Max Number of Save Steps (int)
+# - Number of quadrature points for finite elements (int), 
+# - Name of Datatable for inlet conditions (string)
+# - Type of boundary condition (string - 'NOBOUND','PRESSURE','AREA','FLOW','RESISTANCE','RESISTANCE_TIME','PRESSURE_WAVE',
+#                                        'WAVE','RCR','CORONARY','IMPEDANCE','PULMONARY')
+# - Convergence tolerance (double), 
+# - Formulation Type (int - 0 Advective, 1 Conservative), 
+# - Stabilization (int - 0 No stabilization, 1 With stabilization)
+
+SOLVEROPTIONS 0.001 50 10000 2 AORTAFLOW FLOW 1.0e-6 1 1 
+
+
+# ===========
+# OUTPUT CARD
+# ===========
+# - Output type (string - 'TEXT', 'VTK')
+
+OUTPUT TEXT
+

@@ -1,0 +1,125 @@
+GLOSSARY FOR ONE D SOLVER FILES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+main.cpp
+readModelFile - reads individual file, checks if valid format
+readFiles - reads all files
+createAndRunModel
+
+
+main.cpp --> creatAndRunModel --> 
+
+
+main Includes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+cvException.h - defines how exceptions are thrown
+cvException.cpp - includes cvException.h
+
+cvOptions.h - define variables for input file information (joints, joint inlet/outlet lists, material, datatable, segment, solver options), function calls to print to file/print variable values
+
+cvTypes.h - TYPEDEF variable types, constants, return values
+
+cvOptions.cpp - prints to file all input variables, check data (double entries, positive values)
+
+cvOneDDataTable.h - define datatable of name/type/time/values (for boundary conditions I think)
+cvOneDDataTable.cpp - sets type/name/time/values in datatable
+
+cvOneDGlobal.h - define global constants and flags
+
+cvOneDModel.h - Class to handle 1D network Models (Material properties, joints and segments, FEM params)
+
+cvOneDEnums.h - defines types for the solver (error, boundary condition, material, losses, output, linear/nonlinear)
+
+cvOneDSegment.h - Class to handle 1D network segments (gets id/length/other characteristics) **BOUNDARY VALUES SET HERE**
+
+cvOneDMesh.h - Define data structures to handle segment meshes (node, element, mesh)
+
+cvOneDVector.h - custom templated vector class, details in file header (length, set size, fill, etc)
+
+cvOneDSegment.cpp - set segment properties (including ID, boundary values, name, parent)  **MISSING TESSELATE AND PUTINMATRIX**
+
+cvOneDMthModelBase.h - base class in a finite element computation. Equation formulation, construction of the Newton-Rhapson matrix derivatives, generation of the element dense matrices.
+
+cvOneDSubdomain.h - Header for a class to contain the descritization of the Geometry **BOUNDARY CONDIITONS HERE** (calls all functions in .cpp)
+
+cvOneDFiniteElement.h - abstracts the finite element and provides utilities for maintaining a solution
+
+cvOneDFiniteElement.cpp - abstracts the finite element one-dimensional shape function (sets nodes/connectivity, evaluates endpoints, interpolation)
+
+cvOneDMaterial.h - maintains Material Properties of the subdomain
+
+cvOneDMaterialOlufsen.h - maintains MaterialOlufsen Properties of the subdomain (sets and gets all values defined in .cpp file)
+cvOneDMaterialOlufsen.cpp - maintains MaterialOlufsen Properties of the subdomain (wave speed, area, pressure, partial derivatives, etc) (THERE MIGHT BE SOMETHING WRONG IN HERE - at the end)
+
+cvOneDUtility.h - Utility functions and rules of random point quadratures.
+cvOneDUtility.cpp - utility functions min/max/clear/sum, GetModulus, GetQuadrature (guass-legendre) **SHOULD PROBABLY UNDERSTAND QUAD. BETTER**
+
+cvOneDError.h - error handling function
+cvOneDError.cpp - set error number, error string, debug level
+
+cvOneDSubdomain.cpp - discretization of the geometry (set MANY material properties, initialize mesh, set boundary values, get pressuere and resistance)
+
+cvOneDMaterialManager.h - header for material creation
+cvOneDMaterialManager.cpp - create new materials (linear/olufsen)
+
+cvOneDMaterialLinear.h - header for maintaining MaterialLinear Properties of the subdomain
+cvOneDMaterialLinear.cpp - maintains MaterialLinear Properties of the subdomain **Where conservative form is implemented**
+
+cvOneDSparseMatrix.h - calls functions in .cpp file to define sparse matrix
+
+cvOneDSolverDefinitions.h - constants: epsilon, tolerance, max string value, iterations, precision
+
+cvOneDDenseMatrix.h - creates nxn dense matrix to store local matrices before they are assembled into the global Jacobian
+cvOneDDenseMatrix.cpp - creates, clears, entries and equation number matrices
+
+cvOneDSparseMatrix.cpp - defines spare matrix (with Skyline storage), add values, clear values, set values, get values, siftdown, condence matrix, etc.
+
+cvOneDSkylineMatrix.h - call functions in .cpp file for skyline matrix
+cvOneDSkylineMatrix.cpp - Solve Skyline Matrices - create full matrix, get rows/cols, add values, etc. 
+
+cvOneDFEAVector.h - Header for a class to handle finite element Vectors
+cvOneDFEAVector.cpp - set values, add values, get entires/norm/dimensions/norm/etc. 
+
+cvOneDSparseLinearSolver.h - solving skyline matrix systems
+cvOneDSparseLinearSolver.cpp - set LHS/RHS, solve, etc.
+
+cvOneDLinearSolver.h - Header for a Linear Skyline Matrix Solver
+cvOneDLinearSolver.cpp - set LHS/RHS, solve, etc.
+
+cvOneDFEAJoint.h - data structure for Lagrange joints
+cvOneDMthModelBase.cpp - equation formulation and construction of the Newton-Rhapson matrix derivatives, and generation of the element dense matrices. (impose BC, implement mass balance equations, flow rates)
+
+cvOneDBFSolver.h - Header for a One-Dimensional Network Blood Flow Solver
+
+cvOneDMthSegmentModel.h - header files for segment model
+cvOneDMthSegmentModel.cpp - mathematical formulations of segment model (creates stiffness matrix and RHS for each element)
+
+cvOneDMthBranchModel.h - Mathematical formulations of joints. Lagrange multipliers are used to have pressure continuity and mass conservation (flux conservation) at joints.
+cvOneDMthBranchModel.cpp - make Lagrange multiplers/equation numbers/etc.
+
+cvOneDString.h - Header for a simple string class
+cvOneDString.cpp - define strings
+
+cvOneDBFSolver.cpp - the actual oneD solver is implemented here, VTK results written, TEXT file results written
+
+cvOneDJoint.h - A data structure for model joints. 
+
+cvOneDMatrix.h - A custom templated matrix class, details in file header
+
+cvOneDModel.cpp - functions for setting up model info (name, num elements, etc.), adding segments/joints, printing model, etc.
+
+cvOneDGlobal.cpp - global flags and constants 
+
+cvModelManager.h - creates and manages all aspects of the model
+cvModelManager.cpp - create model (BC, segments, joints, model name) and call
+
+cvOneDMetteImpedance.h - calculate the Impedance for a 1D vascular network
+
+cvOneDComplex.h - Complex numbers, complex arithmetic, and functions of a complex variable
+cvOneDComplex.cpp - more complex functions (trig)
+
+cvOneDMetteImpedance.cpp - define lots of constants, calculate impedance, etc. 
+
+cvOneDMorphImpedance.h - calculate Morph imdeance for 1D vascular network
+cvOneDMorphImpedance.cpp - define lots of constants, calculate impedance, etc.

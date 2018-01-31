@@ -1,0 +1,125 @@
+# ==========
+# MODEL CARD
+# ==========
+# - Name of the model (string)
+
+MODEL simpleArtery_Res_
+
+
+# ==========
+# NODE CARD
+# ==========
+# - Node Name (double)
+# - Node X Coordinate (double)
+# - Node Y Coordinate (double)
+# - Node Z Coordinate (double)
+
+NODE 0 0.0 0.0 0.0
+NODE 1 0.0 0.0 -20.0
+
+
+# ==========
+# JOINT CARD
+# ==========
+# - Joint Name (string)
+# - Joint Node (double)
+# - Joint Inlet Name (string)
+# - Joint Outlet Name (string)
+
+
+# ================================
+# JOINTINLET AND JOINTOUTLET CARDS
+# ================================
+# - Inlet/Outlet Name (string)
+# - Total Number of segments (int)
+# - List of segments (list of int)
+
+# NO JOINTS IN THIS MODEL
+
+
+# ============
+# SEGMENT CARD
+# ============
+# - Segment Name (string)
+# - Segment ID (int)
+# - Segment Length (double)
+# - Total Finite Elements in Segment (int)
+# - Segment Inlet Node (int)
+# - Segment Outlet Node (int)
+# - Segment Inlet Area (double)
+# - Segment Outlet Area (double)
+# - Segment Inflow Value (double)
+# - Segment Material (string)
+# - Type of Loss (string - 'NONE','STENOSIS','BRANCH_THROUGH_DIVIDING','BRANCH_SIDE_DIVIDING','BRANCH_THROUGH_CONVERGING',
+#                          'BRANCH_SIDE_CONVERGING','BIFURCATION_BRANCH')
+# - Branch Angle (double)
+# - Upstream Segment ID (int)
+# - Branch Segment ID (int)
+# - Boundary Condition Type (string - 'NOBOUND','PRESSURE','AREA','FLOW','RESISTANCE','RESISTANCE_TIME','PRESSURE_WAVE',
+#                                     'WAVE','RCR','CORONARY','IMPEDANCE','PULMONARY')
+# - Data Table Name (string)
+
+SEGMENT ARTERY 0 20.0 50 0 1 2.0 2.0 0.0 MAT1 NONE 0.0 0 0 RESISTANCE RESTABLE
+
+
+# ==============
+# DATATABLE CARD
+# ==============
+# - Data Table Name (string)
+# - Data Table Type (string - 'LIST','IMPEDANCE','RCRIMPEDANCE','MORPHIMPEDANCE','ADMITTANCE','RCRADMITTANCE','MORPHADMITTANCE'
+#   - LIST OPTION - List of times and Values (e.g., 'time0 value0 time1 value1 ...' list of alternating times and values)
+#   - IMPEDANCE and ADMITTANCE OPTIONS - Number of time steps, Length to Radius Ratio, Radius at Root, Period, Scale Factor, Number of Fourier modes
+#   - RCRIMPEDANCE and RCRADMITTANCE OPTIONS - Number of time steps, RCR distal resistance, RCR proximal resistance, Period, RCR capacitance, Scale factor, Number of Fourier modes
+#   - MORPHIMPEDANCE and MORPHADMITTANCE OPTIONS - Number of time steps, Min vessel order, Radius at Root, Period, Number of Fourier modes
+# - ENDDATATABLE - Keyword for termination of table data
+
+DATATABLE RESTABLE LIST
+0.0 100.0
+ENDDATATABLE
+
+DATATABLE INLETDATA LIST
+0.0 200.0
+10.0 200.0
+ENDDATATABLE
+
+
+# =============
+# MATERIAL CARD
+# =============
+# - Material Name (string)
+# - Material Type (string - 'LINEAR','OLUFSEN')
+# - Material Density (double)
+# - Material Viscosity (double)
+# - Referemce Pressure (double, CGS units)
+# - Material Exponent (double)
+# - Material Parameter 1 (double)
+# - Material Parameter 2 (double, unused for LINEAR type)
+# - Material Parameter 3 (double, unused for LINEAR type)
+
+# Ref Pressure 1333.22*85 where 85 is in mmHg
+MATERIAL MAT1 OLUFSEN 1.06 0.04 113324.0 1.0 2.0e7 -22.5267 8.65e5
+
+
+# ==================
+# SOLVEROPTIONS CARD
+# ==================
+# - Solver Time Step (double), 
+# - Steps Between Saves (int), 
+# - Max Number of Save Steps (int)
+# - Number of quadrature points for finite elements (int), 
+# - Name of Datatable for inlet conditions (string)
+# - Type of boundary condition (string - 'NOBOUND','PRESSURE','AREA','FLOW','RESISTANCE','RESISTANCE_TIME','PRESSURE_WAVE',
+#                                        'WAVE','RCR','CORONARY','IMPEDANCE','PULMONARY')
+# - Convergence tolerance (double), 
+# - Formulation Type (int - 0 Advective, 1 Conservative), 
+# - Stabilization (int - 0 No stabilization, 1 With stabilization)
+
+SOLVEROPTIONS 0.01 10 1000 4 INLETDATA FLOW 1.0e-6 1 1 
+
+
+# ===========
+# OUTPUT CARD
+# ===========
+# - Output type (string - 'TEXT', 'VTK')
+
+OUTPUT TEXT
