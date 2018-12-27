@@ -13,7 +13,7 @@ cvOneDMaterialManager::cvOneDMaterialManager(){
     materials[i] = NULL;
   }
 }
-  
+
 // Destructor
 cvOneDMaterialManager::~cvOneDMaterialManager(){
 }
@@ -23,7 +23,7 @@ int cvOneDMaterialManager::AddNewMaterial(MaterialType type, cvOneDMaterial* mat
   types[rtnID] = type;
   materials[rtnID] = mat;
   numMaterials++;
-  return rtnID;  
+  return rtnID;
 }
 
 int cvOneDMaterialManager::AddNewMaterialOlufsen(double density, double dynamicViscosity,
@@ -34,7 +34,8 @@ int cvOneDMaterialManager::AddNewMaterialOlufsen(double density, double dynamicV
   olfmat->SetDynamicViscosity(dynamicViscosity);
   olfmat->SetProfileExponent(profile_exponent);
   olfmat->SetReferencePressure(pRef);
-  olfmat->SetMaterialType(params);
+  olfmat->SetMaterialType(params,pRef);
+  printf("new cvOneMaterialOlufsen called check pRef %f \n", olfmat->GetReferencePressure());
   return cvOneDGlobal::gMaterialManager->AddNewMaterial(MaterialType_MATERIAL_OLUFSEN,(cvOneDMaterial*)olfmat);
 }
 
@@ -46,7 +47,7 @@ int cvOneDMaterialManager::AddNewMaterialLinear(double density, double dynamicVi
   linearmat->SetDynamicViscosity(dynamicViscosity);
   linearmat->SetProfileExponent(profile_exponent);
   linearmat->SetReferencePressure(pRef);
-  linearmat->SetEHR(EHR);
+  linearmat->SetEHR(EHR,pRef);
   return cvOneDGlobal::gMaterialManager->AddNewMaterial(MaterialType_MATERIAL_LINEAR,(cvOneDMaterial*)linearmat);
 }
 
@@ -54,7 +55,9 @@ int cvOneDMaterialManager::AddNewMaterialLinear(double density, double dynamicVi
 cvOneDMaterial* cvOneDMaterialManager::GetNewInstance(int matID){
   if (types[matID] == MaterialType_MATERIAL_OLUFSEN) {
     cvOneDMaterialOlufsen* olfmat = new cvOneDMaterialOlufsen();
+    printf("In GetNewInstance cvOneDMaterialOlufsen is called  matID=%i \n",matID);
     *olfmat = *((cvOneDMaterialOlufsen*)(materials[matID]));
+    printf("In GetNewInstance cvOneDMaterialOlufsen* materials is called \n");
     return (cvOneDMaterial*)olfmat;
   }else if (types[matID] == MaterialType_MATERIAL_LINEAR) {
     cvOneDMaterialLinear* linearmat = new cvOneDMaterialLinear();
