@@ -1,5 +1,5 @@
 //
-//  Subdomain.cxx - Source for a class to contain the discretization of 
+//  Subdomain.cxx - Source for a class to contain the discretization of
 //  ~~~~~~~~~~~~~   of the Geometry.
 //
 //  This class will contain the discretization of the geometry.
@@ -12,7 +12,7 @@
 //  Oct., 2000 J.Wan
 //      added the Pressure wave boundary condition.
 //  May 1999, J.Wan, B.Steele, G.R.Feijoo, S.A.Spicer and S.Strohband
-//      Creation of file, 
+//      Creation of file,
 //
 
 # include "cvOneDGlobal.h"
@@ -86,7 +86,7 @@ cvOneDSubdomain::~cvOneDSubdomain(){
 }
 
 void cvOneDSubdomain::SetInitInletS(double So){
-  S_initial = So;  
+  S_initial = So;
 }
 
 void cvOneDSubdomain::SetInitOutletS(double Sn){
@@ -108,6 +108,7 @@ void cvOneDSubdomain::SetInitialdFlowdT(double dQ0dT){
 
 void cvOneDSubdomain::SetupMaterial(int matID){
   mat = cvOneDGlobal::gMaterialManager->GetNewInstance(matID);
+  printf("subdomain cpp setupMaterial matID=%i  \n", matID);
   mat->SetAreas_and_length(S_initial, S_final, fabs(z_out - z_in));
 }
 
@@ -128,8 +129,8 @@ double cvOneDSubdomain::GetInitialFlow(void) {return Q_initial;}
 double cvOneDSubdomain::GetInitialPressure(void) {return P_initial;}
 
 // kimhj added for coronary boundary conditions kimhj 09022005
-double cvOneDSubdomain::GetInitialdFlowdT(void){ 
-  return dQ_dT_initial; 
+double cvOneDSubdomain::GetInitialdFlowdT(void){
+  return dQ_dT_initial;
   // return 0;
 }
 
@@ -160,14 +161,14 @@ void cvOneDSubdomain::Init(double x0, double xL){
     cvOneDError::setErrorString(errStr);
     cvOneDError::CallErrorHandler();
   }
-  
+
   // Set the mesh to be uniform
   double h = (xL - x0) / static_cast<double>(numberOfElements);
-  
+
   for( long i = 0; i < numberOfNodes; i++){
     nodes[i] = x0 + i * h;
   }
-    
+
   long nd = 0;
   for( long element = 0; element < numberOfElements; element++, nd++){
     connectivities[ 2 * element    ] = nd;
@@ -247,40 +248,40 @@ void cvOneDSubdomain::SetBoundImpedanceValues(double *h, int num){
 }
 
 double cvOneDSubdomain::getBoundCoronaryValues(double currentTime){
-  if(PressLVTime == NULL || PressLVWave == NULL){ 
-      cout << "ERROR: LV pressure information is not prescribed"<< endl; 
-      exit(1); 
-  } 
+  if(PressLVTime == NULL || PressLVWave == NULL){
+      cout << "ERROR: LV pressure information is not prescribed"<< endl;
+      exit(1);
+  }
   // flow rate is assumed to be periodic
   double cycleTime = PressLVTime[numPressLVPts-1];
-  double correctedTime = currentTime - static_cast<long>(currentTime / cycleTime) * cycleTime; 
+  double correctedTime = currentTime - static_cast<long>(currentTime / cycleTime) * cycleTime;
   double presslv=0.;
   if(correctedTime >= 0 && correctedTime <= PressLVTime[0]){
-    double xi = (correctedTime - PressLVTime[numPressLVPts-1]) / (PressLVTime[0] - PressLVTime[numPressLVPts-1]); 
-    presslv = (PressLVWave[numPressLVPts-1] + xi * (PressLVWave[0] - PressLVWave[numPressLVPts-1])); 
+    double xi = (correctedTime - PressLVTime[numPressLVPts-1]) / (PressLVTime[0] - PressLVTime[numPressLVPts-1]);
+    presslv = (PressLVWave[numPressLVPts-1] + xi * (PressLVWave[0] - PressLVWave[numPressLVPts-1]));
   }else{
-    int ptr = 0; 
-    bool wasFound = false; 
-    while( !wasFound){ 
+    int ptr = 0;
+    bool wasFound = false;
+    while( !wasFound){
       if(correctedTime >= PressLVTime[ptr] && correctedTime <= PressLVTime[ptr+1]){
-        wasFound = true; 
+        wasFound = true;
       }else{
-        ptr++; 
+        ptr++;
       }
     }
- 
-    // linear interpolation between values 
-    double xi = (correctedTime - PressLVTime[ptr]) / (PressLVTime[ptr+1] - PressLVTime[ptr]); 
 
-    presslv = (PressLVWave[ptr] + xi * (PressLVWave[ptr+1] - PressLVWave[ptr])); 
+    // linear interpolation between values
+    double xi = (correctedTime - PressLVTime[ptr]) / (PressLVTime[ptr+1] - PressLVTime[ptr]);
+
+    presslv = (PressLVWave[ptr] + xi * (PressLVWave[ptr+1] - PressLVWave[ptr]));
   }
   return presslv*1333.2237;
 }
 
 // Added kimhj 09022005
 void cvOneDSubdomain::SetBoundCoronaryValues(double *time, double *p_lv, int num){
-  
-  int numpts=num;  
+
+  int numpts=num;
   corTime=0.0;
   //a=Ra1*Ra2*Ca*Cc;
   //b=Ca*Ra1+Cc*(Ra1+Ra2);
@@ -303,7 +304,7 @@ void cvOneDSubdomain::SetBoundCoronaryValues(double *time, double *p_lv, int num
   for (int i=0;i<numpts;i++){
     PressLVTime[i]=time[i+6];
     PressLVWave[i]=p_lv[i+6];
-    fprintf(stdout,"Time[%i]: %le Pressure_LV[%i]: %le\n",i, PressLVTime[i], i,PressLVWave[i]);  
+    fprintf(stdout,"Time[%i]: %le Pressure_LV[%i]: %le\n",i, PressLVTime[i], i,PressLVWave[i]);
   }
   p0COR=1;
   p1COR=Ra2*Ca+(Rv1+Rv2)*(Ca+Cc);
@@ -324,9 +325,9 @@ void cvOneDSubdomain::SetBoundCoronaryValues(double *time, double *p_lv, int num
 }
 
 void cvOneDSubdomain::SetBoundRCRValues(double *rcr, int num){//added IV 050803
-  
+
   rcrTime = 0.0;
-  
+
   assert(num==3);
   proximalResistance = rcr[0];
   capacitance = rcr[1] ;
@@ -335,7 +336,7 @@ void cvOneDSubdomain::SetBoundRCRValues(double *rcr, int num){//added IV 050803
 }
 
 void cvOneDSubdomain::SetBoundWaveValues(double *wave, int num){//added IV 080603
-  
+
   waveTime = 0.0;
   numWavePts = num;
   waveSo = wave[0];
@@ -343,7 +344,7 @@ void cvOneDSubdomain::SetBoundWaveValues(double *wave, int num){//added IV 08060
   waveEndh = wave [2];
   waveN = mat->GetN(waveSo);//doesn't depend on So in fact
   waveAlpha = waveN/2/waveSo;
-  waveSpeed = mat->GetRefWaveSpeed(waveSo); 
+  waveSpeed = mat->GetRefWaveSpeed(waveSo);
   numWaveMod = wave[3];
   eigValWave = new double[int(ceil(numWaveMod))];
   assert(waveLT<2*PI*waveSo*waveSpeed/fabs(waveN));//assert eigenVal>0
@@ -358,34 +359,34 @@ double cvOneDSubdomain::GetPressure(double currentTime){
     double pressure= P_initial;
     return pressure;
   }
-  
-  if(pressureTime == NULL || pressureWave == NULL){ 
-    cout << "ERROR: pressure information is not prescribed"<< endl; 
-    exit(1); 
-  } 
-  
+
+  if(pressureTime == NULL || pressureWave == NULL){
+    cout << "ERROR: pressure information is not prescribed"<< endl;
+    exit(1);
+  }
+
   // flow rate is assumed to be periodic
   double cycleTime = pressureTime[numPressurePts-1];
-  double correctedTime = currentTime - static_cast<long>(currentTime / cycleTime) * cycleTime; 
+  double correctedTime = currentTime - static_cast<long>(currentTime / cycleTime) * cycleTime;
 
   double pressure=0.;
   if(correctedTime >= 0 && correctedTime <= pressureTime[0]){
-    double xi = (correctedTime - pressureTime[numPressurePts-1]) / (pressureTime[0] - pressureTime[numPressurePts-1]); 
-    pressure = (pressureWave[numPressurePts-1] + xi * (pressureWave[0] - pressureWave[numPressurePts-1])); 
+    double xi = (correctedTime - pressureTime[numPressurePts-1]) / (pressureTime[0] - pressureTime[numPressurePts-1]);
+    pressure = (pressureWave[numPressurePts-1] + xi * (pressureWave[0] - pressureWave[numPressurePts-1]));
   }else{
-    int ptr = 0; 
-    bool wasFound = false; 
-    while( !wasFound){ 
+    int ptr = 0;
+    bool wasFound = false;
+    while( !wasFound){
       if( correctedTime >= pressureTime[ptr] && correctedTime <= pressureTime[ptr+1]){
-        wasFound = true; 
+        wasFound = true;
       }else{
-        ptr++;   
-      }      
+        ptr++;
+      }
     }
- 
-    // linear interpolation between values 
-    double xi = (correctedTime - pressureTime[ptr]) / (pressureTime[ptr+1] - pressureTime[ptr]); 
-    pressure = (pressureWave[ptr] + xi * (pressureWave[ptr+1] - pressureWave[ptr])); 
+
+    // linear interpolation between values
+    double xi = (correctedTime - pressureTime[ptr]) / (pressureTime[ptr+1] - pressureTime[ptr]);
+    pressure = (pressureWave[ptr] + xi * (pressureWave[ptr+1] - pressureWave[ptr]));
   }
   return pressure;
 }
@@ -393,46 +394,46 @@ double cvOneDSubdomain::GetPressure(double currentTime){
 // Returns interpolated resistance from specific boundary resistance wave
 double cvOneDSubdomain::GetBoundResistance(double currentTime){
 
-  if(resistanceTime == NULL || resistanceWave == NULL){ 
-    cout << "ERROR: resistance information is not prescribed"<< endl; 
-    exit(1); 
-  } 
-  
+  if(resistanceTime == NULL || resistanceWave == NULL){
+    cout << "ERROR: resistance information is not prescribed"<< endl;
+    exit(1);
+  }
+
   // Flow rate is assumed to be periodic
   double cycleTime = resistanceTime[numPressurePts-1];
-  double correctedTime = currentTime - static_cast<long>(currentTime / cycleTime) * cycleTime; 
+  double correctedTime = currentTime - static_cast<long>(currentTime / cycleTime) * cycleTime;
 
   double resistance=0.;
   if(correctedTime >= 0 && correctedTime <= resistanceTime[0]){
-    double xi = (correctedTime - resistanceTime[numPressurePts-1]) / (resistanceTime[0] - resistanceTime[numPressurePts-1]); 
-    resistance = (resistanceWave[numPressurePts-1] + xi * (resistanceWave[0] - resistanceWave[numPressurePts-1])); 
+    double xi = (correctedTime - resistanceTime[numPressurePts-1]) / (resistanceTime[0] - resistanceTime[numPressurePts-1]);
+    resistance = (resistanceWave[numPressurePts-1] + xi * (resistanceWave[0] - resistanceWave[numPressurePts-1]));
   }else{
-    int ptr = 0; 
-    bool wasFound = false; 
-    while( !wasFound){ 
+    int ptr = 0;
+    bool wasFound = false;
+    while( !wasFound){
       if( correctedTime >= resistanceTime[ptr] && correctedTime <= resistanceTime[ptr+1]){
-        wasFound = true; 
+        wasFound = true;
       }else{
-        ptr++; 
+        ptr++;
       }
     }
-    // linear interpolation between values 
-    double xi = (correctedTime - resistanceTime[ptr]) / (resistanceTime[ptr+1] - resistanceTime[ptr]); 
-    resistance = (resistanceWave[ptr] + xi * (resistanceWave[ptr+1] - resistanceWave[ptr])); 
+    // linear interpolation between values
+    double xi = (correctedTime - resistanceTime[ptr]) / (resistanceTime[ptr+1] - resistanceTime[ptr]);
+    resistance = (resistanceWave[ptr] + xi * (resistanceWave[ptr+1] - resistanceWave[ptr]));
   }
   return resistance;
 }
 
-double cvOneDSubdomain::GetBoundAreabyPresWave(double currentTime){ 
+double cvOneDSubdomain::GetBoundAreabyPresWave(double currentTime){
   double pressure =  GetPressure(currentTime);
-  return mat->GetArea(pressure, GetLength()); 
-} 
+  return mat->GetArea(pressure, GetLength());
+}
 
 // Use this for impedance boundary condition in convolution
 double* cvOneDSubdomain::ShiftPressure(double lastP, double currentTime,double currS){
   // get the last period of computed pressure.  if less than numImpedancePts, padded with P0=0.0 mmHg.
-  // scoot all values one over 
-  
+  // scoot all values one over
+
   if(currentTime != impedanceTime){
     for(int i=numImpedancePts-1;i>0;i--){
       impedancePressure[i] = impedancePressure[i-1];
@@ -453,10 +454,10 @@ double* cvOneDSubdomain::ShiftPressure(double lastP, double currentTime,double c
 /*double* Subdomain::GetDpDs(double lastDpDs)// don't think I use this
 {
   impedanceDpDs[0]=lastDpDs;
-  return impedanceDpDs;  
+  return impedanceDpDs;
 }
 */
-void cvOneDSubdomain::SaveK(double k, int i){  
+void cvOneDSubdomain::SaveK(double k, int i){
   K[i]=k;
 }
 
@@ -468,42 +469,42 @@ void cvOneDSubdomain::SaveK(double k, int i){
 * all added IV 050803
 */
 
-double cvOneDSubdomain::MemIntRCR(double currP, double previousP, double deltaTime, double currentTime){  
+double cvOneDSubdomain::MemIntRCR(double currP, double previousP, double deltaTime, double currentTime){
   double MemIrcr;
-  MemIrcr = ConvPressRCR(previousP, deltaTime, currentTime)*expmDtOne(deltaTime)/(alphaRCR*alphaRCR) 
-    + currP/alphaRCR*(deltaTime-expmDtOne(deltaTime)/alphaRCR);    
-  return MemIrcr;  
+  MemIrcr = ConvPressRCR(previousP, deltaTime, currentTime)*expmDtOne(deltaTime)/(alphaRCR*alphaRCR)
+    + currP/alphaRCR*(deltaTime-expmDtOne(deltaTime)/alphaRCR);
+  return MemIrcr;
 }
 
-double cvOneDSubdomain::MemAdvRCR(double currP, double previousP, double deltaTime, double currentTime){  
+double cvOneDSubdomain::MemAdvRCR(double currP, double previousP, double deltaTime, double currentTime){
   double MemK;
   double Coeff = MemC(currP, previousP, deltaTime, currentTime);
-  
-  MemK = Coeff*Coeff/2/alphaRCR*(1-exp(-2*alphaRCR*deltaTime)) 
+
+  MemK = Coeff*Coeff/2/alphaRCR*(1-exp(-2*alphaRCR*deltaTime))
     + 2*Coeff*currP/alphaRCR/(proximalResistance + distalResistance)*expmDtOne(deltaTime)
     + deltaTime*pow(currP/(proximalResistance+distalResistance),2);
   return MemK;
 }
 
-double cvOneDSubdomain::MemC(double currP, double previousP, double deltaTime, double currentTime){  
+double cvOneDSubdomain::MemC(double currP, double previousP, double deltaTime, double currentTime){
   double prevTime = currentTime-deltaTime;
   double Cadv;
   Cadv = - ConvPressRCR(previousP, deltaTime, currentTime)/(alphaRCR*proximalResistance*proximalResistance*capacitance)+
-    (Q_initial - mat->GetReferencePressure()/proximalResistance)*exp(-alphaRCR*prevTime) 
+    (Q_initial - mat->GetReferencePressure()/proximalResistance)*exp(-alphaRCR*prevTime)
     + currP/(alphaRCR*proximalResistance*proximalResistance*capacitance);
   return Cadv;
 }
 
-double cvOneDSubdomain::dMemCdP(void){  
+double cvOneDSubdomain::dMemCdP(void){
   double diffMemCdP;
   diffMemCdP = 1/(alphaRCR*capacitance)/pow(proximalResistance,2);
   return diffMemCdP;
 }
 
-double cvOneDSubdomain::ConvPressRCR(double previousP, double deltaTime, double currentTime){  
+double cvOneDSubdomain::ConvPressRCR(double previousP, double deltaTime, double currentTime){
   // Initialization
-  if(currentTime <= deltaTime ){MemD = 0.0;}  
-  // Convoluted pressure   
+  if(currentTime <= deltaTime ){MemD = 0.0;}
+  // Convoluted pressure
   if(currentTime > deltaTime && currentTime != rcrTime){
     MemD = MemD*exp(-alphaRCR*deltaTime)+previousP*expmDtOne(deltaTime);//all the deltaTime are from previous time step
     rcrTime = currentTime;
@@ -511,7 +512,7 @@ double cvOneDSubdomain::ConvPressRCR(double previousP, double deltaTime, double 
   return MemD;
 }
 
-double cvOneDSubdomain::dMemIntRCRdP(double deltaTime){  
+double cvOneDSubdomain::dMemIntRCRdP(double deltaTime){
   double dMemIdP;
   dMemIdP = (deltaTime - expmDtOne(deltaTime)/alphaRCR)/alphaRCR;
   // Cout << dMemIdP ;
@@ -519,10 +520,10 @@ double cvOneDSubdomain::dMemIntRCRdP(double deltaTime){
 }
 
 
-double cvOneDSubdomain::dMemAdvRCRdP(double currP, double prevP, double deltaTime, double currentTime){  
+double cvOneDSubdomain::dMemAdvRCRdP(double currP, double prevP, double deltaTime, double currentTime){
   double MemCoeff = MemC(currP, prevP, deltaTime, currentTime);
   double dMemKdP;
-  dMemKdP = (1-exp(-2*alphaRCR*deltaTime))/alphaRCR*MemCoeff*dMemCdP() 
+  dMemKdP = (1-exp(-2*alphaRCR*deltaTime))/alphaRCR*MemCoeff*dMemCdP()
     + expmDtOne(deltaTime)/alphaRCR/(proximalResistance + distalResistance)*(MemCoeff + currP*dMemCdP())
     + 2*deltaTime*currP/pow(proximalResistance + distalResistance,2);
   //cout<<" dMemKdP"<<" "<<dMemKdP<<endl;
@@ -531,22 +532,22 @@ double cvOneDSubdomain::dMemAdvRCRdP(double currP, double prevP, double deltaTim
 
 /* 082605 kimhj
 * Adding a new boundary condition for coronary arteries
-* Use Mem for "memory" - time integrals 
+* Use Mem for "memory" - time integrals
 */
 double cvOneDSubdomain::ConvPressCoronary(double previousP, double deltaTime, double currentTime, double exponent){
 
   double prevTime=currentTime-deltaTime;
-  if (currentTime <= deltaTime) { 
+  if (currentTime <= deltaTime) {
     MemD1=0.0;
     MemD2=0.0;
   }
-    
+
   if (currentTime > deltaTime && currentTime!=corTime) {
     MemD1=MemD1*exp(expo1COR*deltaTime)+expmDtOneCoronary(deltaTime, expo1COR)*(CoefZ1*previousP+CoefY1*getBoundCoronaryValues(prevTime));
     MemD2=MemD2*exp(expo2COR*deltaTime)+expmDtOneCoronary(deltaTime, expo2COR)*(CoefZ2*previousP+CoefY2*getBoundCoronaryValues(prevTime));
     corTime=currentTime;
   }
-  if (exponent==expo1COR){ return MemD1; } 
+  if (exponent==expo1COR){ return MemD1; }
   else if (exponent==expo2COR){ return MemD2; }
   cout << "ConvPressCoronary return value undefined!" << std::endl;
   assert(0);
@@ -563,14 +564,14 @@ double cvOneDSubdomain::MemIntCoronary(double currP, double previousP, double de
   double MemIcor = 0.0;
   double lambda = exponent;
   if (lambda==expo1COR) {
-    MemIcor = ConvPressCoronary(previousP, deltaTime, currentTime, lambda)*expmDtOneCoronary(deltaTime,lambda) 
+    MemIcor = ConvPressCoronary(previousP, deltaTime, currentTime, lambda)*expmDtOneCoronary(deltaTime,lambda)
     + (CoefZ1*currP+CoefY1*getBoundCoronaryValues(currentTime))*(-deltaTime+expmDtOneCoronary(deltaTime,lambda))/lambda;
   }
   else if (lambda==expo2COR) {
-    MemIcor = ConvPressCoronary(previousP, deltaTime, currentTime, lambda)*expmDtOneCoronary(deltaTime,lambda) 
+    MemIcor = ConvPressCoronary(previousP, deltaTime, currentTime, lambda)*expmDtOneCoronary(deltaTime,lambda)
     + (CoefZ2*currP+CoefY2*getBoundCoronaryValues(currentTime))*(-deltaTime+expmDtOneCoronary(deltaTime,lambda))/lambda;
   }
-  return MemIcor;  
+  return MemIcor;
 }
 
 double cvOneDSubdomain::CORic1(void){
@@ -587,35 +588,35 @@ double cvOneDSubdomain::CORic2(void){
   return CORic2;
 }
 
-double cvOneDSubdomain::MemCoronary1(double currP, double previousP, double deltaTime, double currentTime){  
+double cvOneDSubdomain::MemCoronary1(double currP, double previousP, double deltaTime, double currentTime){
   double prevTime = currentTime-deltaTime;
   double Cadv;
-  Cadv = ConvPressCoronary(previousP, deltaTime, currentTime, expo1COR)+CORic1()*exp(expo1COR*prevTime) 
+  Cadv = ConvPressCoronary(previousP, deltaTime, currentTime, expo1COR)+CORic1()*exp(expo1COR*prevTime)
     + (currP*CoefZ1+CoefY1*getBoundCoronaryValues(currentTime))/expo1COR;
   return Cadv;
 }
 
-double cvOneDSubdomain::MemCoronary2(double currP, double previousP, double deltaTime, double currentTime){  
+double cvOneDSubdomain::MemCoronary2(double currP, double previousP, double deltaTime, double currentTime){
   double prevTime = currentTime-deltaTime;
   double Cadv;
-  Cadv = ConvPressCoronary(previousP, deltaTime, currentTime, expo2COR)+CORic2()*exp(expo2COR*prevTime) 
+  Cadv = ConvPressCoronary(previousP, deltaTime, currentTime, expo2COR)+CORic2()*exp(expo2COR*prevTime)
     + (currP*CoefZ2+CoefY2*getBoundCoronaryValues(currentTime))/expo2COR;
   return Cadv;
 }
 
-double cvOneDSubdomain::dMemCoronary1dP(void){  
+double cvOneDSubdomain::dMemCoronary1dP(void){
   double diffMemCdP;
   diffMemCdP = CoefZ1/expo1COR;
   return diffMemCdP;
 }
 
-double cvOneDSubdomain::dMemCoronary2dP(void){  
+double cvOneDSubdomain::dMemCoronary2dP(void){
   double diffMemCdP;
   diffMemCdP = CoefZ2/expo2COR;
   return diffMemCdP;
 }
 
-double cvOneDSubdomain::dMemIntCoronarydP(double deltaTime, double exponent){  
+double cvOneDSubdomain::dMemIntCoronarydP(double deltaTime, double exponent){
   double dMemIdP = 0.0;
   double lambda=exponent;
   if (lambda==expo1COR) { dMemIdP = CoefZ1*(-deltaTime+expmDtOneCoronary(deltaTime,lambda))/lambda; }
@@ -623,13 +624,13 @@ double cvOneDSubdomain::dMemIntCoronarydP(double deltaTime, double exponent){
   return dMemIdP;
 }
 
-double cvOneDSubdomain::MemAdvCoronary(double currP, double previousP, double deltaTime, double currentTime){  
+double cvOneDSubdomain::MemAdvCoronary(double currP, double previousP, double deltaTime, double currentTime){
   double MemK;
   double Coeff1 = MemCoronary1(currP, previousP, deltaTime, currentTime);
   double Coeff2 = MemCoronary2(currP, previousP, deltaTime, currentTime);
   double currPlv = getBoundCoronaryValues(currentTime);
   double factor = (p0COR*currP-b0COR*currPlv)/q0COR;
-  MemK = Coeff1*Coeff1/2/expo1COR*(exp(2*expo1COR*deltaTime)-1) 
+  MemK = Coeff1*Coeff1/2/expo1COR*(exp(2*expo1COR*deltaTime)-1)
     - 2*Coeff1*Coeff2*expmDtOneCoronary(deltaTime, expo1COR+expo2COR)
     + Coeff2*Coeff2/2/expo2COR*(exp(2*expo2COR*deltaTime)-1)
     +pow(factor,2)*deltaTime
@@ -638,7 +639,7 @@ double cvOneDSubdomain::MemAdvCoronary(double currP, double previousP, double de
   return MemK;
 }
 
-double cvOneDSubdomain::dMemAdvCoronarydP(double currP, double prevP, double deltaTime, double currentTime){  
+double cvOneDSubdomain::dMemAdvCoronarydP(double currP, double prevP, double deltaTime, double currentTime){
   double Coeff1 = MemCoronary1(currP, prevP, deltaTime, currentTime);
   double Coeff2 = MemCoronary2(currP, prevP, deltaTime, currentTime);
   double currPlv = getBoundCoronaryValues(currentTime);
@@ -660,7 +661,7 @@ double cvOneDSubdomain::dMemAdvCoronarydP(double currP, double prevP, double del
 * Mem is for "memory" - time integrals
 * all added IV 080603
 */
-double cvOneDSubdomain::memIniWave(double initS,double Time){   
+double cvOneDSubdomain::memIniWave(double initS,double Time){
   WaveIni = 0.0;
   for(int j=0;j<numWaveMod;j++){
     WaveIni += sin(waveSpeed*eigValWave[j]*Time)/eigValWave[j];
@@ -672,26 +673,26 @@ double cvOneDSubdomain::memIniWave(double initS,double Time){
   //return 0.0;//gr1 only
 }
 
-double cvOneDSubdomain::memEndBCWave(double Time){   
-  WaveEndBC = waveSpeed*waveSpeed*waveSo*waveEndh*(1.0-exp(waveN/waveSo*Time))/waveN/waveLT; 
+double cvOneDSubdomain::memEndBCWave(double Time){
+  WaveEndBC = waveSpeed*waveSpeed*waveSo*waveEndh*(1.0-exp(waveN/waveSo*Time))/waveN/waveLT;
   return WaveEndBC;
 }
 
-double cvOneDSubdomain::convolWave(double currS, double prevS, double deltaTime, double currentTime, double Time){     
+double cvOneDSubdomain::convolWave(double currS, double prevS, double deltaTime, double currentTime, double Time){
   double prevTime = currentTime-deltaTime;
   //initialization
   if(currentTime == deltaTime && currentTime != waveTime){
     MemDWave = 0.0;
   }
   if(currentTime > deltaTime && currentTime != waveTime){
-    MemDWave = MemDWave + prevS*exp(-prevTime*waveN/waveSo)*(exp(waveN/waveSo*deltaTime)-1.0);    
-  }   
+    MemDWave = MemDWave + prevS*exp(-prevTime*waveN/waveSo)*(exp(waveN/waveSo*deltaTime)-1.0);
+  }
   MemEWave = (1.0+2.0*numWaveMod)*waveSpeed*waveSpeed/waveLT*waveSo/waveN*exp(waveN/waveSo*Time)*(MemDWave+currS*(exp(-prevTime*waveN/waveSo)-exp(-Time*waveN/waveSo)));
   // MemEWave = MemEWave/(1.0+2.0*numWaveMod);//check gr1
   return MemEWave;
 }
 
-double cvOneDSubdomain::dblConvolWave(double currS, double prevS, double deltaTime, double currentTime, double Time){   
+double cvOneDSubdomain::dblConvolWave(double currS, double prevS, double deltaTime, double currentTime, double Time){
   double prevTime = currentTime-deltaTime;
   complex<double> COMPLX(0.0,1.0);
   //initialization
@@ -733,18 +734,18 @@ double cvOneDSubdomain::dblConvolWave(double currS, double prevS, double deltaTi
       // cout<<"MemEIw1  "<<-deltaTime*(MemEIw1[j]*2.0*waveSpeed/waveLT/eigValWave[j]*exp(waveN/waveSo*Time)).real();
     }
 //*
-    MemEIw2[j] = MemEIS2pWave[j]/2.0/COMPLX*(exp(-COMPLX*waveSpeed*eigValWave[j]*Time)*exp(-waveAlpha*Time)-exp(-COMPLX*waveSpeed*eigValWave[j]*prevTime)*exp(-waveAlpha*prevTime)-exp(waveAlpha*deltaTime)*(exp(-waveAlpha*Time)*exp(-COMPLX*waveSpeed*eigValWave[j]*(Time+deltaTime))-exp(-waveAlpha*prevTime)*exp(-COMPLX*waveSpeed*eigValWave[j]*(prevTime+deltaTime)))) 
+    MemEIw2[j] = MemEIS2pWave[j]/2.0/COMPLX*(exp(-COMPLX*waveSpeed*eigValWave[j]*Time)*exp(-waveAlpha*Time)-exp(-COMPLX*waveSpeed*eigValWave[j]*prevTime)*exp(-waveAlpha*prevTime)-exp(waveAlpha*deltaTime)*(exp(-waveAlpha*Time)*exp(-COMPLX*waveSpeed*eigValWave[j]*(Time+deltaTime))-exp(-waveAlpha*prevTime)*exp(-COMPLX*waveSpeed*eigValWave[j]*(prevTime+deltaTime))))
                  - MemEIS2mWave[j]/2.0/COMPLX*(exp(COMPLX*waveSpeed*eigValWave[j]*Time)*exp(-waveAlpha*Time)-exp(COMPLX*waveSpeed*eigValWave[j]*prevTime)*exp(-waveAlpha*prevTime)-exp(waveAlpha*deltaTime)*(exp(-waveAlpha*Time)*exp(COMPLX*waveSpeed*eigValWave[j]*(Time+deltaTime))-exp(-waveAlpha*prevTime)*exp(COMPLX*waveSpeed*eigValWave[j]*(prevTime+deltaTime))))
                  + currS*(sin(waveSpeed*eigValWave[j]*(prevTime-Time))*exp(-waveAlpha*(Time+prevTime))+waveSo/waveN*waveSpeed*eigValWave[j]*(exp(-waveN/waveSo*prevTime)-exp(-waveN/waveSo*Time)));
-//*/   
+//*/
   /*
-      cout<<"   + "<< (-deltaTime*2.0*waveSpeed/waveLT/eigValWave[j]*exp(waveN/waveSo*Time)*MemEIS2pWave[j]/2.0/COMPLX*(exp(-COMPLX*waveSpeed*eigValWave[j]*Time)*exp(-waveAlpha*Time)-exp(-COMPLX*waveSpeed*eigValWave[j]*prevTime)*exp(-waveAlpha*prevTime)-exp(waveAlpha*deltaTime)*(exp(-waveAlpha*Time)*exp(-COMPLX*waveSpeed*eigValWave[j]*(Time+deltaTime))-exp(-waveAlpha*prevTime)*exp(-COMPLX*waveSpeed*eigValWave[j]*(Time+deltaTime))))).real() 
+      cout<<"   + "<< (-deltaTime*2.0*waveSpeed/waveLT/eigValWave[j]*exp(waveN/waveSo*Time)*MemEIS2pWave[j]/2.0/COMPLX*(exp(-COMPLX*waveSpeed*eigValWave[j]*Time)*exp(-waveAlpha*Time)-exp(-COMPLX*waveSpeed*eigValWave[j]*prevTime)*exp(-waveAlpha*prevTime)-exp(waveAlpha*deltaTime)*(exp(-waveAlpha*Time)*exp(-COMPLX*waveSpeed*eigValWave[j]*(Time+deltaTime))-exp(-waveAlpha*prevTime)*exp(-COMPLX*waveSpeed*eigValWave[j]*(Time+deltaTime))))).real()
           <<"   -  "<<(deltaTime*2.0*waveSpeed/waveLT/eigValWave[j]*exp(waveN/waveSo*Time)*MemEIS2mWave[j]/2.0/COMPLX*(exp(COMPLX*waveSpeed*eigValWave[j]*Time)*exp(-waveAlpha*Time)-exp(COMPLX*waveSpeed*eigValWave[j]*prevTime)*exp(-waveAlpha*prevTime)-exp(waveAlpha*deltaTime)*(exp(-waveAlpha*Time)*exp(COMPLX*waveSpeed*eigValWave[j]*(Time+deltaTime))-exp(-waveAlpha*prevTime)*exp(COMPLX*waveSpeed*eigValWave[j]*(Time+deltaTime))))).real()
           <<"   currS  "<<-deltaTime*2.0*waveSpeed/waveLT/eigValWave[j]*exp(waveN/waveSo*Time)*currS*(sin(waveSpeed*eigValWave[j]*(prevTime-Time))*exp(-waveAlpha*(Time+prevTime))+waveSo/waveN*waveSpeed*eigValWave[j]*(exp(-waveN/waveSo*prevTime)-exp(-waveN/waveSo*Time)))<<"   "
           <<endl;
   //*/    //cout<<"   MemEIw2  "<<-deltaTime*(MemEIw2[j]*2.0*waveSpeed/waveLT/eigValWave[j]*exp(waveN/waveSo*Time)).real()<<endl;
 
-      //MemEIw2[j]=0.0;  
+      //MemEIw2[j]=0.0;
     MemEIw[j] = MemEIw1[j]+MemEIw2[j];
     MemEIWaveM -= MemEIw[j]*2.0*waveSpeed/waveLT/eigValWave[j]*exp(waveN/waveSo*Time);
   }
@@ -756,22 +757,22 @@ double cvOneDSubdomain::dblConvolWave(double currS, double prevS, double deltaTi
   //return 0.0;//gr1 only
 }
 
-double cvOneDSubdomain::QWave(double currS, double prevS, double initS, double deltaTime, double currentTime, double Time){   
+double cvOneDSubdomain::QWave(double currS, double prevS, double initS, double deltaTime, double currentTime, double Time){
   double Qwave = memEndBCWave(Time) + convolWave(currS, prevS, deltaTime, currentTime,Time) + memIniWave(initS,Time) + dblConvolWave(currS,prevS,deltaTime,currentTime,Time);
   if(currentTime != waveTime){waveTime = currentTime;}//to check
   return Qwave;
 }
 
-double cvOneDSubdomain::MemQWave(double currS, double prevS, double initS, double deltaTime,double currentTime){   
+double cvOneDSubdomain::MemQWave(double currS, double prevS, double initS, double deltaTime,double currentTime){
   double MemInt;
   // MemInt = (QWave(currS,prevS,initS,deltaTime,currentTime,currentTime) + QWave(currS,prevS,initS,deltaTime,currentTime,currentTime-deltaTime))*deltaTime/2;//integration by trapezoidal rule
   // MemInt = (QWave(currS,prevS,initS,deltaTime,currentTime,currentTime)+4*QWave(currS,prevS,initS,deltaTime,currentTime,currentTime-deltaTime/2)  + QWave(currS,prevS,initS,deltaTime,currentTime,currentTime-deltaTime))*deltaTime/6;//integration by simpson rule
-  // MemInt = QWave(currS,prevS,initS,deltaTime,currentTime,currentTime)*deltaTime;//integration with SpaceTime 
+  // MemInt = QWave(currS,prevS,initS,deltaTime,currentTime,currentTime)*deltaTime;//integration with SpaceTime
   MemInt = QWave(currS,prevS,initS,deltaTime,currentTime,currentTime-deltaTime)*deltaTime;//integration with SpaceTime tn
   return MemInt;
 }
 
-double cvOneDSubdomain::MemAdvWave(double currS, double prevS,double initS,double deltaTime,double currentTime){  
+double cvOneDSubdomain::MemAdvWave(double currS, double prevS,double initS,double deltaTime,double currentTime){
   double MemK;
   // double QMemKEnd = QWave(currS,prevS,initS,deltaTime,currentTime,currentTime);
   double QMemKBeg = QWave(currS,prevS,initS,deltaTime,currentTime,currentTime-deltaTime);
@@ -783,7 +784,7 @@ double cvOneDSubdomain::MemAdvWave(double currS, double prevS,double initS,doubl
   return MemK;
 }
 
-double cvOneDSubdomain::dMemQWavedS(double deltaTime, double currentTime){  
+double cvOneDSubdomain::dMemQWavedS(double deltaTime, double currentTime){
   double dMemIdS;
   double prevTime = currentTime - deltaTime;
   double dQWavedS = (1.0+2.0*numWaveMod)*waveSpeed*waveSpeed/waveLT*waveSo/waveN*exp(waveN/waveSo*currentTime)*(exp(-prevTime*waveN/waveSo)-exp(-currentTime*waveN/waveSo));//contribution from ConvolWave
@@ -805,7 +806,7 @@ double cvOneDSubdomain::dMemQWavedS(double deltaTime, double currentTime){
   return 0.0;
 }
 
-double cvOneDSubdomain::dMemAdvWavedS(double currS,double prevS,double initS,double deltaTime, double currentTime){  
+double cvOneDSubdomain::dMemAdvWavedS(double currS,double prevS,double initS,double deltaTime, double currentTime){
   double dMemKdS;
   double QdMemKdS = QWave(currS,prevS,initS,deltaTime,currentTime,currentTime);
   dMemKdS = 2*dMemQWavedS(deltaTime,currentTime)*QdMemKdS;//trapzoidal rule and space time
@@ -820,7 +821,7 @@ double cvOneDSubdomain::dMemAdvWavedS(double currS,double prevS,double initS,dou
 
   }
   dMemKdS=deltaTime/6*(2*dQWaveEnddS*QdMemKdS+2*dQWaveMiddS*QdMemKdSMid);//simpson rule //*/
-  
+
   //return 0.0;
   return dMemKdS;
 }
@@ -830,49 +831,49 @@ double cvOneDSubdomain::dMemAdvWavedS(double currS,double prevS,double initS,dou
 * Mem is for "memory" - time integrals
 * all added IV 050803
 */
-double cvOneDSubdomain::MemIntImp(double *press, double deltaTime, double currentTime){  
+double cvOneDSubdomain::MemIntImp(double *press, double deltaTime, double currentTime){
   double MemIimp;
   MemIimp = deltaTime*ConvPressImp(press, currentTime);
   return MemIimp;
 }
 
-double cvOneDSubdomain::MemAdvImp(double *press, double deltaTime, double currentTime){  
+double cvOneDSubdomain::MemAdvImp(double *press, double deltaTime, double currentTime){
   double MemK;
   MemK = deltaTime*pow(ConvPressImp(press, currentTime),2);
   return MemK;
 }
 
-double cvOneDSubdomain::dMemIntImpdP(double deltaTime){  
+double cvOneDSubdomain::dMemIntImpdP(double deltaTime){
   double dMemIdP;
   //dMemIdP = deltaTime* impedance[0];
-  dMemIdP = deltaTime* impedance[0]/numImpedancePts;//vie 112904 consistent impedance 
+  dMemIdP = deltaTime* impedance[0]/numImpedancePts;//vie 112904 consistent impedance
   //cout << dMemIdP ;
   return dMemIdP;
 }
 
-double cvOneDSubdomain::dMemAdvImpdP(double *press, double deltaTime, double currentTime){  
+double cvOneDSubdomain::dMemAdvImpdP(double *press, double deltaTime, double currentTime){
   double dMemKdP;
   //dMemKdP = deltaTime*2*impedance[0]*ConvPressImp(press, currentTime);
-  dMemKdP = deltaTime*2*impedance[0]/numImpedancePts*ConvPressImp(press, currentTime);//vie 112904 consistent impedance 
+  dMemKdP = deltaTime*2*impedance[0]/numImpedancePts*ConvPressImp(press, currentTime);//vie 112904 consistent impedance
   //cout<<" dMemKdP"<<" "<<dMemKdP<<endl;
   return dMemKdP;
 }
 
-double cvOneDSubdomain::ConvPressImp(double *press, double currentTime){  
-  double MemDImpc = 0.0; 
-  // convoluted pressure 
+double cvOneDSubdomain::ConvPressImp(double *press, double currentTime){
+  double MemDImpc = 0.0;
+  // convoluted pressure
   //first compute the convolution of the known values-memory terms at the beginning of each new time step
   if(currentTime != impedanceTime){
     MemDImp= 0.0;
     for(int j=1;j<numImpedancePts;j++){
-      //MemDImp += impedance[j]*press[j];  
-      MemDImp += impedance[j]/numImpedancePts*press[j]; //vie 112904 consistent impedance 
+      //MemDImp += impedance[j]*press[j];
+      MemDImp += impedance[j]/numImpedancePts*press[j]; //vie 112904 consistent impedance
       }
     impedanceTime = currentTime;
   //  cout<<"convpressimp"<<impedanceTime<<endl;
   }
   //add the contribution of the currentSol, which is updated at each iteration
   //MemDImpc = MemDImp + impedance[0]*press[0];
-  MemDImpc = MemDImp + impedance[0]/numImpedancePts*press[0];//vie 112904 consistent impedance 
+  MemDImpc = MemDImp + impedance[0]/numImpedancePts*press[0];//vie 112904 consistent impedance
   return MemDImpc;
 }

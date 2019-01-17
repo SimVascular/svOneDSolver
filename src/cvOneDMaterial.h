@@ -3,7 +3,7 @@
 
 //
 //  cvOneDMaterial.h - Header for a class to maintain material properties
-//  
+//
 //  This class maintains Material Properties of the subdomain.
 //
 //  History:
@@ -83,12 +83,12 @@ class cvOneDMaterial{
 
     void   UpdateKinematicViscosity() {kinematicViscosity = dynamicViscosity/density;return;}
 
-    void   SetReferencePressure(double refP) {p1_ = refP;} 
-    double GetReferencePressure() {return p1_;}
+    void   SetReferencePressure(double refP) {p1_ = refP;}
+    double GetReferencePressure() {return p1_; }
     double GetReferencedPressure_dt() {return 0; }
     // void SetReferencePressure (double refdP_dt) {dp_dt=refdP_dt;}
     // double GetReferencedPressure_dt() {return dp_dt; }
-       
+
   protected:
 
     double density;
@@ -101,7 +101,7 @@ class cvOneDMaterial{
 
     double p1_;
     // double dp_dt;
- 
+
 };
 
 #endif // CVONEDMATERIAL_H
