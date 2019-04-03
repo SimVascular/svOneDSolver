@@ -221,10 +221,11 @@ void cvOneDOptions::checkSegmentLengthConsistency(){
     dz = nodeZcoord[outNode] - nodeZcoord[inNode];
 
     nodeDist = sqrt(dx*dx + dy*dy + dz*dz);
-    if(fabs(nodeDist-segLength)>1.0e-8){
-      inconsistencyFound = true;
-      segmentLength[loopA] = nodeDist;
-    }
+    // COMMENTED CHANGES OUT TO PRIORITIZE SEGMENT CARD LENGTH OVER NODE DISTANCE (MD 4/2/19)
+    // if(fabs(nodeDist-segLength)>1.0e-8){
+    //   inconsistencyFound = true;
+    //   segmentLength[loopA] = nodeDist;
+    // }
   }
   if(inconsistencyFound){
     printf("WARNING: Inconsistency detected between segment length and end node distance.\n");
