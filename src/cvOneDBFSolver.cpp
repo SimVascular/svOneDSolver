@@ -1136,10 +1136,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       subdomain -> SetNumberOfElements(nels);
       subdomain -> SetMeshType(mType);
       subdomain -> Init(zin, zout);
-      //subdomain -> SetupMaterial(matID);
-      // I think set period was out of place in the
-      // code from irene because the mat hadn't been initialized yet
-      //subdomain -> GetMaterial()->SetPeriod(Period);
+      
 
       // Get the Initial Properties of the subdomain...
       double Qo = 0.0;
