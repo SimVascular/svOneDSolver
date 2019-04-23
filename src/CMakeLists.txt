@@ -80,3 +80,10 @@ ELSEIF(sparseSolverType STREQUAL "csparse")
   ADD_EXECUTABLE(${PROJECT_NAME} ${SRC_C} ${SRC_H} ${CSPARSE_SRC_C} ${CSPARSE_SRC_H})
 
 ENDIF()
+
+install( TARGETS ${PROJECT_NAME}
+         RUNTIME 
+         DESTINATION bin 
+         COMPONENT executable )
+
+

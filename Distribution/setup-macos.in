@@ -1,0 +1,2 @@
+#!/bin/bash -f
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$1/lib:
