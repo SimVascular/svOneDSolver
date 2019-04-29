@@ -124,115 +124,6 @@ double* cvOneDSkylineMatrix::GetLowerDiagonalEntries(){
   return KL;
 }
 
-/*
-ostream & operator<<( ostream & oFile, SkylineMatrix& matrix)
-{
-  assert( matrix.wasSet);
-
-  long dimension = matrix.dimension;
-  char* title = matrix.title;
-  long* position = matrix.position;
-  double* KU = matrix.KU;
-  double* KL = matrix.KL;
-  double* KD = matrix.KD;
-  long i, j; 
-  double ** fullmatrix = new double*[dimension];
-  for(i = 0; i < dimension; i++){
-    fullmatrix[i] = new double[dimension];
-    for(j = 0; j < dimension; j++){
-      fullmatrix[i][j] = 0;
-    }
-  }
-  int * rowid = new int[dimension*dimension];
-  int * colid = new int[dimension*dimension];
-  double * value = new double[dimension*dimension];
-  long height, row, column, pos;
-  
-//  oFile.setf(  ios::scientific);
-//  oFile.precision( OUTPUT_PRECISION);
-  
-  int temp = 0;
-// first index corresponds to the row positions
-  for( i = 0; i < dimension; i++){ // diagonal entries
-    rowid[temp++] = i+1;
-  }
-  for( i = 0; i < dimension; i++){ // upper diagonal entries
-    height = position[i + 1] - position[i]; // number of elements in the skyline
-    row = i + 1 - height;
-    while( height--){
-      rowid[temp++] = row++;
-    }
-  }
-  for( i = 0; i < dimension; i++){ // lower diagonal entries
-    height = position[i + 1] - position[i];
-    row = i + 1;
-    while( height--){
-      rowid[temp++] = row;
-    }
-  }
-  temp = 0;
-  // second index corresponds to the column positi
-  oFile << "j" << title << " = [\n";
-  for( i = 0; i < dimension; i++){ // diagonal entries
-    colid[temp++] = i+1;
-  }
-  for( i = 0; i < dimension; i++){ // upper diagonal entries
-    height = position[i + 1] - position[i];
-    column = i + 1;
-    while( height--){
-      colid[temp++] = column;
-    }
-  }
-  for( i = 0; i < dimension; i++){ // lower diagonal entries
-    height = position[i + 1] - position[i];
-    column = i + 1 - height;
-    while( height--){
-      colid[temp++] = column++;
-    }
-  }
-  oFile << "]; \n";
-  temp = 0;
-  // now we output the entries of the matrix
-  oFile << "s" << title << " = [ \n" ;
-  for( i = 0; i < dimension; i++){ // diagonal entries
-    value[temp++] = KD[i];
-  }
-  for( i = 0; i < dimension; i++){ // upper diagonal entries
-    height = position[i + 1] - position[i];
-    pos = position[i];
-    while( height--){
-      value[temp++] = KU[pos++];
-    }
-  }
-  for( i = 0; i < dimension; i++){ // lower diagonal entries   
-    height = position[i + 1] - position[i];
-    pos = position[i];
-    while( height--){
-      value[temp++] = KL[pos++];
-    }
-  }
-  for(i = 0; i < temp; i++){
-    fullmatrix[rowid[i]-1][colid[i]-1] = value[i];
-  }
-  for(i = 0; i < dimension; i++){
-    for(int j = 0; j < dimension; j++){
-      oFile << fullmatrix[i][j] << "  ";
-    }
-    oFile << "\n";
-  }
-  // create sparse matrix using the above arrays
-  oFile << title << " = sparse( i" << title << ", j" << title << ", s" << title << "); \n";
-  for(i = 0; i < dimension; i++){
-    delete [] fullmatrix[i];
-  }
-  delete [] fullmatrix;
-  delete [] rowid;
-  delete [] colid;
-  delete [] value;
- 
-  return oFile;
-}
-*/
 
 void cvOneDSkylineMatrix::SetArrays( double* upperEntries, double* lowerEntries, double* diagonalEntries){
   assert( wasSet);
@@ -436,8 +327,6 @@ void cvOneDSkylineMatrix::print(std::ostream &os){
   double * value = new double[dimension*dimension];
   long height, row, column, pos;
   
-  // os.setf(  ios::scientific);
-  // os.precision( OUTPUT_PRECISION);
   
   int temp = 0;
   // first index corresponds to the row positions

@@ -1160,24 +1160,14 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       subdomain->SetInitOutletS(Sn);
       subdomain->SetGlobal1stNodeID(temp);
       subdomain->SetBoundCondition(boundT);
-      // I put this back (not in irene's code.  Want to see if this solves problem w/o interferring with Irene's code
       if(!seg->IsOutlet){
         subdomain->SetBoundCondition(BoundCondTypeScope::NOBOUND);
       }
       subdomain->SetupMaterial(matID);
       subdomain->GetMaterial()->SetPeriod(Period);
-      //if(seg->use_k )subdomain -> SetupMaterial(karray);
-      //else subdomain -> SetupMaterialType(eType); // not used if manually set K's
-
-      // cout<<" test material call  "<< subdomain->GetMaterial()->GetReferencePressure()<<endl;
-
-      // Set up Minor Loss
+      
+      // Set up Minor Loss - Only for NO MINOR LOSS TYPE
       subdomain->SetMinorLossType(seg->GetMinorLossType());
-      if(seg->GetMinorLossType() != MinorLossScope::NONE){
-        subdomain->SetBranchAngle(seg->GetBranchAngle());
-        subdomain->SetUpstreamSeg(seg->GetUpstreamSeg());
-        subdomain->SetBranchSeg(seg->GetBranchSeg());
-      }
 
       // Set up boundary condition
       if (boundT == BoundCondTypeScope::PRESSURE_WAVE){ //added
@@ -1186,44 +1176,18 @@ void cvOneDBFSolver::QuerryModelInformation(void)
         int num; // x-fer info from Segment to subdomain
         seg->getBoundPressureValues(&pres,&time,&num);
         subdomain ->SetBoundPresWave(time, pres, num);
-      }else if (boundT == BoundCondTypeScope::RESISTANCE_TIME){ //added
+      }else if (boundT == BoundCondTypeScope::RESISTANCE_TIME){
         double* time;
         double* resist;
         int num; // x-fer info from Segment to subdomain
         seg->getBoundResistanceValues(&resist,&time,&num);
         subdomain->SetBoundResistanceWave(time, resist, num);
-      }else if(boundT == BoundCondTypeScope::ADMITTANCE ){ //added
-        double* h;
-        int num;
-        seg->getBoundImpedanceValues(&h,&num);
-        //printf("SUBDOMAIN IMPEDANCE\n");
-        //for(int loopA=0;loopA<num;loopA++){
-        //  printf("%e\n",h[loopA]);
-        //}
-        //getchar();
-        subdomain->SetBoundImpedanceValues(h,num);
       }else if(boundT == BoundCondTypeScope::RCR){ // Added IV 050803
         double* rcr;
         int num;
         seg->getBoundRCRValues(&rcr,&num);
         subdomain -> SetBoundRCRValues(rcr,num);
         cout<<"RCR boundary condition"<<endl;
-      }else if(boundT == BoundCondTypeScope::CORONARY){// added kimhj 090205
-        double* time;
-        double* p_lv;
-        int num;
-        seg->getBoundCoronaryValues(&p_lv, &time, &num);
-        subdomain->SetBoundCoronaryValues(time, p_lv,num);
-        cout<<"Coronary boundary condition"<<endl;
-      }else if(boundT == BoundCondTypeScope::WAVE){// added IV 080603
-        double* wave;
-        int num;
-        seg->getBoundWaveValues(&wave,&num);
-        subdomain -> SetBoundWaveValues(wave,num);
-        cout<<"Wave boundary condition"<<endl;
-      }else if(boundT == BoundCondTypeScope::LPN){// added DES
-        // DES COMPLETE !!!
-        cout<<"LPN boundary condition"<<endl;
       }else{
         subdomain -> SetBoundValue(boundV);
       }

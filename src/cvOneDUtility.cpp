@@ -4,9 +4,6 @@
 //  Utility.cxx - Source for Some Utility functions 
 //  ~~~~~~~~~~~   
 //
-//  History:
-//  May 1999, J.Wan
-//      Creation of file, class project of ME234C of T.J.R. Hughes and C.Taylor
 
 long min(long size, long* values){
   long m = values[0];

@@ -5,9 +5,6 @@
 //  cvOneDUtility.h - Header for Some Utility functions and rules of random point quadratures.
 //  ~~~~~~~~~~~   
 //  
-//  History:
-//  May 1999, J.Wan
-//      Creation of file,
 
 # include <cmath>
 # include <iostream>
