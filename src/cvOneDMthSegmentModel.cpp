@@ -11,14 +11,6 @@
 
 int cvOneDMthSegmentModel::STABILIZATION;
 
-int cvOneDMthSegmentModel::SHOCKCAPTURE;
-
-double cvOneDMthSegmentModel::SHOCKBETA;
-
-double cvOneDMthSegmentModel::SHOCKSref;
-
-double cvOneDMthSegmentModel::SHOCKQref;
-
 cvOneDMthSegmentModel::cvOneDMthSegmentModel(const vector<cvOneDSubdomain*>& subdList,
                                              const vector<cvOneDFEAJoint*>& jtList,
                                              const vector<int>& outletList, long quadPoints_):
@@ -380,11 +372,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     U[0] = finiteElement->Interpolate( xi[l], S);
     U[1] = finiteElement->Interpolate( xi[l], Q);
 
-    // evaluate U,z at integration point
-    double DxU[2];
-    DxU[0] = DxShape[0]*S[0]+DxShape[1]*S[1];
-    DxU[1] = DxShape[0]*Q[0]+DxShape[1]*Q[1];
-
     // get the coordinate corresponding to the quadrature point
     // the elements are assumed to be isoparametric
     double z = finiteElement->Interpolate( xi[l], nodes);
@@ -428,11 +415,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     double C21 = -1.0/density*DpDz;
     double C22 = N / U[0];
     double K22 = kinViscosity;
-
-    double G1 = -Outflow;
-    double G2 = N*aux-U[0]/density*DpDz;
-    double GF1 = -Outflow;
-    double GF2 = N*aux+IntegralpD2S/density;
 
     if(cvOneDGlobal::debugMode){
       printf("(Debug) Assembling Element %ld\n",element);
@@ -542,40 +524,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
 
     } // end STABILIZATION
 
-        //numerical viscosity for capture/discontinuity capture
-    double Kdc=0.0;
-    if(SHOCKCAPTURE==1){
-
-    //Y=[U1ref 0; U2ref 0;]
-    double Uref[2];
-    Uref[0]= SHOCKSref ;
-    Uref[1]= SHOCKQref ;
-    //Z=L(U)U
-    double Z[2];
-    Z[0]=DxU[1];
-    Z[1]=A21*DxU[0]+A22*DxU[1];
-    // for a smooth layer set beta=1, for a sharper layer set beta=2
-
-    // ||Y^-1*Z||
-    double YZ;
-    YZ=sqrt(pow(Z[0]/Uref[0],2.0)+pow(Z[1]/Uref[1],2.0));
-
-    // (||Y^-1*(dU/dx)||^2)^(beta/2-1)
-    double YdxU;
-    YdxU=pow(DxU[0]/Uref[0],2)+pow(DxU[1]/Uref[1],2);
-    YdxU=pow(YdxU,SHOCKBETA/2.0-1);
-    double hdc;
-    double jshock;
-    if (fabs(DxU[1])>1e-6){
-    jshock=DxU[1]/fabs(DxU[1]);
-   // printf("forLHS, jshock=%lf, U[1]=%lf, DxU[1]=%lf \n",jshock,U[1],DxU[1]);
-    hdc=2.0/(fabs(DxShape[0]*jshock)+fabs(DxShape[1]*jshock));
-    } else{
-    hdc=0.0;
-    }
-    Kdc=YZ*YdxU*pow(hdc/2.0,SHOCKBETA);
-    //printf("formLHS Kdc=%lf K22=%lf  \n",Kdc,K22);
-    }
 
 
 
@@ -591,13 +539,13 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
           k11 = deltaTime*(shape[a]*CF11*shape[b])-shape[a]*shape[b];
           k12 = deltaTime*(A12*shape[b]*DxShape[a]);
           k21 = deltaTime*(DxShape[a]*A21*shape[b]+shape[a]*CF21*shape[b]);
-          k22 = deltaTime*(DxShape[a]*A22*shape[b]-DxShape[a]*(K22+Kdc)*DxShape[b]+shape[a]*CF22*shape[b]) - shape[a]*shape[b];
+          k22 = deltaTime*(DxShape[a]*A22*shape[b]-DxShape[a]*(K22)*DxShape[b]+shape[a]*CF22*shape[b]) - shape[a]*shape[b];
         }else{
           // Here is Brooke's version that I am not using IV 01-30-03
           k11 = deltaTime*(-shape[a]*C11*shape[b])+shape[a]*shape[b];
           k12 = deltaTime*(shape[a]*DxShape[b]);
           k21 = deltaTime*(shape[a]*A21*DxShape[b]-shape[a]*C21*shape[b]);
-          k22 = deltaTime*(shape[a]*A22*DxShape[b]+DxShape[a]*(K22+Kdc)*DxShape[b]-shape[a]*C22*shape[b]) + shape[a]*shape[b];
+          k22 = deltaTime*(shape[a]*A22*DxShape[b]+DxShape[a]*(K22)*DxShape[b]-shape[a]*C22*shape[b]) + shape[a]*shape[b];
         }
 
         if(STABILIZATION == 1){
@@ -922,43 +870,6 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
       tau[3] =  temp/det;
     }
 
-    //numerical viscosity for capture/discontinuity capture
-    double Kdc=0.0;
-    if(SHOCKCAPTURE==1){
-
-    //Y=[U1ref 0; U2ref 0;]
-    double Uref[2];
-    Uref[0]= SHOCKSref ;
-    Uref[1]= SHOCKQref ;
-    //Z=L(U)U
-    double Z[2];
-    Z[0]=DxU[1];
-    Z[1]=A21*DxU[0]+A22*DxU[1];
-
-    // for a smooth layer set beta=1, for a sharper layer set beta=2
-    // ||Y^-1*Z||
-    double YZ;
-    YZ=sqrt(pow(Z[0]/Uref[0],2.0)+pow(Z[1]/Uref[1],2.0));
-
-    // (||Y^-1*(dU/dx)||^2)^(beta/2-1)
-    double YdxU;
-    YdxU=(DxU[0]/Uref[0])*(DxU[0]/Uref[0])+(DxU[1]/Uref[1])*(DxU[1]/Uref[1]);
-    YdxU=pow(YdxU,SHOCKBETA/2.0-1);
-    double hdc;
-    double jshock;
-    if (fabs(DxU[1])>1e-6){
-    jshock=DxU[1]/fabs(DxU[1]);
-
-    hdc=2.0/(fabs(DxShape[0]*jshock)+fabs(DxShape[1]*jshock));
-    }else{
-    hdc=0.0;
-    }
-    Kdc=YZ*YdxU*pow(hdc/2.0,SHOCKBETA);
-  //  printf("formRHS Kdc=%lf K22=%lf DxShape[0]=%lf DxShape[1]=%lf \n",Kdc,K22,DxShape[0],DxShape[1]);
-    }
-
-
-
 
     for( int a = 0; a < numberOfNodes; a++){
 
@@ -975,14 +886,14 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
         // IV formulation 01-31-03
 
         rDG1 = deltaTime*(DxShape[a]*F1+shape[a]*GF1)-shape[a]*(U[0]-Un[0]);
-        rDG2 = deltaTime*(DxShape[a]*F2-DxShape[a]*(K22+Kdc)*DxU[1]+shape[a]*GF2)-shape[a]*(U[1]-Un[1]);
+        rDG2 = deltaTime*(DxShape[a]*F2-DxShape[a]*K22*DxU[1]+shape[a]*GF2)-shape[a]*(U[1]-Un[1]);
         // if(element==0 && a==0) cout<<"rDG2"<<" "<<DxShape[a]*F2<<" "<<-DxShape[a]*K22*DxU[1]<<" "<<shape[a]*GF2<<" "<<-shape[a]*(U[1]-Un[1])<<endl;
       }else{
 
         // Brooke's formulation that I am not using IV 01-31-03
 
         rDG1 = deltaTime*(shape[a]*(DxU[1])-shape[a]*G1)+shape[a]*(U[0]-Un[0]);
-        rDG2 = deltaTime*(shape[a]*(A21*DxU[0]+A22*DxU[1])+DxShape[a]*(K22+Kdc)*DxU[1]-shape[a]*G2)+shape[a]*(U[1]-Un[1]);
+        rDG2 = deltaTime*(shape[a]*(A21*DxU[0]+A22*DxU[1])+DxShape[a]*K22*DxU[1]-shape[a]*G2)+shape[a]*(U[1]-Un[1]);
     }
 
     double rGLS1 = 0.0;

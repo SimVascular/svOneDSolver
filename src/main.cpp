@@ -265,15 +265,7 @@ void createAndRunModel(cvOneDOptions* opts){
                                 // Formulation Type
                                 opts->useIV,
                                 // Stabilization
-                                opts->useStab,
-                                //shockcapture viscosity
-                                opts->useShockcap,
-                                //shockcapture smooth parameter beta
-                                opts->smoothbeta,
-                                //shochcapture S,Q ref values
-                                opts->Sref,
-                                opts->Qref
-                                );
+                                opts->useStab);
   if(solveError == CV_ERROR){
     throw cvException(string("ERROR: Error Solving Model\n").c_str());
   }
@@ -457,7 +449,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         if(opts->solverOptionDefined){
           throw cvException("ERROR: SOLVEROPTIONS already defined\n");
         }
-        if(tokenizedString.size() > 14){
+        if(tokenizedString.size() > 10){
           throw cvException(string("ERROR: Too many parameters for SOLVEROPTIONS token. Line " + to_string(lineCount) + "\n").c_str());
         }else if(tokenizedString.size() < 10){
           throw cvException(string("ERROR: Not enough parameters for SOLVEROPTIONS token. Line " + to_string(lineCount) + "\n").c_str());
@@ -486,12 +478,6 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         }catch(...){
           throw cvException(string("ERROR: Invalid SOLVEROPTIONS Format. Line " + to_string(lineCount) + "\n").c_str());
         }
-        if (tokenizedString.size() == 14){
-          opts->useShockcap= atoi(tokenizedString[10].c_str());
-          opts->smoothbeta= atof(tokenizedString[11].c_str());
-          opts->Sref= atof(tokenizedString[12].c_str());
-          opts->Qref= atof(tokenizedString[13].c_str());
-         }
         opts->solverOptionDefined = true;
       }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("OUTPUT")){
         if(tokenizedString.size() > 3){

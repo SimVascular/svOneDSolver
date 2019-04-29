@@ -461,10 +461,16 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_ONEFILE(){
 
     // Loop on the number of elements
     for(int loopEl=0;loopEl<currSeg->getNumElements() + 1;loopEl++){
-      // Current Centre
-      currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
-      currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
-      currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
+      // Compress/Elongate solution by length between nodes rather than defined segment length - to prioritize segment length
+      // and maintain similar geometry to node definitions, MD 4/2/19
+      currCentre[0] = nodeList[inletSegJoint][0] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[0][0];
+      currCentre[1] = nodeList[inletSegJoint][1] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[1][0];
+      currCentre[2] = nodeList[inletSegJoint][2] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[2][0];
+
+      // // Current Centre
+      // currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
+      // currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
+      // currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
 
       // Get initial radius at current location
       currIniArea = currSeg->getInitInletS() + (loopEl/double(currSeg->getNumElements()))*(currSeg->getInitOutletS() - currSeg->getInitInletS());
@@ -802,10 +808,16 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_MULTIPLEFILES(){
 
       // Loop on the number of elements
       for(int loopEl=0;loopEl<currSeg->getNumElements() + 1;loopEl++){
-        // Current Centre
-        currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
-        currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
-        currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
+        // Compress/Elongate solution by length between nodes rather than defined segment length - to prioritize segment length
+        // and maintain similar geometry to node definitions, MD 4/2/19
+        currCentre[0] = nodeList[inletSegJoint][0] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[0][0];
+        currCentre[1] = nodeList[inletSegJoint][1] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[1][0];
+        currCentre[2] = nodeList[inletSegJoint][2] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[2][0];
+
+        // // Current Centre
+        // currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
+        // currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
+        // currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
 
         // Get initial radius at current location
         currIniArea = currSeg->getInitInletS() + (loopEl/double(currSeg->getNumElements()))*(currSeg->getInitOutletS() - currSeg->getInitInletS());

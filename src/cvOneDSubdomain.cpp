@@ -191,17 +191,11 @@ long cvOneDSubdomain::GetNumberOfElements()const{
 void cvOneDSubdomain::GetConnectivity(long element, long* conn)const{
    conn[0] = connectivities[ 2 * element    ] + global1stNodeID;
    conn[1] = connectivities[ 2 * element + 1] + global1stNodeID;
-
-  // conn[0]=element+global1stNodeID;
-  // conn[1]=element+1+global1stNodeID;
-
 }
 
 void cvOneDSubdomain::GetNodes( long element, double* nd)const{
   nd[0] = nodes[ connectivities[2*element]];
   nd[1] = nodes[ connectivities[2*element+1]];
- //   nd[0]=nodes[element];
-  //  nd[1]=nodes[element+1];
 }
 
 cvOneDFiniteElement* cvOneDSubdomain::GetElement(long element)const{

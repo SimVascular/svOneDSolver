@@ -216,7 +216,7 @@ int cvOneDModelManager::CreateJoint(char * jointName,double x,double y,double z,
 int cvOneDModelManager::SolveModel(double dt, long stepSize,
                                    long maxStep, long quadPoints,
                                    int len, char* boundType, double* values,
-                                   double* times, double conv, int useIV, int usestab, int useshockcap,double smoothbeta, double Sref, double Qref){
+                                   double* times, double conv, int useIV, int usestab){
 
   BoundCondTypeScope::BoundCondType boundT;
 
@@ -272,10 +272,6 @@ int cvOneDModelManager::SolveModel(double dt, long stepSize,
 
   // Set Solver Options
   cvOneDMthSegmentModel::STABILIZATION = usestab; // 1=Brooke's stabilization, 0=none
-  cvOneDMthSegmentModel::SHOCKCAPTURE = useshockcap; // 1=add YZbeta shock capture viscosity, 0=none
-  cvOneDMthSegmentModel::SHOCKBETA = smoothbeta; // 1=add YZbeta shock capture smooth parameter
-  cvOneDMthSegmentModel::SHOCKSref = Sref; // 1=add YZbeta shock capture reference S
-  cvOneDMthSegmentModel::SHOCKQref = Qref; // 1=add YZbeta shock capture reference Q
   cvOneDGlobal::CONSERVATION_FORM = useIV;
   cvOneDBFSolver::ASCII = 1;
 

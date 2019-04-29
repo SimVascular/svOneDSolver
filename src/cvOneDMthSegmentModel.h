@@ -43,11 +43,7 @@ class cvOneDMthSegmentModel : public cvOneDMthModelBase{
     long GetUpmostEqnNumber(long ele, long ith) { return -2;}
     // 1=Brooke's one, 0=none IV 04-28-03
     static int STABILIZATION;
-    // shock/discontuity capture parameters wgyang 2019.3
-    static int SHOCKCAPTURE;
-    static double SHOCKBETA;
-    static double SHOCKSref;
-    static double SHOCKQref;
+
   private:
 
     void FormElementLHS(long element, cvOneDDenseMatrix* elementMatrix, long ithSubdomain);
