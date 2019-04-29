@@ -473,8 +473,6 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
           opts->useIV = atoi(tokenizedString[8].c_str());
           // int usestab
           opts->useStab = atoi(tokenizedString[9].c_str());
-          //int useshockcap
-          opts->useShockcap=0;
         }catch(...){
           throw cvException(string("ERROR: Invalid SOLVEROPTIONS Format. Line " + to_string(lineCount) + "\n").c_str());
         }
