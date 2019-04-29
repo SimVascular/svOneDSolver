@@ -61,6 +61,7 @@ class cvOneDMaterial{
     virtual double GetIntegralpS (double area, double z) const = 0;
 
     virtual double GetN(double S) const = 0;//not really dependent on S actually IV 080703
+    virtual double GetEHR(double z) const = 0;
     virtual double GetOutflowFunction(double pressure, double z) const = 0;
     virtual double GetDpDz(double area, double z) const = 0;
     virtual double GetDOutflowDp(double pressure, double z) const = 0;

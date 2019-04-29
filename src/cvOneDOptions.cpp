@@ -86,6 +86,12 @@ void cvOneDOptions::printSolverOptions(FILE* f){
   fprintf(f,"CONVERGENCE TOLERANCE: %f\n",convergenceTolerance);
   fprintf(f,"USE IV: %d\n",useIV);
   fprintf(f,"USE STABILIZATION: %d\n",useStab);
+  fprintf(f,"USE SHOCKCAPTURE: %d\n",useShockcap);
+  if (useShockcap==1){
+  fprintf(f,"Smooth parameter beta: %f\n",smoothbeta);
+  fprintf(f,"Reference S: %f\n",Sref);
+  fprintf(f,"Reference Q: %f\n",Qref);
+   }
 
 }
 
@@ -221,15 +227,14 @@ void cvOneDOptions::checkSegmentLengthConsistency(){
     dz = nodeZcoord[outNode] - nodeZcoord[inNode];
 
     nodeDist = sqrt(dx*dx + dy*dy + dz*dz);
-    // COMMENTED CHANGES OUT TO PRIORITIZE SEGMENT CARD LENGTH OVER NODE DISTANCE (MD 4/2/19)
-    // if(fabs(nodeDist-segLength)>1.0e-8){
-    //   inconsistencyFound = true;
-    //   segmentLength[loopA] = nodeDist;
-    // }
+    if(fabs(nodeDist-segLength)>1.0e-8){
+      inconsistencyFound = true;
+   //   segmentLength[loopA] = nodeDist;
+    }
   }
   if(inconsistencyFound){
     printf("WARNING: Inconsistency detected between segment length and end node distance.\n");
-    printf("Changing the segment lengths.\n");
+  //  printf("Changing the segment lengths.\n");
   }
 }
 

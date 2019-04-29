@@ -108,7 +108,7 @@ void cvOneDSubdomain::SetInitialdFlowdT(double dQ0dT){
 
 void cvOneDSubdomain::SetupMaterial(int matID){
   mat = cvOneDGlobal::gMaterialManager->GetNewInstance(matID);
-  printf("subdomain cpp setupMaterial matID=%i  \n", matID);
+ // printf("subdomain cpp setupMaterial matID=%i  \n", matID);
   mat->SetAreas_and_length(S_initial, S_final, fabs(z_out - z_in));
 }
 
@@ -173,6 +173,7 @@ void cvOneDSubdomain::Init(double x0, double xL){
   for( long element = 0; element < numberOfElements; element++, nd++){
     connectivities[ 2 * element    ] = nd;
     connectivities[ 2 * element + 1] = nd + 1;
+
   }
 
   finiteElement = new cvOneDFiniteElement();
@@ -188,13 +189,19 @@ long cvOneDSubdomain::GetNumberOfElements()const{
 }
 
 void cvOneDSubdomain::GetConnectivity(long element, long* conn)const{
-  conn[0] = connectivities[ 2 * element    ] + global1stNodeID;
-  conn[1] = connectivities[ 2 * element + 1] + global1stNodeID;
+   conn[0] = connectivities[ 2 * element    ] + global1stNodeID;
+   conn[1] = connectivities[ 2 * element + 1] + global1stNodeID;
+
+  // conn[0]=element+global1stNodeID;
+  // conn[1]=element+1+global1stNodeID;
+
 }
 
 void cvOneDSubdomain::GetNodes( long element, double* nd)const{
   nd[0] = nodes[ connectivities[2*element]];
   nd[1] = nodes[ connectivities[2*element+1]];
+ //   nd[0]=nodes[element];
+  //  nd[1]=nodes[element+1];
 }
 
 cvOneDFiniteElement* cvOneDSubdomain::GetElement(long element)const{
@@ -202,9 +209,7 @@ cvOneDFiniteElement* cvOneDSubdomain::GetElement(long element)const{
   double nd[2];
   GetConnectivity( element, conn);
   GetNodes( element, nd);
-
   finiteElement->Set( nd, conn);
-
   return finiteElement;
 }
 
@@ -327,12 +332,30 @@ void cvOneDSubdomain::SetBoundCoronaryValues(double *time, double *p_lv, int num
 void cvOneDSubdomain::SetBoundRCRValues(double *rcr, int num){//added IV 050803
 
   rcrTime = 0.0;
-
-  assert(num==3);
+  rcrTime2=0.0;
+  assert(num>=3);
   proximalResistance = rcr[0];
   capacitance = rcr[1] ;
   distalResistance= rcr[2];
   alphaRCR = (proximalResistance+distalResistance)/(proximalResistance*distalResistance*capacitance);
+  if (num>3){
+  Pd=rcr[3];
+  }else {
+  Pd=0.0;
+  }
+}
+
+
+void cvOneDSubdomain::SetBoundResistPdValues(double *value, int num){//resistance with Pd wgyang 2019/4
+  assert(num<=2);
+  resistancevalue=value[0];
+  if (num==2){
+  Pd=value[1];
+  }else{
+  Pd=0.0;//if no Pd is provided
+  }
+
+
 }
 
 void cvOneDSubdomain::SetBoundWaveValues(double *wave, int num){//added IV 080603
@@ -472,14 +495,13 @@ void cvOneDSubdomain::SaveK(double k, int i){
 double cvOneDSubdomain::MemIntRCR(double currP, double previousP, double deltaTime, double currentTime){
   double MemIrcr;
   MemIrcr = ConvPressRCR(previousP, deltaTime, currentTime)*expmDtOne(deltaTime)/(alphaRCR*alphaRCR)
-    + currP/alphaRCR*(deltaTime-expmDtOne(deltaTime)/alphaRCR);
+    + (currP)/alphaRCR*(deltaTime-expmDtOne(deltaTime)/alphaRCR);
   return MemIrcr;
 }
 
 double cvOneDSubdomain::MemAdvRCR(double currP, double previousP, double deltaTime, double currentTime){
   double MemK;
   double Coeff = MemC(currP, previousP, deltaTime, currentTime);
-
   MemK = Coeff*Coeff/2/alphaRCR*(1-exp(-2*alphaRCR*deltaTime))
     + 2*Coeff*currP/alphaRCR/(proximalResistance + distalResistance)*expmDtOne(deltaTime)
     + deltaTime*pow(currP/(proximalResistance+distalResistance),2);
@@ -510,6 +532,42 @@ double cvOneDSubdomain::ConvPressRCR(double previousP, double deltaTime, double 
     rcrTime = currentTime;
   }
   return MemD;
+}
+// wgyang convolution int(p(t')exp(-alphaRCR(t-t')dt'
+double cvOneDSubdomain::MemIntPexp( double previousP, double deltaTime, double currentTime){
+  double MemIrcr;
+  MemIrcr = ConvPressexp(previousP, deltaTime, currentTime);
+  return MemIrcr;
+}
+
+double cvOneDSubdomain::ConvPressexp(double previousP, double deltaTime, double currentTime){
+  // Initialization
+  if(currentTime <= deltaTime ){MemConvP = 0.0;}
+  // Convoluted pressure
+  if(currentTime > deltaTime && currentTime != rcrTime2){
+    MemConvP = MemConvP*exp(-alphaRCR*deltaTime)+previousP/alphaRCR*expmDtOne(deltaTime);//all the deltaTime are from previous time step
+    rcrTime2 = currentTime;
+  }
+  return MemConvP;
+}
+// wgyang convolution int(S(t')^(-3/2)exp(-alphaRCR(t-t')dt'
+double cvOneDSubdomain::MemIntSexp( double previousS, double deltaTime, double currentTime){
+  double MemIrcr;
+  MemIrcr = ConvSexp(previousS, deltaTime, currentTime);
+  return MemIrcr;
+}
+
+double cvOneDSubdomain::ConvSexp(double previousS, double deltaTime, double currentTime){
+  // Initialization
+  if(currentTime <= deltaTime ){MemConvS = 0.0;}
+  // Convoluted pressure
+  if(currentTime > deltaTime && currentTime != rcrTime3){
+    //MemConvS = MemConvS*exp(-alphaRCR*deltaTime)+pow(previousS,-1.5)/alphaRCR*expmDtOne(deltaTime);//all the deltaTime are from previous time step  convolution  int S(t)^(-3/2)exp(-alpha*(t-t')dt
+    MemConvS=MemConvS*exp(-alphaRCR*deltaTime)+previousS/alphaRCR*expmDtOne(deltaTime);
+    rcrTime3 = currentTime;
+  }
+
+  return MemConvS;
 }
 
 double cvOneDSubdomain::dMemIntRCRdP(double deltaTime){

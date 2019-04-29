@@ -86,6 +86,10 @@ class cvOneDOptions{
     double convergenceTolerance;
     int    useIV;
     int    useStab;
+    int    useShockcap;
+    double smoothbeta;
+    double Sref;
+    double Qref;
     string outputType;
     bool solverOptionDefined;
 

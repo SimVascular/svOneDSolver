@@ -1,7 +1,7 @@
 //
 //  FEAVector.cxx - Source for a class to handle finite element Vectors
 //  ~~~~~~~~~~~~~
-//  SYNOPSIS...This is a utility class used to handle the finite element 
+//  SYNOPSIS...This is a utility class used to handle the finite element
 //             Vectors (currentSolution, increment, previousSolution, etc.
 //
 //
@@ -10,8 +10,8 @@
 # include <iomanip>
 # include <cstring>
 # include <cmath>
-
 # include "cvOneDFEAVector.h"
+
 
 using namespace std;
 
@@ -26,7 +26,7 @@ void cvOneDFEAVector::CreateVector(long dim, const char* tit){
   for(long i=0;i<dimension;i++){
     equationNumbers[i] = i;
   }
-    
+
   Rename(tit);
   Clear();
 }
@@ -133,7 +133,7 @@ void cvOneDFEAVector::CheckPositive(int start, int step, int stop){
   for(long i= start; i< stop; i+=step){
     // printf("%e\n",cvOneDFEAVector::Get(i));
     assert(cvOneDFEAVector::Get(i) >= 0.0);
-  }
+    }
 }
 
 void cvOneDFEAVector::print(std::ostream &os){

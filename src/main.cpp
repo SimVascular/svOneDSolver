@@ -139,8 +139,8 @@ void createAndRunModel(cvOneDOptions* opts){
     // CREATE MATERIAL
     matError = oned->CreateMaterial((char*)opts->materialName[loopA].c_str(),
                                     (char*)currMatType.c_str(),
-                                    opts->materialDensity[loopA], 
-                                    opts->materialViscosity[loopA], 
+                                    opts->materialDensity[loopA],
+                                    opts->materialViscosity[loopA],
                                     opts->materialExponent[loopA],
                                     opts->materialPRef[loopA],
                                     numParams, doubleParams,
@@ -265,7 +265,15 @@ void createAndRunModel(cvOneDOptions* opts){
                                 // Formulation Type
                                 opts->useIV,
                                 // Stabilization
-                                opts->useStab);
+                                opts->useStab,
+                                //shockcapture viscosity
+                                opts->useShockcap,
+                                //shockcapture smooth parameter beta
+                                opts->smoothbeta,
+                                //shochcapture S,Q ref values
+                                opts->Sref,
+                                opts->Qref
+                                );
   if(solveError == CV_ERROR){
     throw cvException(string("ERROR: Error Solving Model\n").c_str());
   }
@@ -449,7 +457,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         if(opts->solverOptionDefined){
           throw cvException("ERROR: SOLVEROPTIONS already defined\n");
         }
-        if(tokenizedString.size() > 10){
+        if(tokenizedString.size() > 14){
           throw cvException(string("ERROR: Too many parameters for SOLVEROPTIONS token. Line " + to_string(lineCount) + "\n").c_str());
         }else if(tokenizedString.size() < 10){
           throw cvException(string("ERROR: Not enough parameters for SOLVEROPTIONS token. Line " + to_string(lineCount) + "\n").c_str());
@@ -473,9 +481,17 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
           opts->useIV = atoi(tokenizedString[8].c_str());
           // int usestab
           opts->useStab = atoi(tokenizedString[9].c_str());
+          //int useshockcap
+          opts->useShockcap=0;
         }catch(...){
           throw cvException(string("ERROR: Invalid SOLVEROPTIONS Format. Line " + to_string(lineCount) + "\n").c_str());
         }
+        if (tokenizedString.size() == 14){
+          opts->useShockcap= atoi(tokenizedString[10].c_str());
+          opts->smoothbeta= atof(tokenizedString[11].c_str());
+          opts->Sref= atof(tokenizedString[12].c_str());
+          opts->Qref= atof(tokenizedString[13].c_str());
+         }
         opts->solverOptionDefined = true;
       }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("OUTPUT")){
         if(tokenizedString.size() > 3){
@@ -496,7 +512,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         if(tokenizedString.size() > 2){
           cvOneDGlobal::vtkOutputType = atoi(tokenizedString[2].c_str());
           if(cvOneDGlobal::vtkOutputType > 1){
-            throw cvException("ERROR: Invalid OUTPUT VTK Type.\n");   
+            throw cvException("ERROR: Invalid OUTPUT VTK Type.\n");
           }
         }
       }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("DATATABLE")){
@@ -670,7 +686,7 @@ int main(int argc, char** argv){
   }catch(exception& e){
     // Print Exception Message
     printf("%s\n",e.what());
-    // Execution Terminated      
+    // Execution Terminated
     printf("Terminated.\n");
     return -1;
   }

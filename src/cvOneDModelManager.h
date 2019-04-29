@@ -50,7 +50,7 @@ class cvOneDModelManager{
     int SolveModel(double dt,long stepSize,
                    long maxStep,long quadPoints,
                    int len,char* boundType,double* values,
-                   double* times,double conv, int useIV, int usestab);
+                   double* times,double conv, int useIV, int usestab, int useshockcap, double smoothbeta, double Sref, double Qref);
 
     // COMPUTE ADMITTANCE AND IMPEDANCE CURVES
     int CalcImpedance(int numTimeSteps, double lengthRadiusRatio, double rootRadius, double period, double scaleFactor, int rtnFourier,

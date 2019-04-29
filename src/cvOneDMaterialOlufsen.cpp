@@ -39,7 +39,7 @@ cvOneDMaterialOlufsen::cvOneDMaterialOlufsen(){
  // K3_ = 8.65e5; //865251;
 
   rigid = 0;
-  printf("call cvOneMaterialsOlufsen p1_=%f K3_=%f \n",p1_,K3_);
+ // printf("call cvOneMaterialsOlufsen p1_=%f K3_=%f \n",p1_,K3_);
 }
 
 cvOneDMaterialOlufsen::~cvOneDMaterialOlufsen(){
@@ -55,7 +55,7 @@ cvOneDMaterialOlufsen::cvOneDMaterialOlufsen (const cvOneDMaterialOlufsen &rhs){
   K2_ = k2;
   K3_ = k3;
   p1_= pref;
-  printf("call cvOneDmaterialOlufsen &rhs\n");
+ // printf("call cvOneDmaterialOlufsen &rhs\n");
 
 }
 
@@ -71,7 +71,7 @@ cvOneDMaterialOlufsen& cvOneDMaterialOlufsen::operator= (const cvOneDMaterialOlu
     K2_ = k2;
     K3_ = k3;
     p1_= pref;
-    printf("call cvOneDMaterialOlufsen that this K3_=%f p1_=%f \n",K3_,p1_ );
+  //  printf("call cvOneDMaterialOlufsen that this K3_=%f p1_=%f \n",K3_,p1_ );
   }
   return *this;
 }
@@ -83,7 +83,7 @@ void cvOneDMaterialOlufsen::SetMaterialType(double *mType,double Pref){
   PP1_=Pref;
   cout<< "Setting material K's "<< K1_ <<" "<< K2_<<" "<< K3_<< " ..." << endl;
   cout<< "Setting reference Pressure "<< PP1_<<endl;
-   printf("call SetMaterialType K3_ %f \n",K3_);
+ //  printf("call SetMaterialType K3_ %f \n",K3_);
 }
 
 void cvOneDMaterialOlufsen::SetPeriod(double per){
@@ -149,6 +149,7 @@ double cvOneDMaterialOlufsen::Getr1(double z)const{
 
   // mette's method
   //r=r_top*exp(z/len*log(r_bot/r_top));
+
 
   return r;
 }
@@ -320,8 +321,10 @@ double cvOneDMaterialOlufsen::GetN(double S)const{
   double del  = sqrt(kinematicViscosity*T/2.0/PI);// from Lighthill, olufsen's thesis, pg56
   double altN = -2.0*PI*kinematicViscosity*R/del; // == -1.45838*r
   // N = -2.0*PI*kinematicViscosity*(profile_exponent+2.0) ; // == -1.1673
+
   return N;
   //  return altN;
+
 }
 
 //IV added it 02-03-03

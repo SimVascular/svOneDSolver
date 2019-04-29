@@ -10,17 +10,17 @@
 
 # ifdef USE_SKYLINE
   # include "cvOneDSkylineMatrix.h"
-  # include "cvOneDSkylineLinearSolver.h"  
-# endif 
+  # include "cvOneDSkylineLinearSolver.h"
+# endif
 
-# ifdef USE_SUPERLU    
+# ifdef USE_SUPERLU
   # include "cvOneDSparseMatrix.h"
   # include "cvOneDSparseLinearSolver.h"
 # endif
 
 # ifdef USE_CSPARSE
   # include "cvOneDSparseMatrix.h"
-  # include "cvOneDSparseLinearSolver.h"  
+  # include "cvOneDSparseLinearSolver.h"
 # endif
 
 # define baryeTommHg 0.0007500615613026439
@@ -461,16 +461,10 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_ONEFILE(){
 
     // Loop on the number of elements
     for(int loopEl=0;loopEl<currSeg->getNumElements() + 1;loopEl++){
-      // Compress/Elongate solution by length between nodes rather than defined segment length - to prioritize segment length
-      // and maintain similar geometry to node definitions, MD 4/2/19
-      currCentre[0] = nodeList[inletSegJoint][0] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[0][0];
-      currCentre[1] = nodeList[inletSegJoint][1] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[1][0];
-      currCentre[2] = nodeList[inletSegJoint][2] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[2][0];
-
-      // // Current Centre
-      // currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
-      // currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
-      // currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
+      // Current Centre
+      currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
+      currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
+      currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
 
       // Get initial radius at current location
       currIniArea = currSeg->getInitInletS() + (loopEl/double(currSeg->getNumElements()))*(currSeg->getInitOutletS() - currSeg->getInitInletS());
@@ -776,7 +770,7 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_MULTIPLEFILES(){
       // Compute the total number of points for this segment
       totSegmentSolutions = (currSeg->getNumElements()+1);
       totSegmentPoints = totSegmentSolutions * circSubdiv;
-      
+
       // Set the range for the totalsoluton of this segment
       startOut = segOffset;
       finishOut = segOffset + 2*(totSegmentSolutions);
@@ -808,16 +802,10 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_MULTIPLEFILES(){
 
       // Loop on the number of elements
       for(int loopEl=0;loopEl<currSeg->getNumElements() + 1;loopEl++){
-        // Compress/Elongate solution by length between nodes rather than defined segment length - to prioritize segment length
-        // and maintain similar geometry to node definitions, MD 4/2/19
-        currCentre[0] = nodeList[inletSegJoint][0] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[0][0];
-        currCentre[1] = nodeList[inletSegJoint][1] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[1][0];
-        currCentre[2] = nodeList[inletSegJoint][2] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[2][0];
-
-        // // Current Centre
-        // currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
-        // currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
-        // currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
+        // Current Centre
+        currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
+        currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
+        currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
 
         // Get initial radius at current location
         currIniArea = currSeg->getInitInletS() + (loopEl/double(currSeg->getNumElements()))*(currSeg->getInitOutletS() - currSeg->getInitInletS());
@@ -1227,6 +1215,12 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       }else if(boundT == BoundCondTypeScope::LPN){// added DES
         // DES COMPLETE !!!
         cout<<"LPN boundary condition"<<endl;
+      }else if(boundT == BoundCondTypeScope::RESISTANCE){ // modified resistance taking Pd wgyang
+        double* resistance_pd;
+        int num;
+        seg->getBoundRCRValues(&resistance_pd,&num);
+        subdomain -> SetBoundResistPdValues(resistance_pd,num);
+        cout<<"RESISTANCE boundary condition"<<endl;
       }else{
         subdomain -> SetBoundValue(boundV);
       }
@@ -1303,14 +1297,14 @@ void cvOneDBFSolver::CreateGlobalArrays(void){
     for( i = neq - 1; i >= 0; i--)
         maxa[i] = maxa[i+1] - maxa[i];
 
-    // INITIALIZE MATRIX STORAGE SCHEME 
+    // INITIALIZE MATRIX STORAGE SCHEME
     // AND ASSOCIATED SOLVER
 # ifdef USE_SKYLINE
     lhs = new cvOneDSkylineMatrix(neq, maxa, "globalMatrix");
     cvOneDGlobal::solver = new cvOneDSkylineLinearSolver();
-# endif 
+# endif
 
-# ifdef USE_SUPERLU    
+# ifdef USE_SUPERLU
     lhs = new cvOneDSparseMatrix(neq, maxa, "globalMatrix");
     cvOneDGlobal::solver = new cvOneDSparseLinearSolver();
 # endif
@@ -1319,7 +1313,7 @@ void cvOneDBFSolver::CreateGlobalArrays(void){
     lhs = new cvOneDSparseMatrix(neq, maxa, "globalMatrix");
     cvOneDGlobal::solver = new cvOneDSparseLinearSolver();
 # endif
-    
+
     assert(lhs != 0);
 
     rhs = new cvOneDFEAVector( neq);
@@ -1383,7 +1377,7 @@ void cvOneDBFSolver::GenerateSolution(void){
   clock_t tstart_solve;
   clock_t tend_iter;
   clock_t tend_solve;
-  
+
   // Print the formulation used IV 02-24-03
   if(cvOneDGlobal::CONSERVATION_FORM){
     cout << "Using Conservative Form ..." << endl;
@@ -1444,11 +1438,15 @@ void cvOneDBFSolver::GenerateSolution(void){
 
     while(true){
       tstart_iter=clock();
+
       for(i = 0; i < numMath; i++){
         mathModels[i]->FormNewtonRHS(rhs);
+
       }
+
       for(i = 0; i < numMath; i++){
         mathModels[i]->FormNewtonLHS(lhs);
+
       }
 
       // PRINT RHS BEFORE BC APP
@@ -1489,16 +1487,20 @@ void cvOneDBFSolver::GenerateSolution(void){
       // cout << "convCriteria" << convCriteria <<endl;
       // getchar();
       if((currentTime != deltaTime || (currentTime == deltaTime && iter != 0)) && normf < convCriteria && norms < convCriteria){
+        cout << "    iter: " << (int)iter << " ";
+        cout << "normf: " << normf << " ";
+        cout << "norms: " << norms << " ";
+        cout << "time: " << ((float)(tend_iter-tstart_iter))/CLOCKS_PER_SEC << endl;
         break;
       }
 
       // Add increment
       increment->Clear();
-      
+
       //   tstart_solve=clock();
 
       cvOneDGlobal::solver->Solve(*increment);
-      
+
       //  tend_solve=clock();
 
       currentSolution->Add(*increment);
@@ -1506,11 +1508,14 @@ void cvOneDBFSolver::GenerateSolution(void){
       // kimhj 2004-10-19, if the area goes less than zero, it tells in which
       // segment, the error occurs.
       // Assumes that all the lagrange multipliers are at the end of the vector.
+      int negArea=0;
       if(jointList.size() != 0){
         for (long i= 0; i< jointList[0]->GetGlobal1stLagNodeID();i+=2){
           long elCount = 0;
           int fileIter = 0;
-          if (currentSolution->Get(i) < 0.0){
+          //check if area <0 or =nan
+          if (currentSolution->Get(i) < 0.0 || (currentSolution->Get(i) != currentSolution->Get(i))){
+           negArea=1;
             while (fileIter < model -> getNumberOfSegments()){
               cvOneDSegment *curSeg = model -> getSegment(fileIter);
               long numEls = curSeg -> getNumElements();
@@ -1526,10 +1531,15 @@ void cvOneDBFSolver::GenerateSolution(void){
               }
               elCount += 2*(numEls+1);
               fileIter++;
-            }
-          }
+             }
+           }
+         }
         }
-      }
+
+        if(negArea==1) {
+        postprocess_Text();
+        assert(0);
+        }
 
       if(cvOneDGlobal::debugMode){
         printf("(Debug) Printing Solution...\n");
