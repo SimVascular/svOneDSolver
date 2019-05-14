@@ -672,7 +672,7 @@ int main(int argc, char** argv){
     printf("%s\n",e.what());
     // Execution Terminated      
     printf("Terminated.\n");
-    return -1;
+    return 1;
   }
   printf("Completed!\n");
   return 0;
