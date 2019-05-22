@@ -603,7 +603,6 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
     // we begin by calculating the residual
     double F1  = U[1];
     double F2  = (1.0+ delta)*U[1]*aux+IntegralpS/density;
-    // if(element==0) cout<<"F2"<<" "<<(1.0+ delta)*U[1]*aux<<" "<<IntegralpS/density<<endl;
     // double K22 = kinViscosity;
     double GF1 = -Outflow;
     double GF2 = N*aux+IntegralpD2S/density;
@@ -733,15 +732,12 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
       double InletR2 = (1.0+delta)*Q[0]*aux + IntegralpS/density;//without viscosity in flux
       elementVector->Add(2*a  , -InletR1*deltaTime);
       elementVector->Add(2*a+1, -InletR2*deltaTime);
-      // cout<<"\t"<<"\t"<<"-InletR2*deltaTime"<<" "<<-InletR2*deltaTime<<endl;
-      // cout<<"\t"<<"\t"<<"terms of inletR2"<<" "<<(1.0+delta)*Q[0]*aux <<" "<<IntegralpS/density<<endl;
     }// end inlet flux
 
     if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
       ||bound==BoundCondTypeScope::PRESSURE_WAVE||bound==BoundCondTypeScope::AREA||bound==BoundCondTypeScope::FLOW){
       //If no outlet BC or Dirichlet outlet BC, compute the Outlet full flux term (at z=z_outlet) which is the linearized F-KU IV 02-03-03
       if (element == (sub->GetNumberOfElements())-1){
-        //cout<<element<<endl;
         double z = sub->GetOutletZ();//checked IV 02-03-03
         double pressure = material->GetPressure( S[1], z);
         finiteElement->Evaluate( z, shape, DxShape, &jacobian);//careful: shape is in the natural coord system (xi)
