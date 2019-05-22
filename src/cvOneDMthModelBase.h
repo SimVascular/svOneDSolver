@@ -9,16 +9,7 @@
 //  computation.  It handles the equation formulation, and
 //  construction of the Newton-Rhapson matrix derivatives,
 //  and generation of the element dense matrices.
-//  Aug. 2003, I. Vignon
-//      wave bc
-//  Mar. 2003, I. Vignon
-//      more bc types...
-//  **       , B.Steele
-//      Impedance bc
-//  Nov. 1999, J.Wan
-//      Resistance bc
-//  May 1999, J.Wan, B.Steele, S.Strohband
-//      Creation of file
+//
 
 # include <vector>
 

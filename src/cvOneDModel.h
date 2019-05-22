@@ -3,18 +3,7 @@
 
 //
 //  cvOneDModel.h: Class to handle 1D network Models.
-//  ~~~~~~~
 //
-//  This is the C representation of the model
-//  It corresponds roughly to the java version, 
-//  but not exactly.
-//
-//  History:
-//  Jul. 2003, J.Wan
-//      *Use STL vector to replace old darray for better memory management and optimization
-//      *Deleted bloodpropstruct.h. The struct declaration is moved here instead.
-//  May 1999, B.Steele, S.A.Spicer and J.Wan
-//      Creation of file
 
 # include <vector>
 
@@ -69,12 +58,7 @@ class cvOneDModel{
     int addSegment(cvOneDSegment *newSeg);
     int addNode(cvOneDNode *Node);
     int addJoint(cvOneDJoint *Joint);
-
-    // just to see what's happening
-    void PrintModel(void);
-
-    int Reorder(void);
-    
+   
     
     cvOneDBloodPropStruct   BloodProps;
     
@@ -92,13 +76,12 @@ class cvOneDModel{
 
     long numEquations;
     long topJoint;
-    // double    convCrit;
 
     vector<cvOneDNode*>     NodeList;
     vector<cvOneDJoint*>    JointList;
     vector<cvOneDSegment*>  SegmentList;
 
-    // Mapping back to Brooke's Java
+    // Mapping of Segments
     vector<long>  Mapping;
 
     // How many models are there?

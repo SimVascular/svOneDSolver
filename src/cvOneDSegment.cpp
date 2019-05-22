@@ -167,18 +167,6 @@ long *cvOneDSegment::getInOutJoints(void){
   return ConnJoints;
 }
 
-/*
-void cvOneDSegment::setYoungsModulus(double e)
-{
-    youngs_modulus = e;
-}
-
-double cvOneDSegment::getYoungsModulus(void)
-{
-    return youngs_modulus;
-}
-*/
-
 void cvOneDSegment::tesselate(void){
   // Unimplimented...but coming
 }

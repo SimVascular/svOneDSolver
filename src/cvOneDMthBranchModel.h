@@ -8,9 +8,7 @@
 //  Mathematical formulations of joints. Lagrange multipliers are used to have
 //  pressure continuity and mass conservation (flux conservation) at joints.
 //
-//  History:
-//  May 1999, J.Wan
-//      creation of file,
+
 
 # include "cvOneDMthModelBase.h"
 # include "cvOneDFEAVector.h"
