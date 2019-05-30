@@ -9,6 +9,11 @@ The input file for the first model is reported here below. ::
 
   MODEL Bifurcation_RCR_
 
+  NODE 0 0.0 0.0 0.0
+  NODE 1 0.0 0.0 -17.670671
+  NODE 2 0.0 6.498730 -40.182934
+  NODE 3 4.595296 4.595296 -40.182934 
+
   JOINT AbdomBifurcJ 17.670671 0.0 0.0 INSEGS OUTSEGS
   JOINTINLET INSEGS 1 0
   JOINTOUTLET OUTSEGS 2 1 2
@@ -91,9 +96,11 @@ The input file for the first model is reported here below. ::
   0.9 34.8
   ENDDATATABLE
 
-  SOLVEROPTIONS 0.001 1 100 2 AORTAFLOW FLOW 1.0e-6 1 1 TEXT
+  SOLVEROPTIONS 0.001 50 10000 2 AORTAFLOW FLOW 1.0e-6 1 1 
 
-  MATERIAL MAT1 OLUFSEN 1.06 0.04 1.0 2.0e7 -22.5267 8.65e5
+  OUTPUT TEXT
+
+  MATERIAL MAT1 OLUFSEN 1.06 0.04 113324.0 1.0 2.0e7 -22.5267 8.65e5
 
 
 Results
@@ -102,12 +109,6 @@ Results
 The graphs here below illustrate the results:
 
 COMPLETE WITH RESULTS!!!
-
-Impedance BCS
-^^^^^^^^^^^^^
-
-Wave BCS
-^^^^^^^^
 
 
 

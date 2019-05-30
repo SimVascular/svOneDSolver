@@ -23,6 +23,11 @@ An example of a valid template file is ::
 
   MODEL simpleArtery_Flow_
 
+  NODE 0 0.0 0.0 0.0
+  NODE 1 0.0 0.0 -20.0
+
+  # NO JOINTS IN THIS MODEL
+
   SEGMENT ARTERY 0 20.0 50 0 1 <params,0> <params,0> 14.0 MAT1 NONE 0.0 0 0 FLOW INLETDATA
 
   DATATABLE INLETDATA LIST
@@ -30,9 +35,11 @@ An example of a valid template file is ::
   1000.0 <params,1>
   ENDDATATABLE
 
-  SOLVEROPTIONS 0.01 10 1000 2 INLETDATA FLOW 1.0e-6 1 1 TEXT
+  SOLVEROPTIONS 0.01 10 1000 2 INLETDATA FLOW 1.0e-6 1 1 
 
-  MATERIAL MAT1 OLUFSEN 1.06 0.04 1.0 2.0e7 -22.5267 8.65e5
+  OUTPUT TEXT
+
+  MATERIAL MAT1 OLUFSEN 1.06 0.04 113324.0 1.0 2.0e7 -22.5267 8.65e5
 
 The above template contains two parameters. Parameter 0 describes the initial and final segment area, while parameter 1 is used to change the constant inlet flow rate.
 
