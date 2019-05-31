@@ -4,7 +4,7 @@ Bifurcation
 RCR BCS
 ^^^^^^^
 
-A bifurcation (e.g., the bifurcation of the abdominal aorta into right and left iliac arteries) is considered in the first tutorial, subject to a variety of outflow boundary conditions. 
+A bifurcation (e.g., the bifurcation of the abdominal aorta into right and left iliac arteries) is considered in the fifth example, subject to a variety of outflow boundary conditions. 
 The input file for the first model is reported here below. ::
 
   MODEL Bifurcation_RCR_
@@ -14,18 +14,24 @@ The input file for the first model is reported here below. ::
   NODE 2 0.0 6.498730 -40.182934
   NODE 3 4.595296 4.595296 -40.182934 
 
-  JOINT AbdomBifurcJ 17.670671 0.0 0.0 INSEGS OUTSEGS
+  JOINT AbdomBifurcJ 1 INSEGS OUTSEGS
   JOINTINLET INSEGS 1 0
   JOINTOUTLET OUTSEGS 2 1 2
 
   SEGMENT Aorta 0 17.670671 50 0 1 5.027254990390394 1.6068894493599328 0.0 MAT1 NONE 0.0 0 0 NOBOUND NONE
   SEGMENT iliacR 1 12.997461 50 1 3 1.55 0.3525652531134944 0.0 MAT1 NONE 0.0 0 0 RCR RCR_VALS
-  SEGMENT iliacL 2 12.997461 50 1 2 1.55 0.3525652531134944 0.0 MAT1 NONE 0.0 0 0 RCR RCR_VALS
+  SEGMENT iliacL 2 12.997461 50 1 2 1.55 0.3525652531134944 0.0 MAT1 NONE 0.0 0 0 RCR RCR_VALS_2
 
   DATATABLE RCR_VALS LIST
   0.0 90 
   0.0 0.0008 
   0.0 1200
+  ENDDATATABLE
+
+  DATATABLE RCR_VALS_2 LIST
+  0.0 100 
+  0.0 0.0004 
+  0.0 1100
   ENDDATATABLE
 
   DATATABLE AORTAFLOW LIST
@@ -96,11 +102,13 @@ The input file for the first model is reported here below. ::
   0.9 34.8
   ENDDATATABLE
 
-  SOLVEROPTIONS 0.001 50 10000 2 AORTAFLOW FLOW 1.0e-6 1 1 
+  MATERIAL MAT1 OLUFSEN 1.06 0.04 113324.0 1.0 2.0e7 -22.5267 8.65e5
+
+  SOLVEROPTIONS 0.001 15 10000 2 AORTAFLOW FLOW 1.0e-6 1 1 
 
   OUTPUT TEXT
 
-  MATERIAL MAT1 OLUFSEN 1.06 0.04 113324.0 1.0 2.0e7 -22.5267 8.65e5
+
 
 
 Results
@@ -108,7 +116,14 @@ Results
 
 The graphs here below illustrate the results:
 
-COMPLETE WITH RESULTS!!!
+.. image:: Images/Ex05-plottingExample_01.png
+   :width: 600
+   :alt: Flows in model
+
+.. image:: Images/Ex05-plottingExample_05.png
+   :width: 600
+   :alt: Pressures in model   
+
 
 
 

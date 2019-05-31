@@ -159,7 +159,7 @@ set(groot,'defaultAxesColorOrder',co);
 hold on
 
 % Plot results
-for i = 2:size(flow1D)
+for i = 1:size(flow1D)
     name = sprintf('%s 1D',branches{i});
     plot(t,flow1D(i,tt),'DisplayName',name,'LineWidth',2);
     % UNCOMMENT below to plot 3D results also
@@ -167,7 +167,7 @@ for i = 2:size(flow1D)
     %     plot(t3D,flow3D(tt3D,i+1),':','DisplayName',name,'LineWidth',2);
 end
 
-% UNCOMMENT below to plot inflow
+% UNCOMMENT below to plot inflow (and CHANGE the index into branches{})
 %name = sprintf('%s',branches{11});
 %plot(inflow(:,1),inflow(:,2),'--k','DisplayName',name,'LineWidth',2);
 
