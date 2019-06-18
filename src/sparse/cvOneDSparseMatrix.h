@@ -6,12 +6,6 @@
 //  ~~~~~~~~~~~~~~~~~
 //  matrix storage for direct solver, skyline solver
 //
-//  History:
-//  May 1999, J.Wan
-//      modification for 1D FEM project
-//  Mar. 1999, G.R. Feijoo
-//      creation of file
-//
 
 # include <iostream>
 

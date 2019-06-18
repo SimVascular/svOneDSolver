@@ -22,7 +22,6 @@ cvOneDSparseMatrix::cvOneDSparseMatrix(const char* tit): cvOneDFEAMatrix(tit){
 
 cvOneDSparseMatrix::cvOneDSparseMatrix(long dim, long* pos, const char* tit): cvOneDFEAMatrix(tit){
   numEntries_ = 0;
-  // WHY 40 ???
   allocatedSizeEntries_ = dim*40;
   Kentries_ = NULL;
   dim_ = dim;
@@ -193,68 +192,41 @@ void cvOneDSparseMatrix::CondenseMatrix(){
 
   int array_size = numEntries_;
 
-
-   clock_t tstart_condense;
-   clock_t tstart_sum;
-   clock_t tend_sum;
-   clock_t tend_condense;
-
+  clock_t tstart_condense;
+  clock_t tstart_sum;
+  clock_t tend_sum;
+  clock_t tend_condense;
 
 
- // tstart_condense=clock();
   // heap sort by row
   Build_MaxHeap(Kentries_, array_size-1);
   HeapSort(Kentries_,array_size-1);
 
- // cout << "t(sort): " << ((float)(clock()-tstart_condense))/CLOCKS_PER_SEC<< endl;
 
-//   for (i=0;i<numEntries_;i++){
- // if (Kentries_[i].row ==6583 && Kentries_[i].col==6582){
-//   printf("after row sort index=%i,IA=%i,JA=%i,K=%f \n",i,Kentries_[i].row,Kentries_[i].col,Kentries_[i].value);
- //  }
- //  }
+  // sum duplicate entries, tag duplicate entries and remove entries with col=-1 in stanfordSparse.cpp
+  array_size = numEntries_;
 
-  //  printf("sum duplicate entries \n");
+  for (i=0;i<numEntries_;i++){
+    if (Kentries_[i].col!=-1) {
+       for (j=i+1;j<numEntries_;j++){
+         if(Kentries_[i].row==Kentries_[j].row ){
+             if(Kentries_[i].col==Kentries_[j].col){
+         Kentries_[i].value=Kentries_[i].value+Kentries_[j].value;
+         //tage duplicate entry
+         Kentries_[j].col=-1;
+         Kentries_[j].value=0.0;
+         array_size=array_size-1;
+             }
+          } else {
+          break;
+          }
+       }
+      }
 
-
-  ///////////////sum duplicate entries, tag duplicate entries and remove entries with col=-1 in stanfordSparse.cpp
-  //  tstart_sum=clock();
-    array_size = numEntries_;
-
-    for (i=0;i<numEntries_;i++){
-      if (Kentries_[i].col!=-1) {
-         for (j=i+1;j<numEntries_;j++){
-           if(Kentries_[i].row==Kentries_[j].row ){
-               if(Kentries_[i].col==Kentries_[j].col){
-           Kentries_[i].value=Kentries_[i].value+Kentries_[j].value;
-           //tage duplicate entry
-           Kentries_[j].col=-1;
-           Kentries_[j].value=0.0;
-           array_size=array_size-1;
-               }
-            } else {
-            break;
-            }
-         }
-        }
-
-     }
-
- //cout << "t(label duplicate): " <<((float)(clock()-tstart_sum))/CLOCKS_PER_SEC<< endl;
+   }
 
   numNonzeros_ = array_size;
-  //   for (i=0;i<numNonzeros;i++){
- // if (Kentries_[i].row ==6583 && Kentries_[i].col==6582){
- //  printf("after row sort and condense index=%i,IA=%i,JA=%i,K=%f \n",i,Kentries_[i].row,Kentries_[i].col,Kentries_[i].value);
- //  }
-  // }
- //  cout << "t(sum): " <<((float)(clock()-tstart_sum))/CLOCKS_PER_SEC<< endl;
-
-// fprintf(stdout,"  Number of Non-Zero entries: %i and Number of entries: %i \n ",numNonzeros_, numEntries_);
-
-
-
-  //fprintf(stdout,"  Number of Non-Zero entries: %i\n",numEntries_);
+  
 }
 
 
