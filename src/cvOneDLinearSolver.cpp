@@ -11,3 +11,4 @@ cvOneDLinearSolver::cvOneDLinearSolver(){
 cvOneDLinearSolver::~cvOneDLinearSolver(){
 
 }
+

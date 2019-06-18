@@ -4,10 +4,6 @@
 * 2)or the RCR model (electric analog - 0D model)
 * It also modifies them to accomodate for exercise if necessary (scaling factor- see B. Steele's thesis)
 * 
-*
-* Author: B.N.Steele
-* Converted from java to C by N. Wilson 2004
-* I. Vignon added output z(t) 08/06/2004 
 */
 
 # include <ostream>
@@ -34,7 +30,7 @@ double cvOneDMetteImpedance::GetExerciseFactor(){
 cvOneDMetteImpedance::cvOneDMetteImpedance(){
 
   // Variables Initialization
-  METTE = false; // Use mette's structured tree method to compute impedance, will turn on if lrr<1
+  METTE = false; // Use Mette Olfusen's structured tree method to compute impedance, will turn on if lrr<1
 
   EXERCISE = false; // modify vessel radii wilth this flag
   ex_fact = 2.0; // if >1 dilate, if <1 constrict

@@ -4,7 +4,6 @@
 # include "cvOneDMaterialOlufsen.h"
 # include "cvOneDMaterialLinear.h"
 
-// cvOneDMaterialManager* gMaterialManager = NULL;
 
 // Constructor
 cvOneDMaterialManager::cvOneDMaterialManager(){
