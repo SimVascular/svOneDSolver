@@ -8,16 +8,6 @@
 //  Essentially, this is a driver for 1D finite element blood flow solver
 //  without any interfaces.
 //
-//  History:
-//
-//  ? 2002  B.Steele
-//      Added impedance boundary conditions
-//  Dec., 2000 J.Wan, B.Steele
-//      Added resistence boundary condition and more complicated models.
-//  May 1999, J.Wan, B.Steele, G.R.Feijoo, S.A.Spicer and S.Strohband
-//      Creation of file, class project of ME234C of T.J.R. Hughes and C.Taylor
-//
-//
 
 # include <vector>
 # include <iostream>
@@ -54,7 +44,6 @@ class cvOneDBFSolver{
     static void Solve(void);
 
     // Get the solution;
-    //static double GetSolution(void)
     static double GetSolution(int i, int j){return TotalSolution[i][j];}//IV 082103
 
     // Cleanup
@@ -62,7 +51,6 @@ class cvOneDBFSolver{
 
     static void DefineInletFlow(double* time, double* flrt, int num);
 
-	// was private, had to make public to add Pressure Wave BC
 	static void QuerryModelInformation(void);
     static double currentTime;
     static double deltaTime;
@@ -109,8 +97,6 @@ class cvOneDBFSolver{
     // Generic matrix, can be skyline or sparse
     static cvOneDFEAMatrix *lhs;
 
-    //static double currentTime;
-    //static double deltaTime;
     static long stepSize;
     static long maxStep;
     static long quadPoints;

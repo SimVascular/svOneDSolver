@@ -100,19 +100,17 @@ void cvOneDBFSolver::postprocess_Text(){
     char tmp3[512];
     char tmp4[512];
     char tmp5[512];
-    // Added DES for WSS - 06/17
-    char tmp6[512];
+    char tmp6[512]; // WSS
 
     char *btemp= model-> getModelName(); // add to write out binary files for java
 
-    strcpy(tmp2, btemp); //add
-    strcpy(tmp3, btemp); //add
-    strcpy(tmp4, btemp); //add
+    strcpy(tmp2, btemp); 
+    strcpy(tmp3, btemp); 
+    strcpy(tmp4, btemp); 
     strcpy(tmp5, btemp);
-    // Added DES for WSS
     strcpy(tmp6, btemp);
 
-    strcat(tmp2, tmp1);//chg cpy to cat
+    strcat(tmp2, tmp1);
     strcat(tmp2, "_flow.dat");
     cout << tmp2 << endl;
     strcat(tmp3, tmp1);
@@ -128,8 +126,8 @@ void cvOneDBFSolver::postprocess_Text(){
     strcat(tmp6,"_wss.dat");
     cout << tmp6 << endl;
 
-    FILE *fp1,*fp2,*fp3,*fp5,*fp6;//for binary
-    ofstream flow,area,pressure,reynolds,wss;// for ASCII
+    FILE *fp1,*fp2,*fp3,*fp5,*fp6; //for binary
+    ofstream flow,area,pressure,reynolds,wss; // for ASCII
 
     if(ASCII){
 
@@ -187,9 +185,8 @@ void cvOneDBFSolver::postprocess_Text(){
         }
         r = sqrt(val/M_PI);
         flo = (double)TotalSolution[i][j+1];
-        //usual Re=rho/mu*D*velocity=rho/mu*Q*sqrt(4/Pi/Area) IV 04-2203
+        //usual Re=rho/mu*D*velocity=rho/mu*Q*sqrt(4/Pi/Area)
         Re = curMat->GetDensity()/curMat->GetDynamicViscosity()*flo/sqrt(val)*sqrt(4.0/M_PI);
-        //Re  = 2*1.06*val*flo /0.049;//used by Brooke
 
         // Write pressure - Initial (CGS) Units
         val = (double) curMat->GetPressure(TotalSolution[i][j],z);
@@ -202,7 +199,6 @@ void cvOneDBFSolver::postprocess_Text(){
         // write minor loss coefficient,radius, and Reynolds number
         val = (double) subdomainList[fileIter]->K[i];
 
-        //if(ASCII) reynolds << TotalSolution[i][j] << " ";
         if(ASCII){
           reynolds << Re << " ";
         }else{
@@ -210,7 +206,6 @@ void cvOneDBFSolver::postprocess_Text(){
         }
 
         // Compute Wall Shear Stresses for Poiseuille flow
-        // Blood Density and Viscosity Hardcoded. Change!!!
         wssVal = (4.0*curMat->GetDynamicViscosity()*flo)/(M_PI*r*r*r);
         if(ASCII){
           wss << wssVal << " ";
@@ -466,11 +461,6 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_ONEFILE(){
       currCentre[0] = nodeList[inletSegJoint][0] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[0][0];
       currCentre[1] = nodeList[inletSegJoint][1] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[1][0];
       currCentre[2] = nodeList[inletSegJoint][2] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[2][0];
-
-      // // Current Centre
-      // currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
-      // currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
-      // currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
 
       // Get initial radius at current location
       currIniArea = currSeg->getInitInletS() + (loopEl/double(currSeg->getNumElements()))*(currSeg->getInitOutletS() - currSeg->getInitInletS());
@@ -814,11 +804,6 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_MULTIPLEFILES(){
         currCentre[1] = nodeList[inletSegJoint][1] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[1][0];
         currCentre[2] = nodeList[inletSegJoint][2] + loopEl*lengthByNodes/double(currSeg->getNumElements())*segVers[2][0];
 
-        // // Current Centre
-        // currCentre[0] = nodeList[inletSegJoint][0] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[0][0];
-        // currCentre[1] = nodeList[inletSegJoint][1] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[1][0];
-        // currCentre[2] = nodeList[inletSegJoint][2] + loopEl*currSeg->getSegmentLength()/double(currSeg->getNumElements())*segVers[2][0];
-
         // Get initial radius at current location
         currIniArea = currSeg->getInitInletS() + (loopEl/double(currSeg->getNumElements()))*(currSeg->getInitOutletS() - currSeg->getInitInletS());
         currIniRad = sqrt(currIniArea/M_PI);
@@ -1060,7 +1045,6 @@ void cvOneDBFSolver::DefineInletFlow(double* time, double* flrt, int num){
 }
 
 void cvOneDBFSolver::DefineMthModels(){
-  // mathModels.resize(0); // DES
   mathModels.clear();
 
   cout << "Subdomain No. "<<subdomainList.size() << endl;
@@ -1124,14 +1108,11 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       double segLen = seg->getSegmentLength();
       int matID = seg->getMaterialID();
       MeshType mType = seg->getMeshType();
-      // MaterialType eType = seg->getMaterialType();  // not used with user specifiec K's
-      // double* karray = seg->getMaterialKarray(); // get user specified K's
       double zin = seg->getInletZ();
       double zout = seg->getOutletZ();
 
       cvOneDSubdomain* subdomain = new cvOneDSubdomain;
       assert(subdomain != 0);
-      // Subdomain -> SetStenosisInfo(seg->getIsStenosisInfo()); // stenosis
       subdomain -> SetNumberOfNodes(nels+1);
       subdomain -> SetNumberOfElements(nels);
       subdomain -> SetMeshType(mType);
@@ -1145,13 +1126,13 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       if(i == 0) {
         Qo = seg->getInitialFlow();
         P0 =  seg->getInitialPressure();
-        // dQ0_dT = seg -> getInitialdFlowdT();
         dQ0_dT = 0.0;
       }
       double So = seg->getInitInletS();
       double Sn = seg->getInitOutletS();
       BoundCondType boundT = seg -> getBoundCondition();
       double  boundV= seg -> getBoundValue();
+      
       // Set these in the subdomain.
       subdomain->SetInitialFlow(Qo);
       subdomain->SetInitialdFlowdT(dQ0_dT);
@@ -1170,7 +1151,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       subdomain->SetMinorLossType(seg->GetMinorLossType());
 
       // Set up boundary condition
-      if (boundT == BoundCondTypeScope::PRESSURE_WAVE){ //added
+      if (boundT == BoundCondTypeScope::PRESSURE_WAVE){
         double* time;
         double* pres;
         int num; // x-fer info from Segment to subdomain
@@ -1182,7 +1163,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
         int num; // x-fer info from Segment to subdomain
         seg->getBoundResistanceValues(&resist,&time,&num);
         subdomain->SetBoundResistanceWave(time, resist, num);
-      }else if(boundT == BoundCondTypeScope::RCR){ // Added IV 050803
+      }else if(boundT == BoundCondTypeScope::RCR){ 
         double* rcr;
         int num;
         seg->getBoundRCRValues(&rcr,&num);
@@ -1304,17 +1285,10 @@ void cvOneDBFSolver::CreateGlobalArrays(void){
 void cvOneDBFSolver::CalcInitProps(long ID){
   double segLen = subdomainList[ID] -> GetLength();
   double Qo, dQ0dT;
-  // if(flowRate != NULL){
-  //   Qo = flowRate[0];
-  // }else{
   Qo = subdomainList[ID] -> GetInitialFlow();
-  // cout << "Q0 " << Qo <<endl;
-
-  // dQ0dT= subdomainList[ID] -> GetInitialdFlowdT();
   dQ0dT=0;
-  // }
+  
   double So = subdomainList[ID] -> GetInitInletS();
-  // cout <<"So " << So <<endl;
   double Sn = subdomainList[ID] -> GetInitOutletS();
   for( long node = 0; node < subdomainList[ID]->GetNumberOfNodes(); node++){
   double zn = subdomainList[ID]->GetNodalCoordinate( node);
@@ -1345,7 +1319,7 @@ void cvOneDBFSolver::GenerateSolution(void){
   clock_t tend_iter;
   clock_t tend_solve;
   
-  // Print the formulation used IV 02-24-03
+  // Print the formulation used
   if(cvOneDGlobal::CONSERVATION_FORM){
     cout << "Using Conservative Form ..." << endl;
   }else{
@@ -1383,7 +1357,7 @@ void cvOneDBFSolver::GenerateSolution(void){
   // Global Solution Loop
   long q=1;
   double checkMass = 0;
-  int numberOfCycle = 1; // IV 081103
+  int numberOfCycle = 1;
 
   // Time stepping
   for(long step = 1; step <= maxStep; step++){
@@ -1397,9 +1371,9 @@ void cvOneDBFSolver::GenerateSolution(void){
     double normf = 1.0;
     double norms = 1.0;
 
-    if(fmod(currentTime, cycleTime) <5.0E-6 || -(fmod(currentTime,cycleTime)-cycleTime)<5.0E-6) { // modified IV 081103
+    if(fmod(currentTime, cycleTime) <5.0E-6 || -(fmod(currentTime,cycleTime)-cycleTime)<5.0E-6) { 
       checkMass = 0;
-      cout << "**** Time cycle " << numberOfCycle++ << endl; // modified IV 081103
+      cout << "**** Time cycle " << numberOfCycle++ << endl;
     }
     currentTime += deltaTime;
 
@@ -1447,25 +1421,16 @@ void cvOneDBFSolver::GenerateSolution(void){
       }
 
       // Check Newton-Raphson Convergence
-      // cout << "convCriteria" << convCriteria <<endl;
-      // getchar();
       if((currentTime != deltaTime || (currentTime == deltaTime && iter != 0)) && normf < convCriteria && norms < convCriteria){
         break;
       }
 
       // Add increment
       increment->Clear();
-      
-      //   tstart_solve=clock();
-
       cvOneDGlobal::solver->Solve(*increment);
-      
-      //  tend_solve=clock();
-
       currentSolution->Add(*increment);
 
-      // kimhj 2004-10-19, if the area goes less than zero, it tells in which
-      // segment, the error occurs.
+      // If the area goes less than zero, it tells in which segment the error occurs.
       // Assumes that all the lagrange multipliers are at the end of the vector.
       if(jointList.size() != 0){
         for (long i= 0; i< jointList[0]->GetGlobal1stLagNodeID();i+=2){
@@ -1504,7 +1469,7 @@ void cvOneDBFSolver::GenerateSolution(void){
 
 
       // A flag in case the cross sectional area is negative, but don't want to include the lagrange multipliers
-      // Added by IV 04-17-03, assumes that all the lagrange multipliers are at the end of the vector
+      // Assumes that all the lagrange multipliers are at the end of the vector
       if(jointList.size() != 0){
         currentSolution->CheckPositive(0,2,jointList[0]->GetGlobal1stLagNodeID());
       }else{
@@ -1515,21 +1480,16 @@ void cvOneDBFSolver::GenerateSolution(void){
       mathModels[0]->SetBoundaryConditions();
       tend_iter=clock();
 
-      //if( step % stepSize == 0 ){
       cout << "    iter: " << (int)iter << " ";
       cout << "normf: " << normf << " ";
       cout << "norms: " << norms << " ";
       cout << "time: " << ((float)(tend_iter-tstart_iter))/CLOCKS_PER_SEC << endl;
 
       if(iter > MAX_NONLINEAR_ITERATIONS){
-        //cout << "rhs " << *rhs << endl;
         cout << "Error: Newton not converged, exceed max iterations" << endl;
         cout << "norm of Flow rate:" << normf << ", norm of Area:" << norms << endl;
-        // norm
         break;
       }
-      // CAREFUL !!!!
-    //} // End Time stepping
 
     // Increment Iteration Number
     iter++;

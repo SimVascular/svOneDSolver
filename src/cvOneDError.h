@@ -18,8 +18,6 @@
 //  handler -- which will be defined by the programmer in his/her 
 //  code.
 //  
-//  History:
-//
  
 #include "cvOneDEnums.h"
 

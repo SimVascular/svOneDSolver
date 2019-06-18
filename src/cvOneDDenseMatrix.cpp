@@ -8,8 +8,6 @@
 //  (element) matrices before they are assembled
 //  into the global Jacobian.
 //  
-//  May 1999, J.Wan, G.R.Feijoo, S.A.Spicer and S.Strohband
-//  Creation of file, class project of ME234C of T.J.R. Hughes and C.Taylor
 
 #include <cassert>
 #include <iomanip>

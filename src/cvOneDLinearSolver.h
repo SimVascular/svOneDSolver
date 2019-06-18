@@ -7,11 +7,6 @@
 //  This class provides functionality for solving matrix systems
 //  presented in the skyline format, and some special manipulations. 
 //  
-//  History:
-//  May 1999, J.Wan
-//      modifications for 1D FEM project and special treatments for boundary conditions and joint handling
-//  Mar. 1999, G.R. Feijoo
-//      creation of file
 
 # include <cmath>
 
@@ -48,8 +43,7 @@ class cvOneDLinearSolver{
     // is still 4x4. 
     virtual void DirectAppResistanceBC(long rbEqnNo, double resistance, double dpds, double rhs) = 0;
 	virtual void AddFlux(long rbEqnNo, double* OutletLHS11, double* OutletRHS1) = 0;
-	//AddFlux added by IV 03-26-03, assumes 2 nodes/element and 2degrees of freedom/node
-  
+	
 };
 
 #endif // CVONEDLINEARSOLVER_H
