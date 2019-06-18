@@ -19,3 +19,4 @@ void createAndRunModel(cvOneDOptions* opts);
 void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFiles);
 void readModel(string inputFile, cvOneDOptions* opts);
 void runOneDSolver(string inputFile);
+

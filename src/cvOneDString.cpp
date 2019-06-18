@@ -1,5 +1,6 @@
+
 //
-//  bnsString.cxx - Source for a simple string class.
+//  cvOneDString.cpp - Source for a simple string class.
 //
 
 # include <string.h>
