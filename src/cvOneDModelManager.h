@@ -10,8 +10,6 @@
 # include "cvOneDGlobal.h"
 # include "cvOneDException.h"
 # include "cvOneDModel.h"
-# include "cvOneDMetteImpedance.h"
-# include "cvOneDMorphImpedance.h"
 
 class cvOneDModelManager{
   public:

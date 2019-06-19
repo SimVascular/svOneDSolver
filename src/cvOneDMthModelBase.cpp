@@ -16,7 +16,6 @@
 # include "cvOneDDenseMatrix.h"
 # include "cvOneDMaterial.h"
 # include "cvOneDFiniteElement.h"
-# include "cvOneDClosedLoop.h"
 
 
 // Static Declarations...
@@ -104,9 +103,7 @@ void cvOneDMthModelBase::SetBoundaryConditions(){
     case BoundCondTypeScope::FLOW:
       (*currSolution)[eqNumbers[1]] = GetFlowRate();
       break;
-    case BoundCondTypeScope::PRESSURE_WAVE:
-      (*currSolution)[eqNumbers[0]] = sub->GetMaterial()->GetArea(GetFlowRate(),0);
-      InitialPressure = flrt[0];
+    default:
       break;
   }
 
@@ -124,9 +121,6 @@ void cvOneDMthModelBase::SetBoundaryConditions(){
   */
     switch(sub->GetBoundCondition()){
     case BoundCondTypeScope::PRESSURE:
-    case BoundCondTypeScope::AREA:
-      (*currSolution)[eqNumbers[0]] = sub->GetBoundArea();
-      break;
     case BoundCondTypeScope::FLOW:
       (*currSolution)[eqNumbers[1]] = sub->GetBoundFlowRate();
       break;
@@ -146,22 +140,8 @@ void cvOneDMthModelBase::SetBoundaryConditions(){
         (*currSolution)[eqNumbers[1]] = currP/resistance;
         }
       break;
-    case BoundCondTypeScope::PRESSURE_WAVE:
-      (*currSolution)[eqNumbers[0]] = sub->GetBoundAreabyPresWave(currentTime);
-      break;
     case BoundCondTypeScope::RCR:
-    /*  //if essential BC, need MemC to be public
-        Rp  = sub -> GetRp();
-        Rd  = sub -> GetRd();
-        Cap = sub -> GetCap();
-        alphaRCR = sub -> GetAlphaRCR();
-        prevP = sub->GetMaterial()->GetPressure(prevSolution->Get(eqNumbers[0]),z);
-
-        currS = (*currSolution)[eqNumbers[0]];
-          currP = sub->GetMaterial()->GetPressure(currS, sub->GetLength());
-        MemoC = sub->MemC(currP, prevP, deltaTime, currentTime);
-        (*currSolution)[eqNumbers[1]] = MemoC*exp(-alphaRCR*deltaTime) + currP/(Rp+Rd);
-     */break;
+      break;
     default:
      break;
     }// end switch
@@ -215,9 +195,6 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
     if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::FLOW){
       GetNodalEquationNumbers(0, eqNumbers, 0);
       cvOneDGlobal::solver->SetSolution(eqNumbers[1], value);
-    }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::PRESSURE_WAVE){
-      GetNodalEquationNumbers(0, eqNumbers, 0);
-      cvOneDGlobal::solver->SetSolution(eqNumbers[0], value);
     }
 
     // Set up the correct outlet boundary condition
@@ -236,7 +213,6 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
       value = 0.0;  // RHS corresponding to imposed Essential BC
       switch(sub->GetBoundCondition()){
         case BoundCondTypeScope::PRESSURE:
-        case BoundCondTypeScope::PRESSURE_WAVE:
 
         case BoundCondTypeScope::FLOW:
           cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
@@ -295,11 +271,7 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
       if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::FLOW){
         GetNodalEquationNumbers( 0, eqNumbers, 0);
         cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
-      }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::PRESSURE_WAVE){
-        GetNodalEquationNumbers( 0, eqNumbers, 0);
-        cvOneDGlobal::solver->SetSolution( eqNumbers[0], value);
       }
-
 
 
       // Set up the correct outlet boundary condition
@@ -355,8 +327,7 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
           // for these BC the Inlet term doesn't have to be specialized
           // so same treatment as regular Essential BC like in Brooke's
           case BoundCondTypeScope::PRESSURE:
-          case BoundCondTypeScope::PRESSURE_WAVE:
-
+          
           case BoundCondTypeScope::FLOW:
             cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
             break;

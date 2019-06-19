@@ -5,6 +5,11 @@
 //  This class provides functionality for solving matrix systems
 //  presented in the skyline format, and some special manipulations.
 //
+//  History:
+//  May 1999, J.Wan
+//      modifications for 1D FEM project and special treatments for boundary conditions and joint handling
+//  Mar. 1999, G.R. Feijoo
+//      creation of file
 
 # include "cvOneDSparseLinearSolver.h"
 
@@ -39,7 +44,21 @@ void cvOneDSparseLinearSolver::Solve(cvOneDFEAVector& sol){
 
   // translate from FEAvector to shifted vector for sparse
   int dim = rhsVector->GetDimension();
-
+/*  double *Fglobal = new double[dim+SPARSE_OFFSET];
+  double* entries = rhsVector->GetEntries();
+  Fglobal[0] = 0.0;
+  for (i = 0; i < dim;i++) {
+    Fglobal[i+SPARSE_OFFSET] = entries[i];
+  }
+  double* soln = new double[dim+SPARSE_OFFSET];
+  lhsMatrix->CondenseMatrix();
+  StanfordSolveSparseMatrix(lhsMatrix->GetKentries(), Fglobal, lhsMatrix->GetNumberOfEntries(), dim, soln);
+  // shift the array down by SPARSE_OFFSET to get the first
+  // dof at 0, and plug into FEAvector
+  double* solution = sol.GetEntries();
+  for (i = 0; i < dim; i++) {
+      solution[i] = soln[i+SPARSE_OFFSET];
+  }*/
   clock_t tstart_solve;
   clock_t tstart_LU;
   clock_t tend_LU;
@@ -77,11 +96,24 @@ void cvOneDSparseLinearSolver::Solve(cvOneDFEAVector& sol){
 
   tend_LU = clock();
 
+  //cout << "t(LU)/t(solve): " << float(tend_LU-tstart_LU)/float(tend_LU-tstart_solve)<<", "<<"t(solve)="<<((float)(tend_LU-tstart_solve))/CLOCKS_PER_SEC<< endl;
+  // shift the array down by SPARSE_OFFSET to get the first
+  // dof at 0, and plug into FEAvector
+
+
   double* solution = sol.GetEntries();
   for (i = 0; i < dim; i++) {
       solution[i] = soln[i];
   }
-
+/*
+ FILE * pFile;
+ pFile = fopen ("SparseSol.txt","w");
+      for (i = 0; i < dim; i++) {
+      fprintf(pFile,"%f \n",solution[i]);
+    }
+    fclose(pFile);
+ abort();
+*/
   delete [] soln;
 }
 
@@ -136,7 +168,6 @@ void cvOneDSparseLinearSolver::Minus1dof(long rbEqnNo, double k_m){
     lhsMatrix->SetValue(rbEqnNo-i,rbEqnNo,0);
     lhsMatrix->SetValue(rbEqnNo, rbEqnNo-i,0);
   }
-  
   kr[2] += lhsMatrix->GetValue(rbEqnNo, rbEqnNo-i)*k_m;
   lhsMatrix->SetValue(rbEqnNo,rbEqnNo,1);
   for(i = 3; i > 0; i--){

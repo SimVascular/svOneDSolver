@@ -26,24 +26,12 @@
 # define baryeTommHg 0.0007500615613026439
 
 //
-//  BFSolver.cxx - Source for a One-Dimensional Network Blood Flow Solver
+//  cvOneDBFSolver.cpp - Source for a One-Dimensional Network Blood Flow Solver
 //  ~~~~~~~~~~~~
 //  This is a static class which abstracts the blood flow solver.
 //  Essentially, this is a driver for 1D finite element blood flow solver
 //  without any interfaces.
 //
-//  History:
-//
-//  Jul. 2003, J.Wan
-//    Some rearrangements in Newton loop and static variable initialization
-//  Mar. 26, 2003, I. Vignon
-//    Residual calculation
-//  Dec., 2000 J.Wan, B.Steele
-//    Ajustment of resistence boundary condition and more complicated models.
-//  May 1999, J.Wan, B.Steele, G.R.Feijoo, S.A.Spicer, S.Strohband, T.J.R. Hughes and C.Taylor
-//    Creation of file.
-
-//using namespace std;
 
 // Static Declarations...
 bool                          cvOneDBFSolver::wasSet = false;
@@ -1091,11 +1079,9 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       cvOneDJoint *joint = model->getJoint(i);
       for(j=0;j < model -> getJoint(i)->InletSegments.size(); j++){
         feajoint->AddInletSubdomains(joint->InletSegments[j]);
-        // printf("Adding Joint Inlet: %d\n",joint->InletSegments[j]);
       }
       for(j=0;j < joint->OutletSegments.size(); j++){
         feajoint->AddOutletSubdomains(joint->OutletSegments[j]);
-        // printf("Adding Joint Outlet: %d\n",joint->OutletSegments[j]);
       }
       jointList.push_back(feajoint);
     }
@@ -1151,13 +1137,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       subdomain->SetMinorLossType(seg->GetMinorLossType());
 
       // Set up boundary condition
-      if (boundT == BoundCondTypeScope::PRESSURE_WAVE){
-        double* time;
-        double* pres;
-        int num; // x-fer info from Segment to subdomain
-        seg->getBoundPressureValues(&pres,&time,&num);
-        subdomain ->SetBoundPresWave(time, pres, num);
-      }else if (boundT == BoundCondTypeScope::RESISTANCE_TIME){
+      if (boundT == BoundCondTypeScope::RESISTANCE_TIME){
         double* time;
         double* resist;
         int num; // x-fer info from Segment to subdomain
@@ -1181,7 +1161,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       }
       if(seg->getIsOutletInfo() == false){
         subdomain->SetBoundCondition(BoundCondTypeScope::NOBOUND);
-      } //IV added 03-21-03 so that if no outlet BC then BoundCondType=NOBOUND for flux calc in MthSegmentModel
+      } 
     }
 
     // For branch use.
@@ -1496,7 +1476,6 @@ void cvOneDBFSolver::GenerateSolution(void){
 
   }// End while
 
-  // DES Check: Why mass is summed, should be integrated in time
   checkMass += mathModels[0]->CheckMassBalance() * deltaTime;
   cout << "  Time = " << currentTime << ", ";
   cout << "Mass = " << checkMass << ", ";

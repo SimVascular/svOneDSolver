@@ -102,6 +102,13 @@ double cvOneDMaterialLinear::Getr1(double z)const{
   return r;
 }
 
+double cvOneDMaterialLinear::GetDS1Dz(double z)const{
+  // Since vessel geometry will always be linear in
+  // space, this is just a constant
+  double drodz  = GetDr1Dz(z) ;
+  double dsodro = 2.0*M_PI*Getr1(z);
+  return dsodro*drodz;  // slightly increased pressure/decreased area
+}
 
 double cvOneDMaterialLinear::GetDr1Dz(double z) const{
   double r_top = sqrt(Stop/M_PI);
@@ -153,6 +160,19 @@ double cvOneDMaterialLinear::GetDpDS(double S, double z)const{
   return dpds;
 }
 
+double cvOneDMaterialLinear::GetD2pDS2( double area, double z) const{
+  double EHR = GetEHR(z);
+  double So_ = GetS1(z);
+  return - EHR /4.0 /sqrt(So_)/sqrt(pow(area, 3));//VIE for linear model
+}
+
+double cvOneDMaterialLinear::GetOutflowFunction(double pressure, double z)const{
+  return 0.; // This is not used in our model
+}
+
+double cvOneDMaterialLinear::GetDOutflowDp(double pressure, double z)const{
+  return 0.; // Nor is this.
+}
 
 // Careful!! this D2p(S,z)Dz first derivative, 2nd variable
 double cvOneDMaterialLinear::GetDpDz(double S, double z)const{

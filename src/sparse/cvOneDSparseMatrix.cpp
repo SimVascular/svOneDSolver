@@ -22,6 +22,7 @@ cvOneDSparseMatrix::cvOneDSparseMatrix(const char* tit): cvOneDFEAMatrix(tit){
 
 cvOneDSparseMatrix::cvOneDSparseMatrix(long dim, long* pos, const char* tit): cvOneDFEAMatrix(tit){
   numEntries_ = 0;
+  // WHY 40 ???
   allocatedSizeEntries_ = dim*40;
   Kentries_ = NULL;
   dim_ = dim;
@@ -138,7 +139,7 @@ int cvOneDSparseMatrix::GetColumnEntries(long column, cvOneDKentry **Krtr){
 void cvOneDSparseMatrix::Add(cvOneDDenseMatrix& matrix){
   int i,j;
   // acquires matrix's data
-  long eDimension	= matrix.GetDimension();
+  long eDimension = matrix.GetDimension();
   const long* eqNumbers = matrix.GetEquationNumbers();
   double* eEntries = matrix.GetPointerToEntries();
 
@@ -192,105 +193,132 @@ void cvOneDSparseMatrix::CondenseMatrix(){
 
   int array_size = numEntries_;
 
-  clock_t tstart_condense;
-  clock_t tstart_sum;
-  clock_t tend_sum;
-  clock_t tend_condense;
+
+   clock_t tstart_condense;
+   clock_t tstart_sum;
+   clock_t tend_sum;
+   clock_t tend_condense;
 
 
+
+ // tstart_condense=clock();
   // heap sort by row
   Build_MaxHeap(Kentries_, array_size-1);
   HeapSort(Kentries_,array_size-1);
 
+ // cout << "t(sort): " << ((float)(clock()-tstart_condense))/CLOCKS_PER_SEC<< endl;
 
-  // sum duplicate entries, tag duplicate entries and remove entries with col=-1 in stanfordSparse.cpp
-  array_size = numEntries_;
+//   for (i=0;i<numEntries_;i++){
+ // if (Kentries_[i].row ==6583 && Kentries_[i].col==6582){
+//   printf("after row sort index=%i,IA=%i,JA=%i,K=%f \n",i,Kentries_[i].row,Kentries_[i].col,Kentries_[i].value);
+ //  }
+ //  }
 
-  for (i=0;i<numEntries_;i++){
-    if (Kentries_[i].col!=-1) {
-       for (j=i+1;j<numEntries_;j++){
-         if(Kentries_[i].row==Kentries_[j].row ){
-             if(Kentries_[i].col==Kentries_[j].col){
-         Kentries_[i].value=Kentries_[i].value+Kentries_[j].value;
-         //tage duplicate entry
-         Kentries_[j].col=-1;
-         Kentries_[j].value=0.0;
-         array_size=array_size-1;
-             }
-          } else {
-          break;
-          }
-       }
-      }
+  //  printf("sum duplicate entries \n");
 
-   }
+
+  ///////////////sum duplicate entries, tag duplicate entries and remove entries with col=-1 in stanfordSparse.cpp
+  //  tstart_sum=clock();
+    array_size = numEntries_;
+
+    for (i=0;i<numEntries_;i++){
+      if (Kentries_[i].col!=-1) {
+         for (j=i+1;j<numEntries_;j++){
+           if(Kentries_[i].row==Kentries_[j].row ){
+               if(Kentries_[i].col==Kentries_[j].col){
+           Kentries_[i].value=Kentries_[i].value+Kentries_[j].value;
+           //tage duplicate entry
+           Kentries_[j].col=-1;
+           Kentries_[j].value=0.0;
+           array_size=array_size-1;
+               }
+            } else {
+            break;
+            }
+         }
+        }
+
+     }
+
+ //cout << "t(label duplicate): " <<((float)(clock()-tstart_sum))/CLOCKS_PER_SEC<< endl;
 
   numNonzeros_ = array_size;
-  
+  //   for (i=0;i<numNonzeros;i++){
+ // if (Kentries_[i].row ==6583 && Kentries_[i].col==6582){
+ //  printf("after row sort and condense index=%i,IA=%i,JA=%i,K=%f \n",i,Kentries_[i].row,Kentries_[i].col,Kentries_[i].value);
+ //  }
+  // }
+ //  cout << "t(sum): " <<((float)(clock()-tstart_sum))/CLOCKS_PER_SEC<< endl;
+
+// fprintf(stdout,"  Number of Non-Zero entries: %i and Number of entries: %i \n ",numNonzeros_, numEntries_);
+
+
+
+  //fprintf(stdout,"  Number of Non-Zero entries: %i\n",numEntries_);
 }
 
 
 
 void cvOneDSparseMatrix::MaxHeapify(cvOneDKentry Kentries[], int i, int n)
 {
-	int j, temp_row,temp_col;
-	double temp_val;
-	temp_row = Kentries[i].row;
-	temp_col = Kentries[i].col;
-	temp_val = Kentries[i].value;
-	j = 2*i;
+  int j, temp_row,temp_col;
+  double temp_val;
+  temp_row = Kentries[i].row;
+  temp_col = Kentries[i].col;
+  temp_val = Kentries[i].value;
+  j = 2*i;
 
- 	while (j <= n)
-	{
-		if (j < n && Kentries[j+1].row > Kentries[j].row)
-		j = j+1;
-		// Break if parent value is already greater than child value.
-		if (temp_row > Kentries[j].row)
-			break;
-		// Switching value with the parent node if temp < a[j].
-		else if (temp_row <= Kentries[j].row)
-		{
-			Kentries[j/2].row = Kentries[j].row;
-			Kentries[j/2].col = Kentries[j].col;
-			Kentries[j/2].value = Kentries[j].value;
+  while (j <= n)
+  {
+    if (j < n && Kentries[j+1].row > Kentries[j].row)
+    j = j+1;
+    // Break if parent value is already greater than child value.
+    if (temp_row > Kentries[j].row)
+      break;
+    // Switching value with the parent node if temp < a[j].
+    else if (temp_row <= Kentries[j].row)
+    {
+      Kentries[j/2].row = Kentries[j].row;
+      Kentries[j/2].col = Kentries[j].col;
+      Kentries[j/2].value = Kentries[j].value;
 
-			j = 2*j;
-		}
-	}
-	Kentries[j/2].row = temp_row;
-	Kentries[j/2].col = temp_col;
-	Kentries[j/2].value = temp_val;
-	return;
+      j = 2*j;
+    }
+  }
+  Kentries[j/2].row = temp_row;
+  Kentries[j/2].col = temp_col;
+  Kentries[j/2].value = temp_val;
+  return;
 }
 void cvOneDSparseMatrix::Build_MaxHeap(cvOneDKentry Kentries[], int n)
 {
-	int i;
-	for(i = n/2; i >= 1; i--)
-		MaxHeapify(Kentries, i, n);
+  int i;
+  for(i = n/2; i >= 1; i--)
+    MaxHeapify(Kentries, i, n);
 }
 void cvOneDSparseMatrix::HeapSort(cvOneDKentry Kentries[], int n)
 {
 
-	int i, temp_row,temp_col;
-	double temp_val;
-	for (i = n; i >= 2; i--){
-		// Storing maximum value at the end.
-		temp_row = Kentries[i].row;
-		temp_col = Kentries[i].col;
-		temp_val = Kentries[i].value;
+  int i, temp_row,temp_col;
+  double temp_val;
+  for (i = n; i >= 2; i--){
+    // Storing maximum value at the end.
+    temp_row = Kentries[i].row;
+    temp_col = Kentries[i].col;
+    temp_val = Kentries[i].value;
 
 
 
-		Kentries[i].row = Kentries[1].row;
-		Kentries[i].col = Kentries[1].col;
-		Kentries[i].value = Kentries[1].value;
+    Kentries[i].row = Kentries[1].row;
+    Kentries[i].col = Kentries[1].col;
+    Kentries[i].value = Kentries[1].value;
 
-		Kentries[1].row = temp_row;
-		Kentries[1].col =temp_col;
-		Kentries[1].value=temp_val;
-		// Building max heap of remaining element.
-		MaxHeapify(Kentries, 1, i - 1);
-	}
+    Kentries[1].row = temp_row;
+    Kentries[1].col =temp_col;
+    Kentries[1].value=temp_val;
+    // Building max heap of remaining element.
+    MaxHeapify(Kentries, 1, i - 1);
+  }
 }
 
 long cvOneDSparseMatrix::GetDimension() const{
@@ -325,5 +353,3 @@ void cvOneDSparseMatrix::print(std::ostream &os){
   }
 
 }
-
-

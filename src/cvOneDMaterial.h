@@ -56,7 +56,6 @@ class cvOneDMaterial{
     virtual double GetDpDz(double area, double z) const = 0;
     virtual double GetDOutflowDp(double pressure, double z) const = 0;
     virtual double GetIntegralpD2S (double area, double z) const = 0;
-    virtual double GetRefWaveSpeed(double area) const = 0;
     virtual void   SetPeriod(double period) = 0;
     virtual void   SetAreas_and_length(double S_top, double S_bottom, double z) = 0;
 

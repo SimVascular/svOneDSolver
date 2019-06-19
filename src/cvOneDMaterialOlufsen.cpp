@@ -115,6 +115,12 @@ double cvOneDMaterialOlufsen::Getr1(double z)const{
   return r;
 }
 
+double cvOneDMaterialOlufsen::GetDS1Dz(double z)const{
+  double drdz=GetDr1Dz(z) ;
+  double dsdr= 2.0*PI*Getr1(z);
+  return dsdr*drdz;  // slightly increased pressure/decreased area
+}
+
 
 //this is in the reference state dr1dz 
 double cvOneDMaterialOlufsen::GetDr1Dz(double z)const{
@@ -159,6 +165,19 @@ double cvOneDMaterialOlufsen::GetDpDS(double S, double z)const{
   return dpds;
 }
 
+double cvOneDMaterialOlufsen::GetD2pDS2(double area, double z)const{
+  double EHR = GetEHR(z);
+  double So_ = GetS1(z);
+  return - 0.75 * EHR * sqrt(So_) / sqrt(pow(area, 5));
+}
+
+double cvOneDMaterialOlufsen::GetOutflowFunction(double pressure, double z)const{
+  return 0.0; // This is not used in our model
+}
+
+double cvOneDMaterialOlufsen::GetDOutflowDp(double pressure, double z)const{
+  return 0.0; // Nor is this.
+}
 
 //used for viscosity term in matrix outlet flux term
 double cvOneDMaterialOlufsen::GetDD2PDzDS(double area, double z)const{

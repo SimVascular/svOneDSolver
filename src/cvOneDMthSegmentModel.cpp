@@ -79,10 +79,11 @@ double cvOneDMthSegmentModel::N_MinorLoss(long ith){
   S[1] = currSolution->Get( eqNumbers[0]);
   Q[1] = currSolution->Get( eqNumbers[1]);
 
-  if(minorLoss == MinorLossScope::NONE ){//|| minorLoss != MinorLossScope::STENOSIS ){
+  if(minorLoss == MinorLossScope::NONE ){
     return sub->GetMaterial()->GetN(S[1]);
   }
 
+  return 0; 
 }
 
 void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elementMatrix, long ith){
@@ -442,11 +443,10 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     }
 
     if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
-      ||bound==BoundCondTypeScope::PRESSURE_WAVE||bound==BoundCondTypeScope::AREA||bound==BoundCondTypeScope::FLOW){
-      //Outlet flux term (at z=z_outlet) which is the linearized F-KU IV 01-28-03
+      ||bound==BoundCondTypeScope::FLOW){
+      //Outlet flux term (at z=z_outlet) which is the linearized F-KU
       if (element == (sub->GetNumberOfElements())-1){
-        //cout<<"elementLHS "<<element<<endl;
-        double z = sub->GetOutletZ();//checked IV 02-03-03
+        double z = sub->GetOutletZ();
         finiteElement->Evaluate( z, shape, DxShape, &jacobian);
         double Pressure= material->GetPressure( S[1], z);
         double aux= Q[1]/S[1];
@@ -454,31 +454,13 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
         int a = 1;
 
         for( int b = 0; b < numberOfNodes; b++){
-          //b= trick because shape is note defined in z coord;
-          //has to be changed if other shape functions are used IV 02-07-03
-          //double x=double b;
+          // b= trick because shape is note defined in z coord;
+          //has to be changed if other shape functions are used 
           double Outlet11 = 0.0;
           double Outlet12 = (double)b;
           double Outlet21 = (double)b*(-(1.0+ delta)*aux*aux + S[1]/density*DpDS);
-          //double Outlet22 = 2*(1.0+ delta)*aux*(double)b - kinViscosity*DxShape[b];
-          //cout<<Outlet21<<"-"<<Outlet22<<" ";
           double Outlet22 = 2*(1.0+ delta)*aux*(double)b ;//without viscosity in flux
-          //*/
-          //try no adv term
-          /*
-          double Outlet21 = (double)b*(S[1]/density*DpDS);
-          double Outlet22 = 0.0;
-          //*/
-          //try no M2h2
-          /*
-          double Outlet21 = 0.0;
-          double Outlet22 = 0.0;
-          //*/
-          //try linear downstream domain-Hughes
-          /* double Cp = material->GetLinCompliance(z);
-             double Outlet21 = (double)b*S[1]/density/Cp;//linear downstream domain-Hughes
-             double Outlet22 = 0.0;//linear downstream domain hughes
-          */
+          
           elementMatrix->Add( 2*a  , 2*b  , -Outlet11*deltaTime);
           elementMatrix->Add( 2*a  , 2*b+1, -Outlet12*deltaTime);
           elementMatrix->Add( 2*a+1, 2*b  , -Outlet21*deltaTime);
@@ -728,14 +710,13 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
       int a = 0;
 
       double InletR1 = Q[0];
-      //double InletR2 = (1.0+delta)*Q[0]*aux + IntegralpS/density- kinViscosity*dQdz;
       double InletR2 = (1.0+delta)*Q[0]*aux + IntegralpS/density;//without viscosity in flux
       elementVector->Add(2*a  , -InletR1*deltaTime);
       elementVector->Add(2*a+1, -InletR2*deltaTime);
     }// end inlet flux
 
     if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
-      ||bound==BoundCondTypeScope::PRESSURE_WAVE||bound==BoundCondTypeScope::AREA||bound==BoundCondTypeScope::FLOW){
+      ||bound==BoundCondTypeScope::FLOW){
       //If no outlet BC or Dirichlet outlet BC, compute the Outlet full flux term (at z=z_outlet) which is the linearized F-KU IV 02-03-03
       if (element == (sub->GetNumberOfElements())-1){
         double z = sub->GetOutletZ();//checked IV 02-03-03

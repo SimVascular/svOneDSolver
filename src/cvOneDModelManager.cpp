@@ -90,9 +90,6 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
   // Set the Boundary Conditions
   seg -> setBoundCondition(boundT);
   switch(boundT) {
-  case BoundCondTypeScope::PRESSURE_WAVE:
-      seg->setBoundPressureValue(value,time,num);
-      break;
   case BoundCondTypeScope::RESISTANCE_TIME:
       seg->setBoundResistanceValue(value,time,num);
       break;
