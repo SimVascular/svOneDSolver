@@ -4,9 +4,6 @@
 //  
 //  This class abstracts the finite element one-dimensional shape function
 //
-//  History:
-//  May 1999, J. Wan
-//  Creation of file
 
 #include <cassert>
 

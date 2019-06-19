@@ -8,7 +8,6 @@
 //  SYNOPSIS...This class abstracts the finite element and provides utilities
 //             for maintaining a solution.
 //
-//
 
 class cvOneDFiniteElement{
 

@@ -8,17 +8,10 @@
 //  SYNOPSIS...This is a utility class used to handle the finite element 
 //             Vectors (currentSolution, increment, previousSolution, etc.
 //
-//  May 1999, J.Wan, G.R.Feijoo, S.A.Spicer and S.Strohband
-//      Creation of file, 
 
 #include <fstream>
 
 #include "cvOneDSolverDefinitions.h"
-
-//
-// this class needs further refinement...
-// global and element vectors are not well represented with this class
-//
 
 using namespace std;
 
@@ -56,10 +49,9 @@ class cvOneDFEAVector{
     void Set(long i, double value);
     double Get( long i) const;
     double Norm(normType type, int start, int step, int stop_index = -1) const;
-    void CheckPositive(int start,int step, int stop);//IV 04-17-03 to check if selected entries are positive
-    //friend ostream& operator<<(ostream& oFile, FEAVector& vector);
+    void CheckPositive(int start,int step, int stop);
 	
-    void print(std::ostream& os);//to replace friend ostream temp fix from Jing IV 081403 
+    void print(std::ostream& os);
 };
 
 #endif	// CVONEDFEAVECTOR_H

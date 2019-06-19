@@ -6,14 +6,7 @@
 //  ~~~~~~~~~~~
 //
 //  This the C representation of a model segment.  
-//  Again, this corresponds roughly to the Java 
-//  version but not exactly.
 //
-//  History:
-//  **, 2001, B. Steele
-//      Added pressure boundary condition holder
-//  May 1999, J.Wan, S.A.Spicer and S.Strohband
-//      Creation of file, class project of ME234C of T.J.R. Hughes and C.Taylor
 
 #include "cvOneDEnums.h"
 #include "cvOneDMesh.h"
@@ -80,11 +73,6 @@ class cvOneDSegment{
 
     void setMaterialID(int matID) {matID_ = matID;}
     int  getMaterialID() {return matID_;}
-    //void setMaterialType(MaterialType matT){elasticType = matT;use_k=0;} // not used if setting K values directly
-    //MaterialType getMaterialType(void){return elasticType;}
-  
-    //void setMaterialKarray(double matT_k1,double matT_k2,double matT_k3){use_k=1;matK[0]=matT_k1;matK[1]=matT_k2;matK[2]=matT_k3;}
-    //double *getMaterialKarray(void){return matK;}
         
     int use_k;
 
@@ -98,7 +86,6 @@ class cvOneDSegment{
     // SET BOUNDARY PRESSURE VALUE
     void  setBoundPressureValue(double* pval, double* ptime,int num){
       presLength = num;
-      //printf("Setting Segment Pressure...\n");
       if(values != NULL){
         delete [] values;
         values = NULL;
@@ -113,13 +100,11 @@ class cvOneDSegment{
         values[loopA] = pval[loopA];
         times[loopA] = ptime[loopA];
       }
-      // cout << "SetBoundaryValue for segment:" << values[2] <<", "<<  times[2] << " " << presLength << endl;
     }
 
     // SET BOUNDARY RESISTANCE VALUE
     void  setBoundResistanceValue(double* pval, double* ptime,int num){
       presLength = num;
-      //printf("Setting Segment Resistance...\n");
       if(values != NULL){
         delete [] values;
         values = NULL;
@@ -134,48 +119,10 @@ class cvOneDSegment{
         values[loopA] = pval[loopA];
         times[loopA] = ptime[loopA];
       }
-      // cout << "SetBoundaryValue for segment:" << values[2] <<", "<<  times[2] << " " << presLength << endl;
-    }
-
-    // SET VALUE OF CORONARY BOUNDARY CONDITION
-    void SetBoundCoronaryValues(double *p_lv, double *time, int num) {
-      presLength = num;
-      //printf("Setting Segment Coronary BC...\n");
-      if(values != NULL){
-        delete [] values;
-        values = NULL;
-      }
-      if(times != NULL){
-        delete [] times;
-        times = NULL;
-      }
-      values = new double[num];
-      times = new double[num];
-      for(int loopA=0;loopA<num;loopA++){
-        values[loopA] = p_lv[loopA];
-        times[loopA] = time[loopA];
-      }
-    } // added kimhj 09022005
-
-    // SET IMPEDANCE BOUNDARY CONDITION
-    void setBoundImpedanceValue(double* h, int num){
-      // printf("Setting Segment Impedance...\n");
-      if(impedance != NULL){
-        //printf("Entered...\n");
-        delete [] impedance;
-        impedance = NULL;
-      }
-      // Printf("FIN QUI\n");
-      impedanceLength = num;
-      impedance = new double[num];
-      for(int loopA=0;loopA<num;loopA++){
-        impedance[loopA] = h[loopA];
-      }
     }
 
     // SET RCR BOUNDARY CONDITION
     void setBoundRCRValue(double* rcr, int num){//added IV 050803
-      //printf("Setting Segment RCR...\n");
       rpCapRdLength = num;
       if(rpCapRd != NULL){
         delete [] rpCapRd;
@@ -187,57 +134,22 @@ class cvOneDSegment{
       }
     }  
 
-    // SET WAVE BOUNDARY CONDITION
-    void setBoundWaveValue(double* wave, int num){//added IV 080603
-      //printf("Setting Segment Wave BC...\n");
-      waveValueLength = num;
-      if(waveValue != NULL){
-        delete [] waveValue;
-        waveValue = NULL;
-      }
-      waveValue = new double[num];
-      for(int loopA=0;loopA<num;loopA++){
-        waveValue[loopA] = wave[loopA];
-      }
-    }
     
     double getBoundValue(){return boundValue;}
     void getBoundPressureValues(double** value, double **time,int* num ){
-      // cout << "GetBoundaryValue for segment:" << values[2] <<", "<<  times[2] << " " 
-      // cout << presLength << endl;
       *value=values,
       *time=times,
       *num=presLength;
     }
     void getBoundResistanceValues(double** value, double **time,int* num ){
-      // cout << "GetBoundaryValue for segment:" << values[2] <<", "<<  times[2] << " " 
-      // cout << presLength << endl;
       *value=values,
       *time=times,
       *num=presLength;
-    }
-
-    void getBoundCoronaryValues(double** value, double **time,int* num ){
-      // cout << "GetBoundaryValue for segment:" << values[2] <<", "<<  times[2] << " " 
-      // cout << presLength << endl;
-      *value=values,
-      *time=times,
-      *num=presLength;
-    }
-
-    void getBoundImpedanceValues(double** h, int* num){
-      *h = impedance;
-      *num = impedanceLength;
     }
 
     void getBoundRCRValues(double** rcr, int* num){//added IV 050803
       *rcr = rpCapRd;
       *num = rpCapRdLength;
-    }
-
-    void getBoundWaveValues(double** wave, int* num){//added IV 080603
-      *wave = waveValue;
-      *num = waveValueLength;
     }
 
     // Segment Connectivity -- These index into the 

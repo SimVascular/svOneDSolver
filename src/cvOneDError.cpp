@@ -1,7 +1,6 @@
 //
 //  Error.cxx: Source file for cvOneDError.handling/Debugging
 //  ~~~~~~~~~
-//  History:
 //
 
 #include "cvOneDError.h"

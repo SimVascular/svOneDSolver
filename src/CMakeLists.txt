@@ -86,4 +86,3 @@ install( TARGETS ${PROJECT_NAME}
          DESTINATION bin 
          COMPONENT executable )
 
-

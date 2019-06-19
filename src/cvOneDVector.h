@@ -172,8 +172,6 @@ template<class Item> void cvOneDVector<Item>::resize(int newSize){
 // exception: aborts if index is out-of-bounds
 template<class Item> Item & cvOneDVector<Item>::operator [] (int index){
   if ((unsigned) index >= (unsigned)myLength || index < 0){
-    //nmw      cerr << "Illegal vector index: " << index
-    //nmw    << " (max = " << (myLength-1) << ")" << endl;
     assert(index >= 0);
     assert(index < myLength);
   }

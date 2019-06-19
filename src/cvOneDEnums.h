@@ -74,22 +74,11 @@ typedef MeshTypeScope::MeshType MeshType;
 struct BoundCondTypeScope{
   enum BoundCondType{
     PRESSURE        = 0,
-    AREA            = 1,
     FLOW            = 2,
     RESISTANCE      = 3, // resistance with full pressure
     RESISTANCE_TIME = 4, // full pressure
-    PRESSURE_WAVE   = 5, // full pressure
-    RCR             = 6, // RCR or Windkessel model, without assuming periodicity, added IV 050803 
-    WAVE            = 7, // wave equation solved with green's function, without assuming periodicity, added IV 080603 
-    LPN             = 8, // Interface with 0D model - DES
-    CORONARY        = 9, // added by kimhj
-    ADMITTANCE      = 10,// admittance has to be last!
-    CLOSEDLOOP      = 11,// closed loop inlet coupling with 0D model - MLD 012518
+    RCR             = 6, // RCR or Windkessel model, without assuming periodicity
     NOBOUND 
-//    INTERNAL_PRESSURE      = 4,
-//    INTERNAL_AREA          = 5,
-//    INTERNAL_FLOW          = 6,
-//    INTERNAL_RESISTANCE    = 7,
   };
 };
 

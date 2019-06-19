@@ -46,20 +46,13 @@ void cvOneDSparseLinearSolver::Solve(cvOneDFEAVector& sol){
   int dim = rhsVector->GetDimension();
 /*  double *Fglobal = new double[dim+SPARSE_OFFSET];
   double* entries = rhsVector->GetEntries();
-
   Fglobal[0] = 0.0;
   for (i = 0; i < dim;i++) {
     Fglobal[i+SPARSE_OFFSET] = entries[i];
   }
-
   double* soln = new double[dim+SPARSE_OFFSET];
-
   lhsMatrix->CondenseMatrix();
-
   StanfordSolveSparseMatrix(lhsMatrix->GetKentries(), Fglobal, lhsMatrix->GetNumberOfEntries(), dim, soln);
-
-
-
   // shift the array down by SPARSE_OFFSET to get the first
   // dof at 0, and plug into FEAvector
   double* solution = sol.GetEntries();
@@ -175,8 +168,6 @@ void cvOneDSparseLinearSolver::Minus1dof(long rbEqnNo, double k_m){
     lhsMatrix->SetValue(rbEqnNo-i,rbEqnNo,0);
     lhsMatrix->SetValue(rbEqnNo, rbEqnNo-i,0);
   }
-  //kr[2] += KD[rbEqnNo]*k_m;
-  // should this be += or just =?? nate
   kr[2] += lhsMatrix->GetValue(rbEqnNo, rbEqnNo-i)*k_m;
   lhsMatrix->SetValue(rbEqnNo,rbEqnNo,1);
   for(i = 3; i > 0; i--){
@@ -204,7 +195,6 @@ void cvOneDSparseLinearSolver::AddFlux(long rbEqnNo, double* OutletLHS11, double
   lhsMatrix->AddValue(rbEqnNo-1, rbEqnNo, *(OutletLHS11+1));
   lhsMatrix->AddValue(rbEqnNo, rbEqnNo-1, *(OutletLHS11+2));
   lhsMatrix->AddValue(rbEqnNo, rbEqnNo, *(OutletLHS11+3));
-  //cout<<rbEqnNo<<" "<<rbEqnNo-1<<endl;
   (*rhsVector)[rbEqnNo-1] += *OutletRHS1;
   (*rhsVector)[rbEqnNo] += *(OutletRHS1+1);
 }

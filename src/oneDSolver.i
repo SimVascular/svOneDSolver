@@ -30,3 +30,4 @@
    %template(cvLongMat)   vector< vector< long > >;
    %template(cvDoubleMat) vector< vector< double > >;
  }  
+

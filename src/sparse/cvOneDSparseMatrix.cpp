@@ -139,7 +139,7 @@ int cvOneDSparseMatrix::GetColumnEntries(long column, cvOneDKentry **Krtr){
 void cvOneDSparseMatrix::Add(cvOneDDenseMatrix& matrix){
   int i,j;
   // acquires matrix's data
-  long eDimension	= matrix.GetDimension();
+  long eDimension = matrix.GetDimension();
   const long* eqNumbers = matrix.GetEquationNumbers();
   double* eEntries = matrix.GetPointerToEntries();
 
@@ -261,64 +261,64 @@ void cvOneDSparseMatrix::CondenseMatrix(){
 
 void cvOneDSparseMatrix::MaxHeapify(cvOneDKentry Kentries[], int i, int n)
 {
-	int j, temp_row,temp_col;
-	double temp_val;
-	temp_row = Kentries[i].row;
-	temp_col = Kentries[i].col;
-	temp_val = Kentries[i].value;
-	j = 2*i;
+  int j, temp_row,temp_col;
+  double temp_val;
+  temp_row = Kentries[i].row;
+  temp_col = Kentries[i].col;
+  temp_val = Kentries[i].value;
+  j = 2*i;
 
- 	while (j <= n)
-	{
-		if (j < n && Kentries[j+1].row > Kentries[j].row)
-		j = j+1;
-		// Break if parent value is already greater than child value.
-		if (temp_row > Kentries[j].row)
-			break;
-		// Switching value with the parent node if temp < a[j].
-		else if (temp_row <= Kentries[j].row)
-		{
-			Kentries[j/2].row = Kentries[j].row;
-			Kentries[j/2].col = Kentries[j].col;
-			Kentries[j/2].value = Kentries[j].value;
+  while (j <= n)
+  {
+    if (j < n && Kentries[j+1].row > Kentries[j].row)
+    j = j+1;
+    // Break if parent value is already greater than child value.
+    if (temp_row > Kentries[j].row)
+      break;
+    // Switching value with the parent node if temp < a[j].
+    else if (temp_row <= Kentries[j].row)
+    {
+      Kentries[j/2].row = Kentries[j].row;
+      Kentries[j/2].col = Kentries[j].col;
+      Kentries[j/2].value = Kentries[j].value;
 
-			j = 2*j;
-		}
-	}
-	Kentries[j/2].row = temp_row;
-	Kentries[j/2].col = temp_col;
-	Kentries[j/2].value = temp_val;
-	return;
+      j = 2*j;
+    }
+  }
+  Kentries[j/2].row = temp_row;
+  Kentries[j/2].col = temp_col;
+  Kentries[j/2].value = temp_val;
+  return;
 }
 void cvOneDSparseMatrix::Build_MaxHeap(cvOneDKentry Kentries[], int n)
 {
-	int i;
-	for(i = n/2; i >= 1; i--)
-		MaxHeapify(Kentries, i, n);
+  int i;
+  for(i = n/2; i >= 1; i--)
+    MaxHeapify(Kentries, i, n);
 }
 void cvOneDSparseMatrix::HeapSort(cvOneDKentry Kentries[], int n)
 {
 
-	int i, temp_row,temp_col;
-	double temp_val;
-	for (i = n; i >= 2; i--){
-		// Storing maximum value at the end.
-		temp_row = Kentries[i].row;
-		temp_col = Kentries[i].col;
-		temp_val = Kentries[i].value;
+  int i, temp_row,temp_col;
+  double temp_val;
+  for (i = n; i >= 2; i--){
+    // Storing maximum value at the end.
+    temp_row = Kentries[i].row;
+    temp_col = Kentries[i].col;
+    temp_val = Kentries[i].value;
 
 
 
-		Kentries[i].row = Kentries[1].row;
-		Kentries[i].col = Kentries[1].col;
-		Kentries[i].value = Kentries[1].value;
+    Kentries[i].row = Kentries[1].row;
+    Kentries[i].col = Kentries[1].col;
+    Kentries[i].value = Kentries[1].value;
 
-		Kentries[1].row = temp_row;
-		Kentries[1].col =temp_col;
-		Kentries[1].value=temp_val;
-		// Building max heap of remaining element.
-		MaxHeapify(Kentries, 1, i - 1);
-	}
+    Kentries[1].row = temp_row;
+    Kentries[1].col =temp_col;
+    Kentries[1].value=temp_val;
+    // Building max heap of remaining element.
+    MaxHeapify(Kentries, 1, i - 1);
+  }
 }
 
 long cvOneDSparseMatrix::GetDimension() const{
@@ -353,5 +353,3 @@ void cvOneDSparseMatrix::print(std::ostream &os){
   }
 
 }
-
-

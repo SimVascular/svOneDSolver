@@ -6,13 +6,6 @@
 //
 //  This class maintains MaterialOlufsen Properties of the subdomain.
 //
-//  History:
-//  Feb. 13, 2003, I. Vignon
-//      linear and nonlinear compliance.
-//  Jul. 2000, J.Wan
-//      Stenosis model properties
-//  May 1999, J.Wan, G.R.Feijoo, S.A.Spicer and S.Strohband
-//      Creation of file, class project of ME234C of T.J.R. Hughes and C.Taylor
 
 # include "cvOneDMaterial.h"
 # include "cvOneDEnums.h"
@@ -34,34 +27,26 @@ class cvOneDMaterialOlufsen:public cvOneDMaterial{
     double GetProperty( char* what) const;
     double GetArea( double pressure, double z) const;
     double GetPressure( double S, double z) const;
-    double GetPsi( double pressure, double z) const;//not used
-    double GetPhi( double pressure, double z) const; //not used
-    double GetDSDp( double pressure, double z) const; //not used
     double GetDpDS( double area, double z) const;
     double GetD2pDS2( double area, double z) const;
-	double GetDD2PDzDS( double area, double z) const; //IV added 03-23-03 for viscosity term
+	double GetDD2PDzDS( double area, double z) const; // for viscosity term
     double GetOutflowFunction( double pressure, double z) const;
     double GetDOutflowDp( double pressure, double z) const;
-    double GetD2S( double pressure, double z) const; //not used
-    double GetIntegralpD2S ( double area, double z) const;//IV added 01-23-03
-	double GetIntegralpS ( double area, double z) const;//IV added 01-24-03
+    double GetIntegralpD2S ( double area, double z) const; 
+	double GetIntegralpS ( double area, double z) const;
 	double GetDpDz( double area, double z) const;
     double GetTopArea() const {return Stop;}
     double GetBotArea() const {return Sbot;}
     double GetEHR(double z) const;
     double GetMette2(double area,double z) const;
- 	double GetN(double S) const;//not really dependent on S actually IV 080703
+ 	double GetN(double S) const;
 
 
 	int IsRigid() {return rigid;}
 
-	double GetLinCompliance(double z) const;//IV added 02-03-03
-	double GetnonLinCompliance(double area,double z) const;//IV added 02-13-03
-	void SetPeriod(double period);//static
-
-    double GetWaveSpeed( double area, double z) const;//added by IV 080703
-    double GetRefWaveSpeed( double area) const;//IV 080703 created for wave BC but can be used in gal;
-    //compute wave speed at the ref. state, assumes  Mette's material model
+	double GetLinCompliance(double z) const;
+	double GetnonLinCompliance(double area,double z) const;
+	void SetPeriod(double period);
 
     void GetParams(double *K1, double *K2, double *K3, double *Pref) const {*K1 = K1_; *K2 = K2_; *K3 = K3_; *Pref=PP1_;};
 
@@ -87,7 +72,7 @@ class cvOneDMaterialOlufsen:public cvOneDMaterial{
     double GetS1( double z) const;
     double Getr1( double z) const;
     double GetDS1Dz( double z) const;
-    double GetDr1Dz(double z) const;//was GetDrDz, but IV changed it 04-23-03 because it was misleading
+    double GetDr1Dz(double z) const;
 
 };
 

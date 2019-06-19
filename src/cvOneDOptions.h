@@ -109,3 +109,4 @@ class cvOneDOptions{
 };
 
 #endif // CVONEDOPTIONS_H
+

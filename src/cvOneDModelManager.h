@@ -10,8 +10,6 @@
 # include "cvOneDGlobal.h"
 # include "cvOneDException.h"
 # include "cvOneDModel.h"
-# include "cvOneDMetteImpedance.h"
-# include "cvOneDMorphImpedance.h"
 
 class cvOneDModelManager{
   public:
@@ -51,22 +49,6 @@ class cvOneDModelManager{
                    long maxStep,long quadPoints,
                    int len,char* boundType,double* values,
                    double* times,double conv, int useIV, int usestab);
-
-    // COMPUTE ADMITTANCE AND IMPEDANCE CURVES
-    int CalcImpedance(int numTimeSteps, double lengthRadiusRatio, double rootRadius, double period, double scaleFactor, int rtnFourier,
-                      cvDoubleVec& time, cvDoubleVec& values);
-    int CalcImpedanceRCR(int numTimeSteps, double Rd, double Ru, double period, double Cap, double scaleFactor, int rtnFourier,
-                         cvDoubleVec& time, cvDoubleVec& values);
-    int CalcMorphImpedance(int numTimeSteps, int min_order, double rootRad, double period, int rtnFourier,
-                           cvDoubleVec& time, cvDoubleVec& values);
-    int CalcAdmittance(int numTimeSteps,double ratio,double rootRad,double period,double scaleFactor,int rtnFourier,
-                       cvDoubleVec& time, cvDoubleVec& values);
-    int CalcRCRAdmittance(int numTimeSteps,double Rd,double Ru,double period,double Cap,double scaleFactor,int rtnFourier,
-                          cvDoubleVec& time, cvDoubleVec& values);
-    int CalcMorphAdmittance(int numTimeSteps,int min_order,double rootRad,double period,int rtnFourier,
-                            cvDoubleVec& time, cvDoubleVec& values);
-    int CalcLRR(int numTimeSteps,double resistance,double rootRad,double period,double scaleFactor,
-                double& lrr);
 
 };
 

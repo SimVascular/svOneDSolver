@@ -5,9 +5,6 @@
 //  Build up the parts corresponding to the Lagrange nodes in the Jacobian
 //  Matrix and the residual vector.
 //
-//  History:
-//  May 1999, J.Wan
-//      creation of file,
 
 # include "cvOneDMthBranchModel.h"
 # include "cvOneDUtility.h"
@@ -111,7 +108,6 @@ void cvOneDMthBranchModel::FormLagrangeRHSbyQ(long ith, cvOneDFEAVector* rhsVect
     double currQ = currSolution->Get(eqn[1]);
     rhsVector->Add(lagOrigin, currQ);
   }
-  //cout<<*rhsVector<<endl;
 }
 
 //lagrange variables are always ordered as

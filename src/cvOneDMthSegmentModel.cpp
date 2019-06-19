@@ -79,223 +79,11 @@ double cvOneDMthSegmentModel::N_MinorLoss(long ith){
   S[1] = currSolution->Get( eqNumbers[0]);
   Q[1] = currSolution->Get( eqNumbers[1]);
 
-  if(minorLoss == MinorLossScope::NONE ){//|| minorLoss != MinorLossScope::STENOSIS ){
+  if(minorLoss == MinorLossScope::NONE ){
     return sub->GetMaterial()->GetN(S[1]);
   }
 
-  //   In case of branch, previous seg might not be adjacent seg
-  // Subdomain *adjacent =subdomainList[ith-1];
-  cvOneDSubdomain *upstream = subdomainList[sub->GetUpstreamSeg()];
-  cvOneDSubdomain *branch = subdomainList[sub->GetBranchSeg()];
-
-  double L = sub->GetLength();
-  double Kv, Kt, Re0, La, D[2], func, N, theta, min;
-  strcpy(propName,"kinematic viscosity");
-  double kinViscosity0 = upstream->GetMaterial()->GetProperty(propName);
-
-  min=0.6; // if a for branches is too small, troubles abound
-
-  // The last node of segment (3) at the upstream of the stenosis (minor loss) segment // not true for converging flow
-  GetEquationNumbers(upstream->GetNumberOfElements()-1, eqNumbers, sub->GetUpstreamSeg());
-  S[0] = currSolution->Get( eqNumbers[2]);
-  Q[0] = currSolution->Get( eqNumbers[3]);
-
-  // first node of the branch (minor loss) segment, only used for through(2) calcs
-   GetEquationNumbers(0, eqNumbers, sub->GetBranchSeg());
-  S[2] = currSolution->Get( eqNumbers[0]);
-  Q[2] = currSolution->Get( eqNumbers[1]);
-
-  // ratio of flow rate between branch and combined flow
-  double q = Q[1]/Q[0];
-  // ratio of area between branch and combined flow
-  double a = S[1]/S[0];
-
-  // why are we doing this?  Sometimes flow is negative.
-  if(Q[0] < 0.000001 || Q[1] < 0.000001){
-    return sub->GetMaterial()->GetN(S[1]);
-  }
-
-  switch(minorLoss){
-    case MinorLossScope::STENOSIS:
-      Kt = 1.52;
-      // modify to lessen stenosis
-      D[0] = sqrt(4*S[0]/3.14159265358979323846);
-      D[1] = sqrt(4*S[1]/3.14159265358979323846);
-      La = 0.83*L + 1.64*D[1];
-      // La = L;
-      Kv = 32. * La / D[0] * 1.0/a*1.0/a;
-      Re0 = D[0] * Q[0] / (S[0] * kinViscosity0);
-      func= Kv/Re0 + Kt / 2. * (1.0/a - 1.) * (1.0/a - 1.);
-      // func= Kv/Re0 + Kt / 2. * (1/a - 1.) * (1/a - 1.)*abs(Q[0])/Q[0]+Ku*1.06*L*sub->getDQDt()/Q;  // for non-steady flow
-      func = 2.0 * func*a*a/q/q;   // a^2/q^2 switch from upstream segment to stenosed segment
-      break;
-
-    case MinorLossScope::BRANCH_THROUGH_DIVIDING:
-      theta = sub -> GetBranchAngle();
-
-      q = Q[2]/Q[0]; // branch(1)/combined(0)
-      a = S[2]/S[0];
-
-      // having problems with a too small, try hokey fix for now 02-08-02
-      if(a<min){
-        // a=min;
-        // return sub->GetMaterial()->GetN(S[1]);
-      }
-      // Wood K32,  modified, times combined flow div by leg flow
-      func = (-0.03*(1-q)*(1-q) - 0.35 * q*q + 0.2*q*(1-q));  // no difference
-      // modified coeff -- too strong
-      // func=func * Q[0]*Q[0]/(Q[1]*Q[1]);
-      // cout<<"through dividing   q "<<q<< " func "<<func<<endl;
-      break;
-
-    // problem with this case.
-    case MinorLossScope::BRANCH_SIDE_DIVIDING:
-      theta = sub -> GetBranchAngle();
-
-      // having problems with a too small, try hokey fix for now 02-08-02
-      if(a<min){
-      // a=min;
-      // return sub->GetMaterial()->GetN(S[1]);
-      }
-      // q= Q[1]/Q[0]; // branch(this=1)/combined(0)
-
-      // Wood K31
-      func = (-0.95*(1-q)*(1-q) + q*q*(1.3*cot((3.14159265358979323846-theta)/2) - 0.3 + (.4 - .1*a)/(a*a)) +
-             -0.4*q*(1-q)*(1+(1/a))*cot((3.14159265358979323846 - theta)/2));// one sign change
-      // func = 0.95*(1-q)*(1-q) + q*q*(1.3*cot((3.14159265358979323846-theta)/2) - 0.3 + (.4 - .1*a)/(a*a)) +
-      //        0.4*q*(1-q)*(1+(1/a))*cot((3.14159265358979323846 - theta)/2);
-
-      // modified coefficient -- too strong
-      // func=func/(q*q);
-      // cout<<"side dividing   q "<<q <<" func "<<func<< endl;
-      break;
-
-    case MinorLossScope::BRANCH_THROUGH_CONVERGING:
-
-      // The segment at the upstream of the stenosis (minor loss) segment // not true for converging flow
-      GetEquationNumbers(0, eqNumbers, sub->GetUpstreamSeg());
-      S[0] = currSolution->Get( eqNumbers[0]);
-      Q[0] = currSolution->Get( eqNumbers[1]);
-
-      // the stenosis (minor loss) segment // not true for converging flow
-      GetEquationNumbers(subdomainList[ith]->GetNumberOfElements()-1, eqNumbers, ith);
-      S[1] = currSolution->Get( eqNumbers[2]);
-      Q[1] = currSolution->Get( eqNumbers[3]);
-
-      theta = sub -> GetBranchAngle();
-
-      q = Q[2]/Q[0]; // branch/combined
-      a = S[2]/S[0];
-      // having problems with a too small, try hokey fix for now 02-08-02
-      if(a<min){
-        a = min;
-        return sub->GetMaterial()->GetN(S[1]);
-      }
-
-      // this method from Marc Serre  Using upstream area instead of downstreram area in divisor a
-      // it also wants branch flow instead of through flow, so modify Q for 90 degree
-      // func = 2*(1-0.2)*q-q*q+.04*q*q*(1/sqrt(a*a*a));
-
-      // Serre for arbitrary angle
-      //func = (1.61*q+(-1+ .04*(1/sqrt(a*a*a)) - 1.74*(1/a)*cos(theta))*q*q);
-      //cout<<"Serre method conv-through "<<func<<endl;
-
-      // Wood K23
-      func = (-0.03*(1+q)*(1+q) + q*q*(1 + 1.62*(cos(theta)/a - 1) - 0.38*(1-a))+(2-a)*q*(1+q)); // sign change in front of last term and in last term
-      // func =(0.03*(1-q)*(1-q) - q*q*(1 + 1.62*(cos(theta)/a - 1) - 0.38*(1-a))+(2-a)*q*(1-q));
-      // modified value, divide by flow ratio squared. I found that this was too strong.
-      // func= func * Q[0]*Q[0]/(Q[1]*Q[1]);
-      // cout <<" branch converging q:"<<q<<"func:"<< func ;
-      break;
-
-    case MinorLossScope::BRANCH_SIDE_CONVERGING:
-      // The segment of combined flow (downstream), want first segment
-      GetEquationNumbers(0, eqNumbers, sub->GetUpstreamSeg());
-      S[0] = currSolution->Get(eqNumbers[0]);
-      Q[0] = currSolution->Get(eqNumbers[1]);
-
-      // the branch segment. want last element
-      GetEquationNumbers(subdomainList[ith]->GetNumberOfElements()-1, eqNumbers, ith);
-      S[1] = currSolution->Get(eqNumbers[2]);
-      Q[1] = currSolution->Get(eqNumbers[3]);
-
-      q = Q[1]/Q[0]; // branch(1)/combined(3)
-      a = S[1]/S[0];
-      // having problems with a too small, try hokey fix for now 02-08-02
-      if(a < min){
-        a = min;
-        return sub->GetMaterial()->GetN(S[1]);
-      }
-      theta = sub -> GetBranchAngle();
-      // Marc Serre eq29 q=branch/upstream
-      // func=(1-1.8*a)*((q*q)/(a*a) - 1);
-      // cout<< "Serre method - conv-branch "<< func <<endl;
-      // Wood K13 // try changing first and last terms to (1+q)
-      func =(0.92*(1+q)*(1+q)+(q*q)*(1.2*(cos(theta)/a-1)+0.8*(1-1/(a*a))-(1-a)*cos(theta)/a) +(2-a)*q*(1+q) );
-      //  func =-0.92*(1-q)*(1-q)-(q*q)*(1.2*(cos(theta)/a-1)+0.8*(1-1/(a*a))-(1-a)*cos(theta)/a) +(2-a)*q*(1-q) ;
-      // use modified value..
-      //func=func/(q*q);
-      //  cout<<"side converging  " <<func<< " q "<<q ;
-      break;
-    case MinorLossScope::BIFURCATION_BRANCH:
-
-      theta = sub ->GetBranchAngle();
-
-      /* JNIEnv* env=BFSolver::jenv;
-      jobject obj=BFSolver::jobj;// OneDModel object
-      // cout<< "in bif-branch " << endl;
-      jclass cls = env->GetObjectClass(obj);
-      // cout<< "jclass " << cls << endl;
-
-      // jmethodID mid = env->GetMethodID(cls, "callback", "(DDD)D");
-      jmethodID mid = env->GetMethodID(cls, "findBifurcationK", "(DDD)D");
-      if (mid == 0) {
-        cout<< "method id is zero " << endl;
-        return sub->GetMaterial()->GetProperty( "N");
-      }
-      jdouble ans = env->CallDoubleMethod(obj, mid, theta,Q[0],S[0]);
-      // cout<< ">>found method id ans = "<<ans  << endl;
-      func = ans;
-      */
-      //this is turned off because we don't use java in the debug version
-      strcpy(propName,"N");
-      return sub->GetMaterial()->GetProperty(propName);
-      break;
-
-    /*
-    case MinorLossScope::BEND_90:
-      func = .45;
-      break;
-    case MinorLossScope::BEND_45:
-      func = .2;
-      break;
-    case MinorLossScope::BEND_180: // don't think I can really model this, case
-      func = 0.4;
-      break;
-    default:
-      return sub->GetMaterial()->GetProperty( "N");
-    */
-  }// end of switch
-
-  // integrate (1) over z to get formula for dP
-  // jing's
-  // N = func * Q[0] * Q[0] * S[1] * S[1] / (S[0] * S[0] * Q[1] * L);
-  // mine.. simple
-
-  N = func *  Q[1]  / (2 * L);
-
-  sub->SaveK(N,(int)(cvOneDBFSolver::currentTime / cvOneDBFSolver::deltaTime) );
-
-  // don't want to have less than the default Puoseille
-  strcpy(propName,"N");
-  double std= sub->GetMaterial()->GetProperty(propName);
-  if( -N > std){
-    return std;
-  }
-
-  // cout << " -N " << -N << " Q(1) :"<< Q[1] << endl;
-  return -N;
-
+  return 0; 
 }
 
 void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elementMatrix, long ith){
@@ -655,11 +443,10 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     }
 
     if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
-      ||bound==BoundCondTypeScope::PRESSURE_WAVE||bound==BoundCondTypeScope::AREA||bound==BoundCondTypeScope::FLOW){
-      //Outlet flux term (at z=z_outlet) which is the linearized F-KU IV 01-28-03
+      ||bound==BoundCondTypeScope::FLOW){
+      //Outlet flux term (at z=z_outlet) which is the linearized F-KU
       if (element == (sub->GetNumberOfElements())-1){
-        //cout<<"elementLHS "<<element<<endl;
-        double z = sub->GetOutletZ();//checked IV 02-03-03
+        double z = sub->GetOutletZ();
         finiteElement->Evaluate( z, shape, DxShape, &jacobian);
         double Pressure= material->GetPressure( S[1], z);
         double aux= Q[1]/S[1];
@@ -667,31 +454,13 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
         int a = 1;
 
         for( int b = 0; b < numberOfNodes; b++){
-          //b= trick because shape is note defined in z coord;
-          //has to be changed if other shape functions are used IV 02-07-03
-          //double x=double b;
+          // b= trick because shape is note defined in z coord;
+          //has to be changed if other shape functions are used 
           double Outlet11 = 0.0;
           double Outlet12 = (double)b;
           double Outlet21 = (double)b*(-(1.0+ delta)*aux*aux + S[1]/density*DpDS);
-          //double Outlet22 = 2*(1.0+ delta)*aux*(double)b - kinViscosity*DxShape[b];
-          //cout<<Outlet21<<"-"<<Outlet22<<" ";
           double Outlet22 = 2*(1.0+ delta)*aux*(double)b ;//without viscosity in flux
-          //*/
-          //try no adv term
-          /*
-          double Outlet21 = (double)b*(S[1]/density*DpDS);
-          double Outlet22 = 0.0;
-          //*/
-          //try no M2h2
-          /*
-          double Outlet21 = 0.0;
-          double Outlet22 = 0.0;
-          //*/
-          //try linear downstream domain-Hughes
-          /* double Cp = material->GetLinCompliance(z);
-             double Outlet21 = (double)b*S[1]/density/Cp;//linear downstream domain-Hughes
-             double Outlet22 = 0.0;//linear downstream domain hughes
-          */
+          
           elementMatrix->Add( 2*a  , 2*b  , -Outlet11*deltaTime);
           elementMatrix->Add( 2*a  , 2*b+1, -Outlet12*deltaTime);
           elementMatrix->Add( 2*a+1, 2*b  , -Outlet21*deltaTime);
@@ -816,7 +585,6 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
     // we begin by calculating the residual
     double F1  = U[1];
     double F2  = (1.0+ delta)*U[1]*aux+IntegralpS/density;
-    // if(element==0) cout<<"F2"<<" "<<(1.0+ delta)*U[1]*aux<<" "<<IntegralpS/density<<endl;
     // double K22 = kinViscosity;
     double GF1 = -Outflow;
     double GF2 = N*aux+IntegralpD2S/density;
@@ -942,19 +710,15 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
       int a = 0;
 
       double InletR1 = Q[0];
-      //double InletR2 = (1.0+delta)*Q[0]*aux + IntegralpS/density- kinViscosity*dQdz;
       double InletR2 = (1.0+delta)*Q[0]*aux + IntegralpS/density;//without viscosity in flux
       elementVector->Add(2*a  , -InletR1*deltaTime);
       elementVector->Add(2*a+1, -InletR2*deltaTime);
-      // cout<<"\t"<<"\t"<<"-InletR2*deltaTime"<<" "<<-InletR2*deltaTime<<endl;
-      // cout<<"\t"<<"\t"<<"terms of inletR2"<<" "<<(1.0+delta)*Q[0]*aux <<" "<<IntegralpS/density<<endl;
     }// end inlet flux
 
     if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
-      ||bound==BoundCondTypeScope::PRESSURE_WAVE||bound==BoundCondTypeScope::AREA||bound==BoundCondTypeScope::FLOW){
+      ||bound==BoundCondTypeScope::FLOW){
       //If no outlet BC or Dirichlet outlet BC, compute the Outlet full flux term (at z=z_outlet) which is the linearized F-KU IV 02-03-03
       if (element == (sub->GetNumberOfElements())-1){
-        //cout<<element<<endl;
         double z = sub->GetOutletZ();//checked IV 02-03-03
         double pressure = material->GetPressure( S[1], z);
         finiteElement->Evaluate( z, shape, DxShape, &jacobian);//careful: shape is in the natural coord system (xi)

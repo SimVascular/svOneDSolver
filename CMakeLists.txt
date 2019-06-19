@@ -19,6 +19,13 @@ OPTION(buildDocs "Build Documentation" OFF)
 SET(sparseSolverType "skyline" CACHE STRING "Use Sparse Solver")
 SET_PROPERTY(CACHE sparseSolverType PROPERTY STRINGS skyline superlu csparse)
 
+# FIX ERROR WITH BOOST
+FIND_PACKAGE(Boost)
+IF (Boost_FOUND)
+    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+    ADD_DEFINITIONS( "-DHAS_BOOST" )
+ENDIF()
+
 # ADD DEFINITION SO THE C++ CODE CAN SEE IT
 IF(sparseSolverType STREQUAL "skyline")
   ADD_DEFINITIONS("-DUSE_SKYLINE")
