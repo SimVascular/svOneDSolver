@@ -1400,6 +1400,10 @@ void cvOneDBFSolver::GenerateSolution(void){
         norms = rhs->Norm(L2_norm,0,2);
       }
 
+      if (std::isnan(norms) || std::isnan(normf)) {
+          throw cvException("Calculated a NaN for the residual.");
+      }
+
       // Check Newton-Raphson Convergence
       if((currentTime != deltaTime || (currentTime == deltaTime && iter != 0)) && normf < convCriteria && norms < convCriteria){
         break;
@@ -1427,8 +1431,8 @@ void cvOneDBFSolver::GenerateSolution(void){
               if (startOut <= i && i <= finishOut) {
                  modelname = model-> getModelName();
                  segname = curSeg -> getSegmentName();
-                 cout << "At " << modelname << segname << " ";
-                 cout << "The area goes to " << currentSolution->Get(i) << endl;
+                 std::string msg = "ERROR: The area of segment '" + std::string(segname) + "' is negative.";
+                 throw cvException(msg.c_str());
               }
               elCount += 2*(numEls+1);
               fileIter++;
@@ -1464,6 +1468,7 @@ void cvOneDBFSolver::GenerateSolution(void){
       cout << "normf: " << normf << " ";
       cout << "norms: " << norms << " ";
       cout << "time: " << ((float)(tend_iter-tstart_iter))/CLOCKS_PER_SEC << endl;
+
 
       if(iter > MAX_NONLINEAR_ITERATIONS){
         cout << "Error: Newton not converged, exceed max iterations" << endl;

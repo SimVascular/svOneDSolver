@@ -81,3 +81,8 @@ ELSEIF(sparseSolverType STREQUAL "csparse")
 
 ENDIF()
 
+install( TARGETS ${PROJECT_NAME}
+         RUNTIME 
+         DESTINATION bin 
+         COMPONENT executable )
+
