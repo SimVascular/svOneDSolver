@@ -6,16 +6,8 @@
 //             computation.  It handles the equation formulation, and
 //             construction of the Newton-Rhapson matrix derivatives,
 //             and generation of the element dense matrices.
-//  Aug. 2003, I. Vignon
-//      wave bc
-//  Jan. - May. 2003, I. Vignon
-//      new formulation and more bc types...
-//  **       , B.Steele
-//      Added Impedance bc and storage of num points in flow rate//
-//  Nov. 1999, J.Wan
-//      Resistance bc
-//  May 1999, J.Wan, B.Steele, S.Strohband
-//      Creation of file
+//
+
 
 # include "cvOneDGlobal.h"
 # include "cvOneDMthModelBase.h"
@@ -24,7 +16,6 @@
 # include "cvOneDDenseMatrix.h"
 # include "cvOneDMaterial.h"
 # include "cvOneDFiniteElement.h"
-# include "cvOneDClosedLoop.h"
 
 
 // Static Declarations...
@@ -48,7 +39,6 @@ cvOneDMthModelBase::cvOneDMthModelBase(const vector<cvOneDSubdomain*>& subdList,
     lagVariables += jtList[i]->getNumberOfSegments();
   }
   for(i = 0; i < olList.size(); i++){
-  //  for (vector<int>::iterator it=olList.begin(); it!=olList.end(); it++){
     outletList.push_back(olList[i]);
   }
   // currently use flow rate and pressure, the equations
@@ -115,41 +105,11 @@ void cvOneDMthModelBase::SetBoundaryConditions(){
     case BoundCondTypeScope::FLOW:
       (*currSolution)[eqNumbers[1]] = GetFlowRate();
       break;
-    case BoundCondTypeScope::PRESSURE_WAVE:
-      (*currSolution)[eqNumbers[0]] = sub->GetMaterial()->GetArea(GetFlowRate(),0);
-      InitialPressure = flrt[0];
-      break;
-    case BoundCondTypeScope::CLOSEDLOOP:
-      //CLOSED LOOP - 0D-1D COUPLING (MLD 1/25/18) /////////
-      //Closed Loop Inlet Boundary Condition
-      currS = (*currSolution)[eqNumbers[0]];
-      currP = sub->GetMaterial()->GetPressure(currS, sub->GetLength());
 
-      cvOneDClosedLoop closedLoop;
+    default:
 
-      // Initialize GenBC on first timestep through all iterations
-      if (double(currentTime) == double(deltaTime)) {
-        cout << "INITIALIZE GENBC" << endl;
-        closedLoop.initGenBC(double(currentTime), double(deltaTime));
-      }else if (currentTime > double(deltaTime) && currentTime <= double(deltaTime)*200) { // Call GenBC once 1D model has initialized for a few timesteps
-        cout << "INITIALIZE 1D SIMULATION" << endl;//NEEDS MODIFICATION - hardcoded initialization time of 200 (MLD 012518)
-        closedLoop.writeClosedLoop_P(double(currP), double(currentTime), double(deltaTime));
-        closedLoop.callGenBC();
-      }else { // Call GenBC for the rest of the timesteps
-        cout << "INPUT FROM 0D" << endl;
-
-        closedLoop.writeClosedLoop_P(double(currP), double(currentTime), double(deltaTime));
-        closedLoop.callGenBC();
-
-        (*currSolution)[eqNumbers[1]] = closedLoop.getClosedLoop_Q();
-      }
-      //////////////////////////////////////////////////
       break;
   }
-
-
-  //  double *h,*press, currQ;
-  //  int j,num_timesteps;
 
   for (vector<int>::iterator it=outletList.begin(); it!=outletList.end(); it++){
     GetNodalEquationNumbers(subdomainList[*it]->GetNumberOfNodes() - 1, eqNumbers, *it);
@@ -165,9 +125,6 @@ void cvOneDMthModelBase::SetBoundaryConditions(){
   */
     switch(sub->GetBoundCondition()){
     case BoundCondTypeScope::PRESSURE:
-    case BoundCondTypeScope::AREA:
-      (*currSolution)[eqNumbers[0]] = sub->GetBoundArea();//GetOutletAreaBC();
-      break;
     case BoundCondTypeScope::FLOW:
       (*currSolution)[eqNumbers[1]] = sub->GetBoundFlowRate();
       break;
@@ -178,34 +135,17 @@ void cvOneDMthModelBase::SetBoundaryConditions(){
         resistance = sub->GetBoundResistance();
         (*currSolution)[eqNumbers[1]] = currP/resistance;
         }
-      //cout<<"resistance" <<currP/(*currSolution)[eqNumbers[1]]<<"  ";
-        // cout<<currP<<"  "<<(*currSolution)[eqNumbers[1]]<<"  "<<currS<<endl;
       break;
     case BoundCondTypeScope::RESISTANCE_TIME:
             if(cvOneDGlobal::CONSERVATION_FORM == 0){
         currS = (*currSolution)[eqNumbers[0]];
           currP = sub->GetMaterial()->GetPressure(currS, sub->GetLength());
         resistance = sub->GetBoundResistance(currentTime);
-        //cout<<"time "<<currentTime<<", resistance "<<resistance<<endl;
         (*currSolution)[eqNumbers[1]] = currP/resistance;
         }
       break;
-    case BoundCondTypeScope::PRESSURE_WAVE:
-      (*currSolution)[eqNumbers[0]] = sub->GetBoundAreabyPresWave(currentTime);
-      break;
     case BoundCondTypeScope::RCR:
-    /*  //if essential BC, need MemC to be public
-        Rp  = sub -> GetRp();
-        Rd  = sub -> GetRd();
-        Cap = sub -> GetCap();
-        alphaRCR = sub -> GetAlphaRCR();
-        prevP = sub->GetMaterial()->GetPressure(prevSolution->Get(eqNumbers[0]),z);
-
-        currS = (*currSolution)[eqNumbers[0]];
-          currP = sub->GetMaterial()->GetPressure(currS, sub->GetLength());
-        MemoC = sub->MemC(currP, prevP, deltaTime, currentTime);
-        (*currSolution)[eqNumbers[1]] = MemoC*exp(-alphaRCR*deltaTime) + currP/(Rp+Rd);
-     */break;
+      break;
     default:
      break;
     }// end switch
@@ -221,10 +161,6 @@ double cvOneDMthModelBase::CheckMassBalance(){
 
   if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::FLOW){
     inletFlow = GetFlowRate();
-  }else if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::CLOSEDLOOP){ //MLD 012518
-    //MELODY MODIFICATIONS - UPDATE INLET FLOW WITH CLOSED LOOP CHECK MASS
-    cvOneDClosedLoop closedLoop;
-    inletFlow = closedLoop.getClosedLoop_Q();
   }else{
    GetNodalEquationNumbers( 0, eqNumbers, 0);
    inletFlow = (*currSolution)[eqNumbers[1]];
@@ -263,12 +199,6 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
     if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::FLOW){
       GetNodalEquationNumbers(0, eqNumbers, 0);
       cvOneDGlobal::solver->SetSolution(eqNumbers[1], value);
-    }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::PRESSURE_WAVE){
-      GetNodalEquationNumbers(0, eqNumbers, 0);
-      cvOneDGlobal::solver->SetSolution(eqNumbers[0], value);
-    }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::CLOSEDLOOP) { //MLD 012518
-      GetNodalEquationNumbers(0, eqNumbers, 0);
-      cvOneDGlobal::solver->SetSolution(eqNumbers[1], value);
     }
 
     // Set up the correct outlet boundary condition
@@ -285,15 +215,11 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
       double z = sub->GetOutletZ(); // Checked IV 02-03-03
 
 
+      value = 0.0;  // RHS corresponding to imposed Essential BC
 
       switch(sub->GetBoundCondition()){
-        value = 0.0;  // RHS corresponding to imposed Essential BC
         case BoundCondTypeScope::PRESSURE:
-        case BoundCondTypeScope::PRESSURE_WAVE:
 
-        case BoundCondTypeScope::AREA:
-          cvOneDGlobal::solver->SetSolution(eqNumbers[0],value);
-          break;
 
         case BoundCondTypeScope::FLOW:
           cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
@@ -309,23 +235,6 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
           currS = (*currSolution)[eqNumbers[0]];
           k_m = sub->GetMaterial()->GetDpDS(currS, sub->GetLength())/ sub->GetBoundResistance(currentTime);
           cvOneDGlobal::solver->Minus1dof(eqNumbers[1], k_m);
-          break;
-
-        case BoundCondTypeScope::ADMITTANCE:// use only pressure change from mean
-          currS = (*currSolution)[eqNumbers[0]];
-          currQ = (*currSolution)[eqNumbers[1]];
-          currP = sub->GetMaterial()->GetPressure(currS, sub->GetLength()); // pressure at outlet
-          h = sub->GetImpedance();
-          num_timesteps = sub->GetNumImpedancePts();
-          prevP= sub->impedancePressure[num_timesteps-1];
-          press= sub->ShiftPressure(currP,currentTime,currS);
-
-          rhsBC=currQ;
-          for( j=0;j<num_timesteps;j++){
-            // rhsBC -= press[j] * h[j] ;
-            rhsBC -= press[j] * h[j] /num_timesteps; //changed by vie 112904 for impedance consistency
-          }
-          cvOneDGlobal::solver->DirectAppResistanceBC(eqNumbers[1], 1, sub->GetMaterial()->GetDpDS(currS, sub->GetLength())*h[0]/num_timesteps, rhsBC);//changed by vie 112904 for impedance consistency
           break;
 
         //added by IV 051403
@@ -369,14 +278,7 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
       if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::FLOW){
         GetNodalEquationNumbers( 0, eqNumbers, 0);
         cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
-      }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::PRESSURE_WAVE){
-        GetNodalEquationNumbers( 0, eqNumbers, 0);
-        cvOneDGlobal::solver->SetSolution( eqNumbers[0], value);
-      }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::CLOSEDLOOP){ //MLD 012518
-        GetNodalEquationNumbers( 0, eqNumbers, 0);
-        cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
       }
-
 
 
       // Set up the correct outlet boundary condition
@@ -441,10 +343,6 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
           // for these BC the Inlet term doesn't have to be specialized
           // so same treatment as regular Essential BC like in Brooke's
           case BoundCondTypeScope::PRESSURE:
-          case BoundCondTypeScope::PRESSURE_WAVE:
-          case BoundCondTypeScope::AREA:
-            cvOneDGlobal::solver->SetSolution( eqNumbers[0], value);
-            break;
 
           case BoundCondTypeScope::FLOW:
             cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
@@ -570,6 +468,7 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
             LinearSolver::DirectAppResistanceBC(eqNumbers[1], -lhs_QQ, lhs_QS, rhs_Q);//minus because of current impl of function "try"
             //LinearSolver::Minus1dof(eqNumbers[1], lhs_QS);*/
             break;
+
 
           // kimhj added for coronary boundary conditions 08312005
           case BoundCondTypeScope::CORONARY:
@@ -701,6 +600,7 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
             LinearSolver::DirectAppResistanceBC(eqNumbers[1], 1, sub->GetMaterial()->GetDpDS(currS, sub->GetLength())*h[0]/num_timesteps, rhsBC);//changed by vie 112904 for impedance consistency
             */
             break;
+
 
           case BoundCondTypeScope::NOBOUND:
 

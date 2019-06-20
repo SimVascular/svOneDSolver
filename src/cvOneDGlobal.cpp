@@ -30,4 +30,3 @@ vector<cvOneDDataTable*> cvOneDGlobal::gDataTables;
 
 // GENERIC SOLVER INSTANCE
 cvOneDLinearSolver* cvOneDGlobal::solver = NULL;
-

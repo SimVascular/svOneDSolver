@@ -8,17 +8,7 @@
 //  of segment model. Essentially it creates the stiffness matrix and
 //  right-hand side for each element
 //
-//  History:
-//  Mar. 26, 2003, I. Vignon
-//      stabilization using conservative form instead of quasilinear form
-//  **  2002, B.Steele
-//      Impedance boundary conditions
-//  **, 2001, B.Steele
-//      minor loos model for bifurcations
-//  **, 2000, J.Wan
-//      resistence b.c. and stenosis model
-//  May 1999, J.Wan
-//      creation of file,
+
 
 # include <iostream>
 

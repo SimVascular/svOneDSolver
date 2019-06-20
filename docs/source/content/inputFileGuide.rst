@@ -80,7 +80,7 @@ This card is used to specify a list of segments ID numbers as inlets for a joint
 
   JOINTINLET IN0 3 2 4 5
 
-This means that the joint inlet named as *IN0* has 3 inlets with segment ID equal to 2,4 and 5 respectively. 
+This means that the joint inlet named as *IN0* has 3 inlets with segment ID equal to 2, 4, and 5 respectively. 
 
 The following fields are required:
 
@@ -96,7 +96,7 @@ This card is used to specify a list of segments ID numbers as outlets for a join
 
   JOINTOUTLET OUT0 3 2 4 5
 
-This means that the joint outlet named as *OUT0* has 3 inlets with segment ID equal to 2,4 and 5 respectively. 
+This means that the joint outlet named as *OUT0* has 3 inlets with segment ID equal to 2, 4, and 5 respectively. 
 
 The following fields are required:
 
@@ -110,10 +110,11 @@ SEGMENT Card
 
 The segment card is used to specify vessel segments. An example is ::
 
-  SEGMENT ARTERY 0 40.0 50 0 1 2.0 2.0 4.0 MAT1 NONE 0.0 0 0 FLOW INLETDATA
+  SEGMENT ARTERY 0 40.0 15 0 1 2.8 2.1 0.0 MAT1 NONE 0.0 0 0 FLOW INLETDATA
 
 The following fields are required:
 
+0. SEGMENT keyword (string)
 1. Segment Name (string)
 2. Segment ID (int)
 3. Segment Length (double)
@@ -124,33 +125,21 @@ The following fields are required:
 8. Segment Outlet Area (double)
 9. Segment Initial Flow (double)
 10. Segment Material (string)
-11. Type of Minor Loss. The following minor pressure losses are supported:
+11. Type of Minor Loss. The following minor pressure losses are supported, with additional losses in development:
 
   * *NONE*. No pressure loss. 
-  * *STENOSIS*.
-  * *BRANCH_THROUGH_DIVIDING*.
-  * *BRANCH_SIDE_DIVIDING*.
-  * *BRANCH_THROUGH_CONVERGING*.
-  * *BRANCH_SIDE_CONVERGING*.
-  * *BIFURCATION_BRANCH*.
 
 12. Branch Angle (double)
 13. Upstream Segment ID (int)
 14. Branch Segment ID (int)
-15. Boundary Condition Type. The following boundary conditions are supported:
+15. Boundary Condition Type. The following boundary conditions are supported, with additional BC in development:
 
   * *NOBOUND*. No outlet boundary condition.
   * *PRESSURE*. Constant pressure in the model units. 
-  * *AREA*. 
   * *FLOW*. Time-varying outlet flow rate. 
   * *RESISTANCE*. Constant resistance in model units. 
   * *RESISTANCE_TIME*. Time-varying resistance in model units. 
-  * *PRESSURE_WAVE*
-  * *WAVE*
   * *RCR*. Boundary condition specified through an RCR circuit.
-  * *CORONARY*. Coronary boundary condition. 
-  * *ADMITTANCE*. Admittance boundary condition.
-  * *PULMONARY*. Boundary condition using pulmonary morphometry.
 
 16. Data Table Name for boundary condition (string)
 
@@ -164,18 +153,26 @@ This cards is used to directly specify constant and time-varying quantities for 
   10.0 14.0
   ENDDATATABLE
 
+An example with a time-varying inlet flow rate is::
+
+  DATATABLE INLETDATA LIST
+  0.0 14.0 
+  1.0 20.0
+  2.0 50.0
+  2.5 89.2
+  3.5 110.0
+  5.0 70.0
+  6.0 48.0
+  7.0 20.0
+  8.0 14.0
+  ENDDATATABLE
+
 The following fields are required:
 
 1. Data Table Name (string)
-2. Data Table Type (string). The following types are supported:
+2. Data Table Type (string). The following types are supported, with additional types in development:
 
   * *LIST*. List of couples time-values. 
-  * *IMPEDANCE*. Computation of impedance 
-  * *RCRIMPEDANCE*.
-  * *MORPHIMPEDANCE*.
-  * *ADMITTANCE*.
-  * *RCRADMITTANCE*.
-  * *MORPHADMITTANCE*.
 
 3. List of times and Values (e.g., "time0 value0 time1 value1 ..." list of alternating times and values)
 4. The card **MUST FINISH** with an ENDDATATABLE command in its own row.
@@ -196,96 +193,12 @@ If the data table is of type LIST, values are specified by alternating the time 
   0.0 1000.0 
   ENDDATATABLE
 
-IMPEDANCE data entries
-""""""""""""""""""""""
-
-The following inputs are required:
-
-1. numTimeSteps = (int)values[0];
-2.     lengthRadiusRatio = values[1];
-3. Radius at the root of the downstream    rootRadius = values[2];
-4.    period = values[3];
-5.    scaleFactor = values[4];
-6. Number of Fourier modes. Use 0 to obtain values of impedance in time. 
-
-An example is of data table defining an impedance is as follows ::
-
-  DATATABLE IMPDATA IMPEDANCE
-  100.0 66.0 0.31 1.1 1.0 0
-  ENDDATATABLE
-
-RCRIMPEDANCE data entries
-"""""""""""""""""""""""""
-
-The following inputs are required:
-
-1. Number of output steps for impedance.
-2. Distal resistance of RCR circuit.
-3. Proximal resistance of RCR circuit.
-4. Period of cardiac cycle.
-5. Capacitance of the RCR circuit.
-6. Scale factor that increases the vessel radius for exercise conditions.
-7. Number of Fourier modes. Use 0 to obtain values of impedance in time. 
-
-An example is of data table defining an impedance is as follows ::
-
-  DATATABLE IMPDATA IMPEDANCE
-  100.0 200.0 10.0 1.1 4.0e-3 1.0 0
-  ENDDATATABLE
-
-MORPHIMPEDANCE data entries
-"""""""""""""""""""""""""""
-
-The following inputs are required:
-
-1. Number of output steps for impedance.
-2. Minimum vessel order in fractal tree.
-3. Vessel radius at the vasculature tree root. 
-4. Period of the cardiac cycle.
-5. Number of Fourier modes. Use 0 to obtain values of impedance in time. 
-
-ADMITTANCE data entries
-"""""""""""""""""""""""
-
-The following inputs are required:
-
-1. Number of time steps to solve for.
-2. Length to radius ratio of typical downstream vessel.
-3. Radius of parent vessel (the fractal tree will be attached to this).
-4. Period of cardiac cycle.
-5. Scale factor.
-6. Integer flag to compute the result in the Fourier (value not zero) or time domain (value equal to zero).
-
-RCRADMITTANCE data entries
-""""""""""""""""""""""""""
-
-The following inputs are required:
-
-1. Number of time steps to solve for.
-2. Value of RCR distal resistance.
-3. Value of RCR proximal resistance.
-4. Period of the cardiac cycle.
-5. Value of RCR Capacitance.
-6. Scale Factor.
-7. Integer flag to compute the result in the Fourier (value not zero) or time domain (value equal to zero).
-
-MORPHADMITTANCE data entries
-""""""""""""""""""""""""""""
-
-The following inputs are required:
-
-1. Number of output steps for impedance.
-2. Minimum vessel order in fractal tree.
-3. Vessel radius at the vasculature tree root. 
-4. Period of the cardiac cycle.
-5. Number of Fourier modes. Use 0 to obtain values of impedance in time otherwise data in the Fourier domain will be returned. 
-
 SOLVEROPTIONS Card
 ^^^^^^^^^^^^^^^^^^
 
 The SOLVEROPTIONS specifies the option needed by the finite element solver. An example is ::
 
-  SOLVEROPTIONS 0.01 10 1000 4 INLETDATA FLOW 1.0e-3 1 1 TEXT  
+  SOLVEROPTIONS 0.01 10 1000 4 INLETDATA FLOW 1.0e-3 1 1  
 
 The following fields are required:
 
@@ -298,17 +211,11 @@ The following fields are required:
 
   * *NOBOUND*. No outlet boundary condition
   * *PRESSURE*. Constant outlet pressure
-  * *AREA*
   * *FLOW*. Time varying outlet flow rate. 
   * *RESISTANCE*. Constant resistance at outlet. 
   * *RESISTANCE_TIME*. Time-varying resistance at the outlet. 
-  * *PRESSURE_WAVE*
-  * *WAVE*
   * *RCR*. Boundary RCR circuit. 
-  * *CORONARY*. Coronary boundary condition. 
-  * *ADMITTANCE*. Outlet admittance as boundary condition.  
-  * *PULMONARY*. Boundary condition with pulmonary morphometry data. 
-
+  
 7. Convergence tolerance (double)
 8. Formulation Type. The following formulations are supported: 
 
@@ -343,8 +250,8 @@ MATERIAL Card
 
 This card is used to specify a constitutive relationship between pressure, cross section diameter and thickness. Example are ::
 
-  MATERIAL MAT1 OLUFSEN 1.06 0.04 1.0 2.0e7 -22.5267 8.65e5
-  MATERIAL MAT1 LINEAR 1.06 0.04 1.0 2.0e7
+  MATERIAL MAT1 OLUFSEN 1.06 0.04 120000.0 1.0 2.0e7 -22.5267 8.65e5
+  MATERIAL MAT1 LINEAR  1.06 0.04 120000.0 1.0 7.1e4
 
 The following fields are required:
 

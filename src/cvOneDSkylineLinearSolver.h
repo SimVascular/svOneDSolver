@@ -7,11 +7,6 @@
 //  This class provides functionality for solving matrix systems
 //  presented in the skyline format, and some special manipulations. 
 //  
-//  History:
-//  May 1999, J.Wan
-//      modifications for 1D FEM project and special treatments for boundary conditions and joint handling
-//  Mar. 1999, G.R. Feijoo
-//      creation of file
 
 # include <cmath>
 

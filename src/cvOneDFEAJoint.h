@@ -4,11 +4,6 @@
 //  cvOneDFEAJoint.h: A data structure for Lagrange joints. 
 //  ~~~~~~~~~~
 //
-//  History:
-//  Jul. 2003, J.Wan
-//      Use stl vector for better memory management and optimization
-//  May 1999, J.Wan, B.Steele, S.A.Spicer and S.Strohband
-//      Creation of file, class project of ME234C of T.J.R. Hughes and C.Taylor
 
 # include <vector>
 

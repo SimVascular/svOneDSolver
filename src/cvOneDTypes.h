@@ -33,3 +33,4 @@ typedef vector<vector<long> >   cvLongMat;
 typedef vector<vector<double> > cvDoubleMat;
 
 #endif // CVONEDTYPES_H
+

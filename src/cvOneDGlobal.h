@@ -50,3 +50,4 @@ class cvOneDGlobal{
 };
 
 #endif // CVONEDGLOBAL_H
+

@@ -5,11 +5,7 @@
 //  This class provides functionality for solving matrix systems
 //  presented in the skyline format, and some special manipulations.
 //
-//  History:
-//  May 1999, J.Wan
-//      modifications for 1D FEM project and special treatments for boundary conditions and joint handling
-//  Mar. 1999, G.R. Feijoo
-//      creation of file
+
 
 # include <cassert>
 
@@ -49,30 +45,9 @@ void cvOneDSkylineLinearSolver::Solve(cvOneDFEAVector& sol){
   double* solution = sol.GetEntries();
  //count size and nnz
 
-  /*
-  int nnz=0;
-   for (int i=0;i<position[numberOfEquations];i++){
-       if(abs(KL[i])>0.0000001){
-        nnz++;
-        }
-
-       }
-
-  printf("KU = %f \n",KU[position[0]]);
-
-    printf("KU = %f \n",KU[position[numberOfEquations-19]]);
-    printf("KU = %f \n",KU[position[numberOfEquations]]);
-    printf("KU = %f \n",KU[position[numberOfEquations+1]]);
-
-   printf("Last entry position= %li \n",position[numberOfEquations-1]);
-   printf("size of KL = %li \n",position[numberOfEquations]);
-   printf("NNZ in KL = %i \n",nnz);
-    printf("ratio = %f \n",float(nnz)/float(position[numberOfEquations]-position[1]));
-*/
 
   SolNonSymSysSkyLine( KU, KL, KD, F, position, solution, numberOfEquations, 0, EPSILON);
   SolNonSymSysSkyLine( KU, KL, KD, F, position, solution, numberOfEquations, 1, EPSILON);
-  // cout<< *solution<<endl;
 }
 
 cvOneDFEAMatrix* cvOneDSkylineLinearSolver::GetLHS(){
@@ -249,7 +224,6 @@ void cvOneDSkylineLinearSolver::solvLT(double *KI, double *F, long *maxa, long n
     len = (i - 1) - firstp + 1;
     sum = scalv( vecA, vecB, len);
     F[i] -= sum;
-    //cout<<maxa[i]<<endl;
   }
 }
 

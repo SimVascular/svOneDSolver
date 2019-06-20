@@ -179,3 +179,4 @@ template <class Item> class cvOneDMatrix{
 };
 
 #endif // CVONEDMATRIX_H
+

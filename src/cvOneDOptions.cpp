@@ -62,12 +62,12 @@ void cvOneDOptions::printSegmentData(FILE* f){
     fprintf(f,"OUT NODE: %ld\n",segmentOutNode[loopA]);
     fprintf(f,"IN AREA: %f\n",segmentInInletArea[loopA]);
     fprintf(f,"OUT AREA: %f\n",segmentInOutletArea[loopA]);
-    fprintf(f,"IN FLOW: %f\n",segmentInFlow[loopA]);
+    fprintf(f,"IN FLOW: %f\n",segmentInFlow[loopA]); //Take out
     fprintf(f,"MAT DATATABLE NAME: %s\n",segmentMatName[loopA].c_str());
-    fprintf(f,"LOSS TYPE: %s\n",segmentLossType[loopA].c_str());
-    fprintf(f,"BRANCH ANGLE: %f\n",segmentBranchAngle[loopA]);
-    fprintf(f,"UPSTREAM SEGMENT: %ld\n",segmentUpstreamSegment[loopA]);
-    fprintf(f,"BRANCH SEGMENT: %ld\n",segmentBranchSegment[loopA]);
+    fprintf(f,"LOSS TYPE: %s\n",segmentLossType[loopA].c_str()); //take out
+    fprintf(f,"BRANCH ANGLE: %f\n",segmentBranchAngle[loopA]); //take out
+    fprintf(f,"UPSTREAM SEGMENT: %ld\n",segmentUpstreamSegment[loopA]); //take out
+    fprintf(f,"BRANCH SEGMENT: %ld\n",segmentBranchSegment[loopA]); //take out
     fprintf(f,"BOUNDARY CONDITIONS TYPE: %s\n",segmentBoundType[loopA].c_str());
     fprintf(f,"INLET DATA TABLE: %s\n",segmentDataTableName[loopA].c_str());
   }
@@ -220,11 +220,6 @@ void cvOneDOptions::checkSegmentLengthConsistency(){
     dz = nodeZcoord[outNode] - nodeZcoord[inNode];
 
     nodeDist = sqrt(dx*dx + dy*dy + dz*dz);
-    // COMMENTED CHANGES OUT TO PRIORITIZE SEGMENT CARD LENGTH OVER NODE DISTANCE (MD 4/2/19)
-    // if(fabs(nodeDist-segLength)>1.0e-8){
-    //   inconsistencyFound = true;
-    //   segmentLength[loopA] = nodeDist;
-    // }
   }
   if(inconsistencyFound){
     printf("WARNING: Inconsistency detected between segment length and end node distance.\n");

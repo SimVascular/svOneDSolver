@@ -30,9 +30,3 @@ class cvOneDMaterialManager{
 
 #endif // CVONEDMATERIALMANAGER_H
     
-
-
-
-
-
-

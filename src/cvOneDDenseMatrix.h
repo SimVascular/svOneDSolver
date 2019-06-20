@@ -10,8 +10,6 @@
 //             Typically, this will be used to store local
 //             (element) matrices before they are assembled
 //             into the global Jacobian.
-//  May 1999, J.Wan, B.Steele, G.R.Feijoo, S.A.Spicer and S.Strohband
-//      Creation of file, class project of ME234C of T.J.R. Hughes and C.Taylor
 
 # include <iostream>
 # include <cstdio>

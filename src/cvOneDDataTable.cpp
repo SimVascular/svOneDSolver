@@ -28,3 +28,4 @@ void cvOneDDataTable::setValues(cvDoubleVec values){
     this->values.push_back(values[loopA]);
   }
 }
+

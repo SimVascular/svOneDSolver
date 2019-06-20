@@ -4,7 +4,6 @@
 //  SYNOPSIS...This is a utility class used to handle the finite element
 //             Vectors (currentSolution, increment, previousSolution, etc.
 //
-//
 
 # include <cassert>
 # include <iomanip>
@@ -131,7 +130,6 @@ double cvOneDFEAVector::Norm( normType type, int start, int step, int stop_index
 void cvOneDFEAVector::CheckPositive(int start, int step, int stop){
   assert(start >= 0 && stop <= dimension);
   for(long i= start; i< stop; i+=step){
-    // printf("%e\n",cvOneDFEAVector::Get(i));
     assert(cvOneDFEAVector::Get(i) >= 0.0);
     }
 }

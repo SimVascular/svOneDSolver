@@ -36,4 +36,3 @@ struct cvOneDJoint{
 };
 
 #endif // CVONEDJOINT_H
-

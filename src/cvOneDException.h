@@ -17,3 +17,4 @@ class cvException: public exception{
 };
 
 #endif // CVONEDEXCEPTION_H
+

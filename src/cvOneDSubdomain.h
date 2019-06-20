@@ -5,20 +5,6 @@
 //  cvOneDSubdomain.h - Header for a class to contain the descritization of
 //  ~~~~~~~~~~~~~   of the Geometry.
 //
-//  History:
-//  Aug. 8, 2003, I. Vignon
-//	    Added MemIntWave, MemAdvWave, dMemIntWavedP, dMemAdvWavedP for Wave boundary conditions
-//      Added the wave boundary condition
-//  May,16, 2003, I. Vignon
-//      Added MemIntImp, MemAdvImp, dMemAdvImpdP for impedance boundary conditions
-//  May. 8, 2003, I. Vignon
-//	    Added MemIntRCR, MemAdvRCR, dMemIntRCRdP, dMemAdvRCRdP for RCR boundary conditions
-//  Mar. 26, 2003, I. Vignon
-//      Added the RCR boundary condition
-//  Oct., 2000 J.Wan
-//      Added the Pressure wave boundary condition.
-//  May 1999, J.Wan, S.A.Spicer and S.Strohband
-//      Creation of file,
 
 #include <cstring>
 #include <cassert>
@@ -86,31 +72,24 @@ class cvOneDSubdomain{
     void SetBoundValue(double boundV);
     void SetBoundPresWave(double *time, double *pres, int num);
 	void SetBoundResistanceWave(double *time, double *resist, int num);
-	void SetBoundImpedanceValues(double *h, int num);
-	void SetBoundCoronaryValues(double *time, double *p_lv, int num); //added kimhj 09022005
 	void SetBoundRCRValues(double *rcr, int num);//added IV 050803
 	void SetBoundWaveValues(double *wave, int num);//added IV 080603
     void SetBoundResistPdValues(double *value, int num); //added wgyang 2019/4
 
+
 	double GetBoundArea(){return boundValue;}
     double GetBoundResistance(){return boundValue;}
     double GetBoundResistance(double currentTime);
-	double getBoundCoronaryValues(double currentTime);
-    double GetBoundFlowRate(){return boundValue;}
+	double GetBoundFlowRate(){return boundValue;}
     double GetBoundAreabyPresWave(double currentTime);
 	double GetPressure(double currentTime);
 	double GetdPressuredt(double currentTime) { return 0; }
-
-	double* GetImpedance(){return impedance;}
-	double* ShiftPressure(double lastP, double currentTime, double currS);
-	//double* FlipAndShiftFlow(double lastQ, double currentTime);
-	double*	GetDpDs(double lastDpDs);// called AFTER FlipAndShiftPressure
-	int		GetNumImpedancePts(){return numImpedancePts;}
 
 	double GetRp(){return proximalResistance;}//added IV 050803
 	double GetCap(){return capacitance;}//added IV 050803
 	double GetRd(){return distalResistance;}//added IV 050803
 	double GetAlphaRCR(){return alphaRCR;}//added IV 050803
+
 
     double GetResistanceR(){return resistancevalue;}//added wgyang 2019/4
     double GetResistancePd(){return Pd;}//added wgyang 2019/4
@@ -121,6 +100,8 @@ class cvOneDSubdomain{
 	double GetCc(){return Cc;}
 	double GetRv1(){return Rv1;}
 	double GetRv2(){return Rv2;}
+
+
 
     //double* GetEigValWave(){return eigValWave;}//added IV 080703
 
@@ -138,6 +119,7 @@ class cvOneDSubdomain{
 
 
 	double MemC(double currP, double previousP, double deltaTime, double currentTime);//if RCR essential-see ApplyBoundaryConditions()
+
 	/* Use the following functions MemIntCoronary, TotalMemIntCoronary, MemAdvCoronary, dMenIntCoronarydP,
 	* dTotalMemIntCoronarydP, dMemAdvCoronarydP, MemCoronary1, MemCoronary2 for coronary boundary conditions
 	* added kimhj 09022005
@@ -169,6 +151,7 @@ class cvOneDSubdomain{
 	double MemAdvImp(double *press, double deltaTime, double currentTime);
 	double dMemAdvImpdP(double *press, double deltaTime, double currentTime);
 	double dMemIntImpdP(double deltaTime);
+
 
 	// minor loss / stenosis info
 
@@ -229,17 +212,14 @@ class cvOneDSubdomain{
     double boundValue;
     double* pressureTime;
     double* pressureWave;
-	double* impedance;
 	double* resistanceTime;
 	double* resistanceWave;
 	double* PressLVWave;
 	double* PressLVTime;
 	double* presslv;
-//	double* impedanceFlow;
-	double* impedanceDpDs;
 	int numPressurePts;
-	int numImpedancePts;
 	int numPressLVPts;
+
 	double impedanceTime;
 
 	//RCR BC added IV 050803
@@ -300,6 +280,7 @@ class cvOneDSubdomain{
     double convolWave(double currS, double previousS, double deltaTime, double currentTime, double Time);//compute the single integral convolution in Q at time t
     double dblConvolWave(double currS, double previousS, double deltaTime, double currentTime, double Time);//compute the double integral convolution in Q at time t
     double QWave(double currS, double prevS, double initS, double deltaTime, double currentTime,double Time);//compute Q at time t in time slab tn to tn+1
+
 };
 
 #endif // CVONEDSUBDOMAIN_H

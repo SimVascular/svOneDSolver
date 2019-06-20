@@ -26,3 +26,4 @@ class cvOneDString{
 };
 
 #endif // CVONEDSTRING_H
+

@@ -4,23 +4,6 @@
 * Complex numbers, complex arithmetic, and functions of a complex          *
 * variable.                                                                *
 *                                                                          *
-*   HISTORY                                                                *
-*      Name    Date        Description                                     *
-*                                                                          *
-*      arvo    03/02/2000  Initial coding.                                 *
-*                                                                          *
-*--------------------------------------------------------------------------*
-* Copyright (C) 2000, James Arvo                                           *
-*                                                                          *
-* This program is free software; you can redistribute it and/or modify it  *
-* under the terms of the GNU General Public License as published by the    *
-* Free Software Foundation.  See http://www.fsf.org/copyleft/gpl.html      *
-*                                                                          *
-* This program is distributed in the hope that it will be useful, but      *
-* WITHOUT EXPRESS OR IMPLIED WARRANTY of merchantability or fitness for    *
-* any particular purpose.  See the GNU General Public License for more     *
-* details.                                                                 *
-*                                                                          *
 ***************************************************************************/
 #include "cvOneDComplex.h"
 

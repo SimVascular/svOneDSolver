@@ -228,17 +228,8 @@ void createAndRunModel(cvOneDOptions* opts){
     curveValue = NULL;
   }
 
-  // PRINT MODEL FOR DEBUG
-  //cvOneDGlobal::gModelList[0]->PrintModel();
-
   double* vals;
   int tot;
-  cvOneDGlobal::gModelList[cvOneDGlobal::currentModel]->getSegment(0)->getBoundImpedanceValues(&vals,&tot);
-  //printf("TEST UP HERE 1 ...");
-  //for(int loopA=0;loopA<tot;loopA++){
-  //  printf("%e\n",vals[loopA]);
-  //}
-  //getchar();
 
   // SOLVE MODEL
   printf("Solving Model ... \n");
@@ -672,7 +663,7 @@ int main(int argc, char** argv){
     printf("%s\n",e.what());
     // Execution Terminated
     printf("Terminated.\n");
-    return -1;
+    return 1;
   }
   printf("Completed!\n");
   return 0;

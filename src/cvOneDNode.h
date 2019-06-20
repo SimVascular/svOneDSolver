@@ -31,4 +31,3 @@ struct cvOneDNode{
 };
 
 #endif // CVONEDNODE_H
-
