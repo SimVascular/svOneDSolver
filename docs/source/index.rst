@@ -15,6 +15,7 @@ Contents:
    content/installation
    content/theory
    content/inputFileGuide
+   content/userGuide
    content/tutorials
    content/pythonScripting
 
