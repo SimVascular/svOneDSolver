@@ -13,7 +13,6 @@ The one-dimensional equations for the flow of a Newtonian, incompressible fluid 
 
 The following software is required:
 
-- Boost Libraries
 - Sphinx  (HTML Manual)
 - SWIG Interface generator (Python Interface)
 - MPI (mpi4py is used for running parameteric simulations from python)
