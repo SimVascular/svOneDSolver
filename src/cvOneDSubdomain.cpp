@@ -275,7 +275,7 @@ double cvOneDSubdomain::getBoundCoronaryValues(double currentTime){
 
     presslv = (PressLVWave[ptr] + xi * (PressLVWave[ptr+1] - PressLVWave[ptr]));
   }
-  return presslv*1333.2237;
+  return presslv;
 }
 
 // Added kimhj 09022005
@@ -292,7 +292,7 @@ void cvOneDSubdomain::SetBoundCoronaryValues(double *time, double *p_lv, int num
   if (time[2]< 0.0) {Ca=p_lv[2];}
   if (time[3]< 0.0) {Cc=p_lv[3];}
   if (time[4]< 0.0) {Rv1=p_lv[4];}
-  if (time[5]< 0.0) {Rv2=p_lv[5];}
+  if (time[5]< 0.0) {P_v=p_lv[5];}
   if (time[6]< 0.0) {
     fprintf(stdout, "Wrong file format");
     exit(1);
@@ -307,13 +307,13 @@ void cvOneDSubdomain::SetBoundCoronaryValues(double *time, double *p_lv, int num
     fprintf(stdout,"Time[%i]: %le Pressure_LV[%i]: %le\n",i, PressLVTime[i], i,PressLVWave[i]);
   }
   p0COR=1;
-  p1COR=Ra2*Ca+(Rv1+Rv2)*(Ca+Cc);
-  p2COR=Ca*Cc*Ra2*(Rv1+Rv2);
-  q0COR=Ra1+Ra2+Rv1+Rv2;
-  q1COR=Ra1*Ca*(Ra2+Rv1+Rv2)+Cc*(Rv1+Rv2)*(Ra1+Ra2);
-  q2COR=Ca*Cc*Ra1*Ra2*(Rv1+Rv2);
+  p1COR=Ra2*Ca+(Rv1)*(Ca+Cc);
+  p2COR=Ca*Cc*Ra2*(Rv1);
+  q0COR=Ra1+Ra2+Rv1;
+  q1COR=Ra1*Ca*(Ra2+Rv1)+Cc*(Rv1)*(Ra1+Ra2);
+  q2COR=Ca*Cc*Ra1*Ra2*(Rv1);
   b0COR=0;
-  b1COR=Cc*(Rv1+Rv2);
+  b1COR=Cc*(Rv1);
   detCOR=sqrt(q1COR*q1COR-4*q0COR*q2COR);
   expo2COR=-(q1COR+detCOR)/2/q2COR;
   expo1COR=q0COR/q2COR/expo2COR;

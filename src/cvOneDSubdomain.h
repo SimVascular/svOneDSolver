@@ -116,7 +116,7 @@ class cvOneDSubdomain{
 	double GetCa(){return Ca;}
 	double GetCc(){return Cc;}
 	double GetRv1(){return Rv1;}
-	double GetRv2(){return Rv2;}
+	double GetP_v(){return P_v;}
 	
     //double* GetEigValWave(){return eigValWave;}//added IV 080703
 
@@ -244,7 +244,7 @@ class cvOneDSubdomain{
 	double b0COR, b1COR;
 	double expo1COR, expo2COR, detCOR;
 	double CoefZ1, CoefY1, CoefZ2, CoefY2, CoefR;
-	double Ra1, Ra2, Ca, Cc, Rv1, Rv2;
+	double Ra1, Ra2, Ca, Cc, Rv1, P_v;
 	double corTime;
  
     //wave BC added IV 080603, parameters for the downstream tube

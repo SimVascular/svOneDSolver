@@ -415,7 +415,7 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
         // double lhs_QQ, lhs_QS, rhs_Q, MemoC;//for essential implementation
 
         //added for coronary boundary conditions kimhj 09022005
-        double Ra1, Ra2, Ca, Cc, Rv1, Rv2;
+        double Ra1, Ra2, Ca, Cc, Rv1, P_v;
         double expo1COR, expo2COR, detCOR, CoefR;
         double p0COR, p1COR, p2COR, q0COR, q1COR, q2COR, b0COR, b1COR;
         double InitialdQdT, CurrentlvP, InitiallvP;
@@ -541,18 +541,18 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
           case BoundCondTypeScope::CORONARY:
             Ra1=sub -> GetRa1(); //5*1333.27;
             Ra2=sub -> GetRa2(); //5*1333.27;
-            Ca=sub -> GetCa(); //0.015/1333.27;
+            Ca=sub -> GetCa(); //0.015/21333.27;
             Cc=sub -> GetCc(); //0.04/1333.27;
             Rv1=sub -> GetRv1();
-            Rv2=sub -> GetRv2();
+            P_v=sub -> GetP_v();
             p0COR=1;
-            p1COR=Ra2*Ca+(Rv1+Rv2)*(Ca+Cc);
-            p2COR=Ca*Cc*Ra2*(Rv1+Rv2);
-            q0COR=Ra1+Ra2+Rv1+Rv2;
-            q1COR=Ra1*Ca*(Ra2+Rv1+Rv2)+Cc*(Rv1+Rv2)*(Ra1+Ra2);
-            q2COR=Ca*Cc*Ra1*Ra2*(Rv1+Rv2);
+            p1COR=Ra2*Ca+(Rv1)*(Ca+Cc);
+            p2COR=Ca*Cc*Ra2*(Rv1);
+            q0COR=Ra1+Ra2+Rv1;
+            q1COR=Ra1*Ca*(Ra2+Rv1)+Cc*(Rv1)*(Ra1+Ra2);
+            q2COR=Ca*Cc*Ra1*Ra2*(Rv1);
             b0COR=0;
-            b1COR=Cc*(Rv1+Rv2);
+            b1COR=Cc*(Rv1);
             detCOR=sqrt(q1COR*q1COR-4*q0COR*q2COR);
             expo2COR=-(q1COR+detCOR)/2/q2COR;
             expo1COR=q0COR/q2COR/expo2COR;
@@ -562,9 +562,15 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
 
             CurrentlvP = sub->getBoundCoronaryValues(currentTime);
             InitiallvP = sub->getBoundCoronaryValues(0);
+                
             // InitialA=1/detCOR*(q2COR*(InitialdQdT-expo2COR*InitialQ)-(p1COR+p2COR*expo1COR)*material->GetReferencePressure()-p2COR*material->GetReferencedPressure_dt()+b1COR*InitiallvP);
             // InitialB=1/detCOR*(-q2COR*(InitialdQdT-expo1COR*InitialQ)+(p1COR+p2COR*expo2COR)*material->GetReferencePressure()+p2COR*material->GetReferencedPressure_dt()-b1COR*InitiallvP);
             prevP = material->GetPressure(prevSolution->Get(eqNumbers[0]),z);
+
+            currP = currP + P_v;
+            prevP = prevP + P_v;
+            CurrentlvP = CurrentlvP + P_v;
+            InitiallvP = InitiallvP + P_v;
 
             MemoI1 = sub->MemIntCoronary(currP, prevP, deltaTime, currentTime, expo1COR);
             MemoI2 = sub->MemIntCoronary(currP, prevP, deltaTime, currentTime, expo2COR);
