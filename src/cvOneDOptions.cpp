@@ -86,7 +86,6 @@ void cvOneDOptions::printSolverOptions(FILE* f){
   fprintf(f,"CONVERGENCE TOLERANCE: %f\n",convergenceTolerance);
   fprintf(f,"USE IV: %d\n",useIV);
   fprintf(f,"USE STABILIZATION: %d\n",useStab);
-
 }
 
 // PRINT MATERIAL DATA

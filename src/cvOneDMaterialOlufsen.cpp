@@ -22,17 +22,31 @@ cvOneDMaterialOlufsen::cvOneDMaterialOlufsen(){
   zstar = 70.0;
   alpha = 9.29e-3/1333.2237;
   pcrit = 33250.0;
-  
+
   //default material values
   K1_ = 2.00e7;
   K2_ = -22.5267;
  // K3_ = 8.65e5;
 
   rigid = 0;
-  printf("call cvOneMaterialsOlufsen p1_=%f K3_=%f \n",p1_,K3_);
+ // printf("call cvOneMaterialsOlufsen p1_=%f K3_=%f \n",p1_,K3_);
 }
 
 cvOneDMaterialOlufsen::~cvOneDMaterialOlufsen(){
+}
+
+cvOneDMaterialOlufsen::cvOneDMaterialOlufsen (const cvOneDMaterialOlufsen &rhs){
+ // this seems not used
+  cvOneDMaterial::operator=(rhs);
+  double k1 = 0,k2 = 0,k3 = 0;
+  double pref=0;
+  rhs.GetParams( &k1, &k2, &k3, &pref);
+  K1_ = k1;
+  K2_ = k2;
+  K3_ = k3;
+  p1_= pref;
+ // printf("call cvOneDmaterialOlufsen &rhs\n");
+
 }
 
 
@@ -47,7 +61,7 @@ cvOneDMaterialOlufsen& cvOneDMaterialOlufsen::operator= (const cvOneDMaterialOlu
     K2_ = k2;
     K3_ = k3;
     p1_= pref;
-    printf("call cvOneDMaterialOlufsen that this K3_=%f p1_=%f \n",K3_,p1_ );
+  //  printf("call cvOneDMaterialOlufsen that this K3_=%f p1_=%f \n",K3_,p1_ );
   }
   return *this;
 }
@@ -59,7 +73,7 @@ void cvOneDMaterialOlufsen::SetMaterialType(double *mType,double Pref){
   PP1_=Pref;
   cout<< "Setting material K's "<< K1_ <<" "<< K2_<<" "<< K3_<< " ..." << endl;
   cout<< "Setting reference Pressure "<< PP1_<<endl;
-   printf("call SetMaterialType K3_ %f \n",K3_);
+ //  printf("call SetMaterialType K3_ %f \n",K3_);
 }
 
 void cvOneDMaterialOlufsen::SetPeriod(double per){
@@ -112,6 +126,7 @@ double cvOneDMaterialOlufsen::Getr1(double z)const{
   double r_bot=sqrt(Sbot/PI);
   double r=((z-len)/(-len))*(r_top - r_bot) + r_bot;
 
+
   return r;
 }
 
@@ -122,7 +137,7 @@ double cvOneDMaterialOlufsen::GetDS1Dz(double z)const{
 }
 
 
-//this is in the reference state dr1dz 
+//this is in the reference state dr1dz
 double cvOneDMaterialOlufsen::GetDr1Dz(double z)const{
   // linearly vary radius
   double r_top=sqrt(Stop/PI);
@@ -207,7 +222,7 @@ double cvOneDMaterialOlufsen::GetIntegralpS(double area, double z)const{
   double EHR   = GetEHR(z);
   double So_   = GetS1(z);
   double IntegralpS = EHR*So_*(sqrt(area/So_)-1.);
-  
+
   return IntegralpS;
 }
 
@@ -229,7 +244,9 @@ double cvOneDMaterialOlufsen::GetN(double S)const{
   double T = Period;
   double del  = sqrt(kinematicViscosity*T/2.0/PI); // from Lighthill, olufsen's thesis, pg56
   double altN = -2.0*PI*kinematicViscosity*R/del; // == -1.45838*r
+
   return altN;
+
 }
 
 double cvOneDMaterialOlufsen::GetLinCompliance(double z)const{

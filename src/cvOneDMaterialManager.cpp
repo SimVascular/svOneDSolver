@@ -54,9 +54,9 @@ int cvOneDMaterialManager::AddNewMaterialLinear(double density, double dynamicVi
 cvOneDMaterial* cvOneDMaterialManager::GetNewInstance(int matID){
   if (types[matID] == MaterialType_MATERIAL_OLUFSEN) {
     cvOneDMaterialOlufsen* olfmat = new cvOneDMaterialOlufsen();
-    printf("In GetNewInstance cvOneDMaterialOlufsen is called  matID=%i \n",matID);
+  //  printf("In GetNewInstance cvOneDMaterialOlufsen is called  matID=%i \n",matID);
     *olfmat = *((cvOneDMaterialOlufsen*)(materials[matID]));
-    printf("In GetNewInstance cvOneDMaterialOlufsen* materials is called \n");
+  //  printf("In GetNewInstance cvOneDMaterialOlufsen* materials is called \n");
     return (cvOneDMaterial*)olfmat;
   }else if (types[matID] == MaterialType_MATERIAL_LINEAR) {
     cvOneDMaterialLinear* linearmat = new cvOneDMaterialLinear();

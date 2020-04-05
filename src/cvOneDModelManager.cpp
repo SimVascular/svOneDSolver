@@ -96,6 +96,11 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
   case BoundCondTypeScope::RCR:
       seg->setBoundRCRValue(value,num);
       break;
+
+  case BoundCondTypeScope::RESISTANCE:
+     seg->setBoundRCRValue(value,num);//using setBoundRCRValue to set resistance and Pd.
+     break;
+
   default:
       seg -> setBoundValue(value[0]);
       break;

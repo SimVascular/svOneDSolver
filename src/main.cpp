@@ -139,8 +139,8 @@ void createAndRunModel(cvOneDOptions* opts){
     // CREATE MATERIAL
     matError = oned->CreateMaterial((char*)opts->materialName[loopA].c_str(),
                                     (char*)currMatType.c_str(),
-                                    opts->materialDensity[loopA], 
-                                    opts->materialViscosity[loopA], 
+                                    opts->materialDensity[loopA],
+                                    opts->materialViscosity[loopA],
                                     opts->materialExponent[loopA],
                                     opts->materialPRef[loopA],
                                     numParams, doubleParams,
@@ -487,7 +487,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         if(tokenizedString.size() > 2){
           cvOneDGlobal::vtkOutputType = atoi(tokenizedString[2].c_str());
           if(cvOneDGlobal::vtkOutputType > 1){
-            throw cvException("ERROR: Invalid OUTPUT VTK Type.\n");   
+            throw cvException("ERROR: Invalid OUTPUT VTK Type.\n");
           }
         }
       }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("DATATABLE")){
@@ -661,7 +661,7 @@ int main(int argc, char** argv){
   }catch(exception& e){
     // Print Exception Message
     printf("%s\n",e.what());
-    // Execution Terminated      
+    // Execution Terminated
     printf("Terminated.\n");
     return 1;
   }
