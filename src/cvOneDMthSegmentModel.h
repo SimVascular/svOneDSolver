@@ -20,7 +20,7 @@ class cvOneDMthSegmentModel : public cvOneDMthModelBase{
   public:
 
     cvOneDMthSegmentModel(const vector<cvOneDSubdomain*> &subdList,
-                          const vector<cvOneDFEAJoint*> &jtList, 
+                          const vector<cvOneDFEAJoint*> &jtList,
                           const vector<int> &outletList,
                           long quadPoints_);
     ~cvOneDMthSegmentModel();

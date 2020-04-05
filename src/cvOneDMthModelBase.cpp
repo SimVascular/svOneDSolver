@@ -79,7 +79,9 @@ void cvOneDMthModelBase::GetNodalEquationNumbers(long locNode, long* eqNumbers,l
 void cvOneDMthModelBase::GetEquationNumbers(long locElem, long* eqNumbers,
                                             long ithSubdomain){
   long connectivity[2];
+
   subdomainList[ithSubdomain]->GetConnectivity(locElem, connectivity);
+
   eqNumbers[0] = 2 * connectivity[0];     // S (area) node 1
   eqNumbers[1] = 2 * connectivity[0] + 1; // Q (flow rate) node 1
   eqNumbers[2] = 2 * connectivity[1];     // S (area) node 2
@@ -103,7 +105,9 @@ void cvOneDMthModelBase::SetBoundaryConditions(){
     case BoundCondTypeScope::FLOW:
       (*currSolution)[eqNumbers[1]] = GetFlowRate();
       break;
+
     default:
+
       break;
   }
 
@@ -209,15 +213,18 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
       double DpDS;
       double lhs_QQ, lhs_QS, rhs_Q, MemoC; // For essential implementation
       double z = sub->GetOutletZ(); // Checked IV 02-03-03
-      
+
+
       value = 0.0;  // RHS corresponding to imposed Essential BC
+
       switch(sub->GetBoundCondition()){
         case BoundCondTypeScope::PRESSURE:
+
 
         case BoundCondTypeScope::FLOW:
           cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
           break;
-        
+
         case BoundCondTypeScope::RESISTANCE:
           currS = (*currSolution)[eqNumbers[0]];// dpds shouldn't be affected by p1
           k_m = sub->GetMaterial()->GetDpDS(currS, sub->GetLength())/ sub->GetBoundResistance();
@@ -301,6 +308,15 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
         // specifically for resistance BC
         double Resistance;
         // double Cp;
+        double pd; //add distal pressure wgyang 2019/4
+        double rhsQ;//outlet flow rate given by RCR solution Q(t) is expressed in terms of  pressure, wgyang 2019/4
+        double convP; // convolution int(P(t')*exp(-alpharcr(t-t'))dt; wgyang/2019/4
+        double convS; // convolution int(S(t')^(-3/2)*exp(-alpharcr(t-t'))dt; wgyang/2019/4
+        double DQDS; // wgyang 2019/4
+        double DQDp;
+        double EHR=material->GetEHR(z); // 4*Eh/(3r0)
+        double Eh=EHR*3.0/4.0*sqrt(So_/3.14);
+
 
         // for viscosity term in Resistance fluxes-have to be checked
         // double currS_BeginElem, DSDz, D2pDz, dpdz;
@@ -327,7 +343,7 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
           // for these BC the Inlet term doesn't have to be specialized
           // so same treatment as regular Essential BC like in Brooke's
           case BoundCondTypeScope::PRESSURE:
-          
+
           case BoundCondTypeScope::FLOW:
             cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
             break;
@@ -336,7 +352,10 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
 
             // Cp = material->GetLinCompliance(z);
             // double Cp = material->GetnonLinCompliance(currS, z);//tried 02-13-03 worse results
-            Resistance = sub->GetBoundResistance();
+
+            //Resistance = sub->GetBoundResistance();
+            Resistance=  sub->GetResistanceR(); //wgyang get resistance and Pd values;
+            pd=sub->GetResistancePd();
 
             // for Resistance with P-P1=Q*R add to Resistance part
             // currP= material->GetPressure( currS, z)-material->p1;//for P-P1=Q*R
@@ -352,19 +371,20 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
             //OutletLHS[2] = -deltaTime*(currS/density/Cp);//linear downstream domain-Hughes
             //OutletLHS[2] = -deltaTime*(currS/density/Cp-(1+delta)*currP*currP/pow(Resistance*currS,2)
             //  +2*(1+delta)*DpDS*currP/currS/pow(Resistance,2));//linearized IntegralpS
-            OutletLHS[2] = -deltaTime*(DpDS*currS/density-(1+delta)*currP*currP/pow(Resistance*currS,2)
-              +2*(1+delta)*DpDS*currP/currS/pow(Resistance,2));//without viscosity term
+            OutletLHS[2] = -deltaTime*(DpDS*currS/density-(1+delta)*(currP-pd)*(currP-pd)/pow(Resistance*currS,2)
+              +2*(1+delta)*DpDS*(currP-pd)/currS/pow(Resistance,2));//without viscosity term
             //OutletLHS[2] = -deltaTime*(DpDS*currS/density);//without adv term
             //OutletLHS[2] = 0.0;//no M2 h2
             OutletLHS[3] = 0.0;
 
             //finiteElement->Evaluate( z, shape, DxShape, &jacobian);//careful: shape is in the natural coord system (xi)
 
-            OutletRHS[0] = deltaTime*currP/Resistance;
+            OutletRHS[0] = deltaTime*(currP-pd)/Resistance;
             //OutletRHS[1] = deltaTime*(currS*currS/(2.0*density*Cp) - So_*So_/(2*density*Cp));//linear downstream domain-Hughes
             //OutletRHS[1] = deltaTime*((1+delta)*pow(currP/Resistance,2)/currS+currS*currS/(2.0*density*Cp) - So_*So_/(2*density*Cp));
             //OutletRHS[1] = deltaTime*((1+delta)*pow(currP/Resistance,2)/currS+So_*(currS-So_)/Cp/density);//linearized IntegralpS
-            OutletRHS[1] = deltaTime*((1.0+delta)*currP*currP/currS/pow(Resistance,2)+IntegralpS/density);//without viscosity term
+            OutletRHS[1] = deltaTime*((1.0+delta)*(currP-pd)*(currP-pd)/currS/pow(Resistance,2)+IntegralpS/density);//without viscosity term
+
               //-kinViscosity*dpdz/Resistance);
             //OutletRHS[1] = deltaTime*(IntegralpS/density);//without advective term
             //OutletRHS[1] =0;//no M2 h2
@@ -402,23 +422,40 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
             alphaRCR = sub -> GetAlphaRCR();
             InitialQ = sub -> GetInitialFlow();
             prevP = material->GetPressure(prevSolution->Get(eqNumbers[0]),z);
-
+/*
+           //Irene's implementation, RCR without Pd
             MemoI = sub->MemIntRCR(currP, prevP, deltaTime, currentTime);
             MemoK = sub->MemAdvRCR(currP, prevP, deltaTime, currentTime);
             dMemoIdP = sub->dMemIntRCRdP(deltaTime);
             dMemoKdP = sub->dMemAdvRCRdP(currP, prevP, deltaTime, currentTime);
 
             //Neumann implementation
-            OutletLHS[0] = -deltaTime*DpDS/Rp+DpDS/(Rp*Rp*Cap)*dMemoIdP;
+           OutletLHS[0] = -deltaTime*DpDS/Rp+DpDS/(Rp*Rp*Cap)*dMemoIdP;
             OutletLHS[1] = 0.0;
             //OutletLHS[2] = -deltaTime*(DpDS*currS/density);//without adv term
             OutletLHS[2] = -deltaTime*(DpDS*currS/density)+(1+delta)*MemoK/(currS*currS)-(1+delta)*DpDS/currS*dMemoKdP;//with adv term
-            OutletLHS[3] = 0.0;
+           OutletLHS[3] = 0.0;
 
-            OutletRHS[0] = deltaTime*currP/Rp +(InitialQ-material->GetReferencePressure()/Rp)*(exp(alphaRCR*deltaTime)-1)*exp(-alphaRCR*currentTime)/alphaRCR - MemoI/(Rp*Rp*Cap);
-            OutletRHS[1] = deltaTime*IntegralpS/density + (1+delta)/currS*MemoK;
+           OutletRHS[0] = deltaTime*currP/Rp +(InitialQ-material->GetReferencePressure()/Rp)*(exp(alphaRCR*deltaTime)-1)*exp(-alphaRCR*currentTime)/alphaRCR - MemoI/(Rp*Rp*Cap);
+           OutletRHS[1] = deltaTime*IntegralpS/density + (1+delta)/currS*MemoK;
             //viscosity term ignored;
+*/
+/////////////////////////////////////////////////////////////////////////////
+          //RCR with Pd  wgyang 2019/4
+            pd=sub->GetResistancePd();
+            convP=sub->MemIntPexp(currP, deltaTime, currentTime);
+            rhsQ=currP/Rp-pd/(Rp+Rd) +(InitialQ-material->GetReferencePressure()/Rp+pd/(Rp+Rd))*exp(-alphaRCR*currentTime) - convP/(Rp*Rp*Cap);
+             // convP(t)=int(P(t')exp(-alphaRCR*(t-t'))dt= convP(t-dt)*exp(-alphaRCR*dt)+int^t_(t-dt) (P(t')exp(-alphaRCR(t-t'))dt,
+             // assumming constant P in dt, the second term = P/alpha *(1-exp(-alphaRCR*dt)), dconvP(t-dt)/dS=0 dconvP(t)dS=dconvP/dp*DpDs=(1-exp(-alphaRCR*dt))/alpha*DpDS
+            DQDS=1.0/Rp*DpDS-(1-exp(-alphaRCR*deltaTime))/alphaRCR*DpDS/(Rp*Rp*Cap);
 
+            OutletRHS[0]=deltaTime*rhsQ;
+            OutletRHS[1]=deltaTime*((1.0+delta)*rhsQ*rhsQ/currS+IntegralpS/density);
+            OutletLHS[0] = -deltaTime*DQDS;
+            OutletLHS[1] = 0.0;
+            OutletLHS[2] = -deltaTime*(DpDS*currS/density)+deltaTime*(1+delta)*(rhsQ*rhsQ)/(currS*currS)-2.0*(1+delta)*rhsQ/currS*DQDS*deltaTime;
+            OutletLHS[3] = 0.0;
+/////////////////////////////////////////////////////////////////////////
             cvOneDGlobal::solver->AddFlux( eqNumbers[1],&(OutletLHS[0]),&(OutletRHS[0]));//specialize the Outlet flux term in LHS and RHS
 
             /* //essential implementation tried like resistance and resistance_other->not ok
@@ -432,8 +469,10 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
             //LinearSolver::Minus1dof(eqNumbers[1], lhs_QS);*/
             break;
 
+
+
           case BoundCondTypeScope::NOBOUND:
-          
+
           default:
             cout<<"ERROR:boundary condition type not handled in ApplyBC"<<endl;
             exit(-1);

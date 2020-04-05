@@ -51,7 +51,10 @@ class cvOneDMaterial{
     virtual double GetProperty(char* what) const = 0;
     virtual double GetIntegralpS (double area, double z) const = 0;
 
-    virtual double GetN(double S) const = 0; //not really dependent on S actually 
+
+    virtual double GetN(double S) const = 0;//not really dependent on S actually IV 080703
+    virtual double GetEHR(double z) const = 0;
+
     virtual double GetOutflowFunction(double pressure, double z) const = 0;
     virtual double GetDpDz(double area, double z) const = 0;
     virtual double GetDOutflowDp(double pressure, double z) const = 0;
@@ -75,7 +78,7 @@ class cvOneDMaterial{
     void   SetReferencePressure(double refP) {p1_ = refP;}
     double GetReferencePressure() {return p1_; }
     double GetReferencedPressure_dt() {return 0; }
-    
+
   protected:
 
     double density;

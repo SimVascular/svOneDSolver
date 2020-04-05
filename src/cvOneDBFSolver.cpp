@@ -10,17 +10,17 @@
 
 # ifdef USE_SKYLINE
   # include "cvOneDSkylineMatrix.h"
-  # include "cvOneDSkylineLinearSolver.h"  
-# endif 
+  # include "cvOneDSkylineLinearSolver.h"
+# endif
 
-# ifdef USE_SUPERLU    
+# ifdef USE_SUPERLU
   # include "cvOneDSparseMatrix.h"
   # include "cvOneDSparseLinearSolver.h"
 # endif
 
 # ifdef USE_CSPARSE
   # include "cvOneDSparseMatrix.h"
-  # include "cvOneDSparseLinearSolver.h"  
+  # include "cvOneDSparseLinearSolver.h"
 # endif
 
 # define baryeTommHg 0.0007500615613026439
@@ -92,9 +92,9 @@ void cvOneDBFSolver::postprocess_Text(){
 
     char *btemp= model-> getModelName(); // add to write out binary files for java
 
-    strcpy(tmp2, btemp); 
-    strcpy(tmp3, btemp); 
-    strcpy(tmp4, btemp); 
+    strcpy(tmp2, btemp);
+    strcpy(tmp3, btemp);
+    strcpy(tmp4, btemp);
     strcpy(tmp5, btemp);
     strcpy(tmp6, btemp);
 
@@ -754,7 +754,7 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_MULTIPLEFILES(){
       // Compute the total number of points for this segment
       totSegmentSolutions = (currSeg->getNumElements()+1);
       totSegmentPoints = totSegmentSolutions * circSubdiv;
-      
+
       // Set the range for the totalsoluton of this segment
       startOut = segOffset;
       finishOut = segOffset + 2*(totSegmentSolutions);
@@ -1103,7 +1103,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       subdomain -> SetNumberOfElements(nels);
       subdomain -> SetMeshType(mType);
       subdomain -> Init(zin, zout);
-      
+
 
       // Get the Initial Properties of the subdomain...
       double Qo = 0.0;
@@ -1118,7 +1118,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       double Sn = seg->getInitOutletS();
       BoundCondType boundT = seg -> getBoundCondition();
       double  boundV= seg -> getBoundValue();
-      
+
       // Set these in the subdomain.
       subdomain->SetInitialFlow(Qo);
       subdomain->SetInitialdFlowdT(dQ0_dT);
@@ -1132,7 +1132,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       }
       subdomain->SetupMaterial(matID);
       subdomain->GetMaterial()->SetPeriod(Period);
-      
+
       // Set up Minor Loss - Only for NO MINOR LOSS TYPE
       subdomain->SetMinorLossType(seg->GetMinorLossType());
 
@@ -1143,12 +1143,20 @@ void cvOneDBFSolver::QuerryModelInformation(void)
         int num; // x-fer info from Segment to subdomain
         seg->getBoundResistanceValues(&resist,&time,&num);
         subdomain->SetBoundResistanceWave(time, resist, num);
-      }else if(boundT == BoundCondTypeScope::RCR){ 
+      }else if(boundT == BoundCondTypeScope::RCR){
         double* rcr;
         int num;
         seg->getBoundRCRValues(&rcr,&num);
         subdomain -> SetBoundRCRValues(rcr,num);
         cout<<"RCR boundary condition"<<endl;
+
+      }else if(boundT == BoundCondTypeScope::RESISTANCE){ // modified resistance taking Pd wgyang
+        double* resistance_pd;
+        int num;
+        seg->getBoundRCRValues(&resistance_pd,&num);
+        subdomain -> SetBoundResistPdValues(resistance_pd,num);
+        cout<<"RESISTANCE boundary condition"<<endl;
+
       }else{
         subdomain -> SetBoundValue(boundV);
       }
@@ -1161,7 +1169,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       }
       if(seg->getIsOutletInfo() == false){
         subdomain->SetBoundCondition(BoundCondTypeScope::NOBOUND);
-      } 
+      }
     }
 
     // For branch use.
@@ -1225,14 +1233,14 @@ void cvOneDBFSolver::CreateGlobalArrays(void){
     for( i = neq - 1; i >= 0; i--)
         maxa[i] = maxa[i+1] - maxa[i];
 
-    // INITIALIZE MATRIX STORAGE SCHEME 
+    // INITIALIZE MATRIX STORAGE SCHEME
     // AND ASSOCIATED SOLVER
 # ifdef USE_SKYLINE
     lhs = new cvOneDSkylineMatrix(neq, maxa, "globalMatrix");
     cvOneDGlobal::solver = new cvOneDSkylineLinearSolver();
-# endif 
+# endif
 
-# ifdef USE_SUPERLU    
+# ifdef USE_SUPERLU
     lhs = new cvOneDSparseMatrix(neq, maxa, "globalMatrix");
     cvOneDGlobal::solver = new cvOneDSparseLinearSolver();
 # endif
@@ -1241,7 +1249,7 @@ void cvOneDBFSolver::CreateGlobalArrays(void){
     lhs = new cvOneDSparseMatrix(neq, maxa, "globalMatrix");
     cvOneDGlobal::solver = new cvOneDSparseLinearSolver();
 # endif
-    
+
     assert(lhs != 0);
 
     rhs = new cvOneDFEAVector( neq);
@@ -1267,7 +1275,7 @@ void cvOneDBFSolver::CalcInitProps(long ID){
   double Qo, dQ0dT;
   Qo = subdomainList[ID] -> GetInitialFlow();
   dQ0dT=0;
-  
+
   double So = subdomainList[ID] -> GetInitInletS();
   double Sn = subdomainList[ID] -> GetInitOutletS();
   for( long node = 0; node < subdomainList[ID]->GetNumberOfNodes(); node++){
@@ -1298,8 +1306,10 @@ void cvOneDBFSolver::GenerateSolution(void){
   clock_t tstart_solve;
   clock_t tend_iter;
   clock_t tend_solve;
-  
+
+
   // Print the formulation used
+
   if(cvOneDGlobal::CONSERVATION_FORM){
     cout << "Using Conservative Form ..." << endl;
   }else{
@@ -1351,7 +1361,7 @@ void cvOneDBFSolver::GenerateSolution(void){
     double normf = 1.0;
     double norms = 1.0;
 
-    if(fmod(currentTime, cycleTime) <5.0E-6 || -(fmod(currentTime,cycleTime)-cycleTime)<5.0E-6) { 
+    if(fmod(currentTime, cycleTime) <5.0E-6 || -(fmod(currentTime,cycleTime)-cycleTime)<5.0E-6) {
       checkMass = 0;
       cout << "**** Time cycle " << numberOfCycle++ << endl;
     }
@@ -1359,11 +1369,15 @@ void cvOneDBFSolver::GenerateSolution(void){
 
     while(true){
       tstart_iter=clock();
+
       for(i = 0; i < numMath; i++){
         mathModels[i]->FormNewtonRHS(rhs);
+
       }
+
       for(i = 0; i < numMath; i++){
         mathModels[i]->FormNewtonLHS(lhs);
+
       }
 
       // PRINT RHS BEFORE BC APP
@@ -1406,21 +1420,30 @@ void cvOneDBFSolver::GenerateSolution(void){
 
       // Check Newton-Raphson Convergence
       if((currentTime != deltaTime || (currentTime == deltaTime && iter != 0)) && normf < convCriteria && norms < convCriteria){
+        cout << "    iter: " << (int)iter << " ";
+        cout << "normf: " << normf << " ";
+        cout << "norms: " << norms << " ";
+        cout << "time: " << ((float)(tend_iter-tstart_iter))/CLOCKS_PER_SEC << endl;
         break;
       }
 
       // Add increment
       increment->Clear();
+
       cvOneDGlobal::solver->Solve(*increment);
+
       currentSolution->Add(*increment);
 
       // If the area goes less than zero, it tells in which segment the error occurs.
       // Assumes that all the lagrange multipliers are at the end of the vector.
+      int negArea=0;
       if(jointList.size() != 0){
         for (long i= 0; i< jointList[0]->GetGlobal1stLagNodeID();i+=2){
           long elCount = 0;
           int fileIter = 0;
-          if (currentSolution->Get(i) < 0.0){
+          //check if area <0 or =nan
+          if (currentSolution->Get(i) < 0.0 || (currentSolution->Get(i) != currentSolution->Get(i))){
+           negArea=1;
             while (fileIter < model -> getNumberOfSegments()){
               cvOneDSegment *curSeg = model -> getSegment(fileIter);
               long numEls = curSeg -> getNumElements();
@@ -1436,10 +1459,15 @@ void cvOneDBFSolver::GenerateSolution(void){
               }
               elCount += 2*(numEls+1);
               fileIter++;
-            }
-          }
+             }
+           }
+         }
         }
-      }
+
+        if(negArea==1) {
+        postprocess_Text();
+        assert(0);
+        }
 
       if(cvOneDGlobal::debugMode){
         printf("(Debug) Printing Solution...\n");

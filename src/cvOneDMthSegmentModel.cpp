@@ -4,7 +4,7 @@
 
 # include "cvOneDMthSegmentModel.h"
 # include "cvOneDGlobal.h"
-
+#include <math.h>
 // stabilization parameter blows up if you have a very small or zero
 // kinematic viscosity
 #define SMALL_KINEMATIC_VISCOSITY 0.0001
@@ -79,11 +79,16 @@ double cvOneDMthSegmentModel::N_MinorLoss(long ith){
   S[1] = currSolution->Get( eqNumbers[0]);
   Q[1] = currSolution->Get( eqNumbers[1]);
 
+
   if(minorLoss == MinorLossScope::NONE ){
+
     return sub->GetMaterial()->GetN(S[1]);
+
   }
 
-  return 0; 
+
+  return 0;
+
 }
 
 void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elementMatrix, long ith){
@@ -130,8 +135,8 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
   Q[1] = currSolution->Get(eqNumbers[3]);
 
   if(cvOneDGlobal::debugMode){
-    printf("(Debug) Assembling Element %ld\n",element);  
-    printf("--- End node solutions\n");  
+    printf("(Debug) Assembling Element %ld\n",element);
+    printf("--- End node solutions\n");
     printf("S[0]: %e\n",S[0]);
     printf("Q[0]: %e\n",Q[0]);
     printf("S[1]: %e\n",S[1]);
@@ -166,8 +171,8 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     double IntegralpD2S = 0.0;
 
     if(cvOneDGlobal::debugMode){
-      printf("(Debug) Assembling Element %ld\n",element);  
-      printf("--- Element Values\n");  
+      printf("(Debug) Assembling Element %ld\n",element);
+      printf("--- Element Values\n");
       printf("z: %e\n",z);
       printf("pressure: %e\n",pressure);
       printf("Outflow: %e\n",Outflow);
@@ -198,8 +203,8 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     double K22 = kinViscosity;
 
     if(cvOneDGlobal::debugMode){
-      printf("(Debug) Assembling Element %ld\n",element);  
-      printf("--- Element Values 2\n");  
+      printf("(Debug) Assembling Element %ld\n",element);
+      printf("--- Element Values 2\n");
       printf("aux: %e\n",aux);
       printf("A12: %e\n",A12);
       printf("A21: %e\n",A21);
@@ -224,8 +229,8 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     double CF22 = N / U[0];
 
     if(cvOneDGlobal::debugMode){
-      printf("(Debug) Assembling Element %ld\n",element);  
-      printf("--- Element Values 2\n");  
+      printf("(Debug) Assembling Element %ld\n",element);
+      printf("--- Element Values 2\n");
       printf("CF11: %e\n",CF11);
       printf("CF21: %e\n",CF21);
       printf("CF22: %e\n",CF22);
@@ -241,7 +246,7 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     double modC[4];
 
     if(cvOneDGlobal::debugMode){
-      printf("(Debug) Assembling Element %ld\n",element);  
+      printf("(Debug) Assembling Element %ld\n",element);
       printf("C[0]: %e\n",C[0]);
       printf("C[1]: %e\n",C[1]);
       printf("C[2]: %e\n",C[2]);
@@ -252,7 +257,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     if(STABILIZATION == 1){
 
       GetModulus(A, modA);
-
       // stabilization parameter blows up if you have a very small or zero
       // kinematic viscosity
       if(kinViscosity < SMALL_KINEMATIC_VISCOSITY){
@@ -270,8 +274,9 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
       tau[2] = 2.0/h*modA[2] + modC[2];
       tau[3] = (2.0/deltaTime) + 2.0/h*modA[3] + 12.0/(h*h)*K22 + modC[3];
 
+
       if(cvOneDGlobal::debugMode){
-        printf("(Debug) Assembling Element %ld\n",element);  
+        printf("(Debug) Assembling Element %ld\n",element);
         printf("kinViscosity: %e\n",kinViscosity);
         printf("SMALL_KINEMATIC_VISCOSITY: %e\n",SMALL_KINEMATIC_VISCOSITY);
         printf("h: %e\n",h);
@@ -295,7 +300,7 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
       tau[3] =  temp/det;
 
       if(cvOneDGlobal::debugMode){
-        printf("(Debug) Assembling Element %ld\n",element);  
+        printf("(Debug) Assembling Element %ld\n",element);
         printf("tau[0]: %e\n",tau[0]);
         printf("tau[1]: %e\n",tau[1]);
         printf("tau[2]: %e\n",tau[2]);
@@ -304,6 +309,9 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
       }
 
     } // end STABILIZATION
+
+
+
 
     for( int a = 0; a < numberOfNodes; a++){
 
@@ -317,13 +325,13 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
           k11 = deltaTime*(shape[a]*CF11*shape[b])-shape[a]*shape[b];
           k12 = deltaTime*(A12*shape[b]*DxShape[a]);
           k21 = deltaTime*(DxShape[a]*A21*shape[b]+shape[a]*CF21*shape[b]);
-          k22 = deltaTime*(DxShape[a]*A22*shape[b]-DxShape[a]*K22*DxShape[b]+shape[a]*CF22*shape[b]) - shape[a]*shape[b];
+          k22 = deltaTime*(DxShape[a]*A22*shape[b]-DxShape[a]*(K22)*DxShape[b]+shape[a]*CF22*shape[b]) - shape[a]*shape[b];
         }else{
           // Here is Brooke's version that I am not using IV 01-30-03
           k11 = deltaTime*(-shape[a]*C11*shape[b])+shape[a]*shape[b];
           k12 = deltaTime*(shape[a]*DxShape[b]);
           k21 = deltaTime*(shape[a]*A21*DxShape[b]-shape[a]*C21*shape[b]);
-          k22 = deltaTime*(shape[a]*A22*DxShape[b]+DxShape[a]*K22*DxShape[b]-shape[a]*C22*shape[b]) + shape[a]*shape[b];
+          k22 = deltaTime*(shape[a]*A22*DxShape[b]+DxShape[a]*(K22)*DxShape[b]-shape[a]*C22*shape[b]) + shape[a]*shape[b];
         }
 
         if(STABILIZATION == 1){
@@ -342,7 +350,7 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
           auxb[3] = DxShape[b]*A22-shape[b]*C22;
 
           if(cvOneDGlobal::debugMode){
-            printf("(Debug) Assembling Element %ld\n",element);  
+            printf("(Debug) Assembling Element %ld\n",element);
             printf("auxa[0]: %e\n",auxa[0]);
             printf("auxa[1]: %e\n",auxa[1]);
             printf("auxa[2]: %e\n",auxa[2]);
@@ -371,7 +379,7 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
           auxa[3] = auxc[2]*auxb[1]+auxc[3]*auxb[3];
 
           if(cvOneDGlobal::debugMode){
-            printf("(Debug) Assembling Element %ld\n",element);  
+            printf("(Debug) Assembling Element %ld\n",element);
             printf("auxa[0]: %e\n",auxa[0]);
             printf("auxa[1]: %e\n",auxa[1]);
             printf("auxa[2]: %e\n",auxa[2]);
@@ -396,8 +404,8 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
         } // end stabilization
 
         if(cvOneDGlobal::debugMode){
-          printf("(Debug) Assembling Element %ld\n",element);  
-          printf("--- Element Values 2\n");  
+          printf("(Debug) Assembling Element %ld\n",element);
+          printf("--- Element Values 2\n");
           printf("k11: %e\n",k11);
           printf("k12: %e\n",k12);
           printf("k21: %e\n",k21);
@@ -455,12 +463,12 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
 
         for( int b = 0; b < numberOfNodes; b++){
           // b= trick because shape is note defined in z coord;
-          //has to be changed if other shape functions are used 
+          //has to be changed if other shape functions are used
           double Outlet11 = 0.0;
           double Outlet12 = (double)b;
           double Outlet21 = (double)b*(-(1.0+ delta)*aux*aux + S[1]/density*DpDS);
           double Outlet22 = 2*(1.0+ delta)*aux*(double)b ;//without viscosity in flux
-          
+
           elementMatrix->Add( 2*a  , 2*b  , -Outlet11*deltaTime);
           elementMatrix->Add( 2*a  , 2*b+1, -Outlet12*deltaTime);
           elementMatrix->Add( 2*a+1, 2*b  , -Outlet21*deltaTime);
@@ -485,10 +493,13 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
   strcpy(propName,"kinematic viscosity");
   double kinViscosity = material->GetProperty(propName);
   //  material->GetProperty( "N");
+
   double N = N_MinorLoss(ith);
 
   BoundCondType bound = sub->GetBoundCondition();
+
   // now get the element information from the domain
+
   const cvOneDFiniteElement* finiteElement=sub->GetElement(element);
 
   int numberOfNodes = 2;
@@ -502,10 +513,11 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
 
   // get the weight and quadrature point
   quadrature_.Get(weight, xi);
-
   // localize the components of the solution at t_{n} on this element
   long eqNumbers[4];
+
   GetEquationNumbers(element, eqNumbers, ith);
+
   double Sn[2];
   double Qn[2];
   Sn[0] = prevSolution->Get(eqNumbers[0]);
@@ -520,7 +532,7 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
   Q[0] = currSolution->Get( eqNumbers[1]);
   S[1] = currSolution->Get( eqNumbers[2]);
   Q[1] = currSolution->Get( eqNumbers[3]);
-  //cout<<"element"<<" "<<element<<" "<<S[0]<<" "<<endl;
+ // cout<<"element"<<" "<<element<<" "<<S[0]<<" "<<endl;
 
   // set the equation numbers on the element vector
   elementVector->SetEquationNumbers(eqNumbers);
@@ -623,6 +635,7 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
       tau[2] = -tau[2]/det;
       tau[3] =  temp/det;
     }
+
 
     for( int a = 0; a < numberOfNodes; a++){
 
