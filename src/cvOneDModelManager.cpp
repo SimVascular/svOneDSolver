@@ -53,8 +53,12 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
     boundT = BoundCondTypeScope::PRESSURE;
   }else if(!strcmp(boundType, "RESISTANCE")){
     boundT = BoundCondTypeScope::RESISTANCE;
+  }else if(!strcmp(boundType, "PRESSURE_WAVE")){
+    boundT = BoundCondTypeScope::PRESSURE_WAVE;
   }else if(!strcmp(boundType, "RCR")){
     boundT = BoundCondTypeScope::RCR;
+  }else if(!strcmp(boundType, "CORONARY")){
+    boundT = BoundCondTypeScope::CORONARY;
   }else{
     return CV_ERROR;
   }
@@ -90,6 +94,9 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
   // Set the Boundary Conditions
   seg -> setBoundCondition(boundT);
   switch(boundT) {
+  case BoundCondTypeScope::PRESSURE_WAVE:
+      seg->setBoundPressureValue(value,time,num);
+      break;
   case BoundCondTypeScope::RESISTANCE_TIME:
       seg->setBoundResistanceValue(value,time,num);
       break;
@@ -99,6 +106,10 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
 
   case BoundCondTypeScope::RESISTANCE:
      seg->setBoundRCRValue(value,num);//using setBoundRCRValue to set resistance and Pd.
+     break;
+
+  case BoundCondTypeScope::CORONARY:
+     seg->SetBoundCoronaryValues(value,time,num);
      break;
 
   default:
@@ -173,6 +184,9 @@ int cvOneDModelManager::SolveModel(double dt, long stepSize,
   }else if(!strcmp( boundType, "PRESSURE")){
     boundT = BoundCondTypeScope::PRESSURE;
     printf("Inlet Condition Type: PRESSURE\n");
+  }else if(!strcmp( boundType, "PRESSURE_WAVE")){
+    boundT = BoundCondTypeScope::PRESSURE_WAVE;
+    printf("Inlet Condition Type: PRESSURE_WAVE\n");
   }else if(!strcmp( boundType, "FLOW")){
     boundT = BoundCondTypeScope::FLOW;
     printf("Inlet Condition Type: FLOW\n");
@@ -185,6 +199,9 @@ int cvOneDModelManager::SolveModel(double dt, long stepSize,
   }else if(!strcmp( boundType, "RCR")){
     boundT = BoundCondTypeScope::RCR;
     printf("Inlet Condition Type: RCR\n");
+  }else if(!strcmp( boundType, "CORONARY")){
+    boundT = BoundCondTypeScope::CORONARY;
+    printf("Inlet Condition Type: CORONARY\n");
   }else{
     return CV_ERROR;
   }

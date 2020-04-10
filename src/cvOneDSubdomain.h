@@ -72,6 +72,7 @@ class cvOneDSubdomain{
     void SetBoundValue(double boundV);
     void SetBoundPresWave(double *time, double *pres, int num);
 	void SetBoundResistanceWave(double *time, double *resist, int num);
+    void SetBoundCoronaryValues(double *time, double *p_lv, int num); //added Jongmin Seo 04062020 & Hyunjin Kim 09022005
 	void SetBoundRCRValues(double *rcr, int num);//added IV 050803
 	void SetBoundWaveValues(double *wave, int num);//added IV 080603
     void SetBoundResistPdValues(double *value, int num); //added wgyang 2019/4
@@ -81,6 +82,7 @@ class cvOneDSubdomain{
     double GetBoundResistance(){return boundValue;}
     double GetBoundResistance(double currentTime);
 	double GetBoundFlowRate(){return boundValue;}
+    double getBoundCoronaryValues(double currentTime);
     double GetBoundAreabyPresWave(double currentTime);
 	double GetPressure(double currentTime);
 	double GetdPressuredt(double currentTime) { return 0; }
@@ -99,9 +101,7 @@ class cvOneDSubdomain{
 	double GetCa(){return Ca;}
 	double GetCc(){return Cc;}
 	double GetRv1(){return Rv1;}
-	double GetRv2(){return Rv2;}
-
-
+	double GetP_v(){return P_v;}
 
     //double* GetEigValWave(){return eigValWave;}//added IV 080703
 
@@ -237,7 +237,7 @@ class cvOneDSubdomain{
 	double b0COR, b1COR;
 	double expo1COR, expo2COR, detCOR;
 	double CoefZ1, CoefY1, CoefZ2, CoefY2, CoefR;
-	double Ra1, Ra2, Ca, Cc, Rv1, Rv2;
+	double Ra1, Ra2, Ca, Cc, Rv1, P_v;
 	double corTime;
 
     //wave BC added IV 080603, parameters for the downstream tube
