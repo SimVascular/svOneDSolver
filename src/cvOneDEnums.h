@@ -77,7 +77,9 @@ struct BoundCondTypeScope{
     FLOW            = 2,
     RESISTANCE      = 3, // resistance with full pressure
     RESISTANCE_TIME = 4, // full pressure
+    PRESSURE_WAVE   = 5, // pressure wave in time
     RCR             = 6, // RCR or Windkessel model, without assuming periodicity
+    CORONARY        = 9, // Coronary BC, Jongmin Seo & Hyunjin Kim
     NOBOUND 
   };
 };

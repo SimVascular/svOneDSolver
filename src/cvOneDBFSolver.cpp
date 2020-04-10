@@ -1157,6 +1157,21 @@ void cvOneDBFSolver::QuerryModelInformation(void)
         subdomain -> SetBoundResistPdValues(resistance_pd,num);
         cout<<"RESISTANCE boundary condition"<<endl;
 
+      }else if (boundT == BoundCondTypeScope::PRESSURE_WAVE){
+        double* time;
+        double* pres;
+        int num;
+        seg->getBoundPressureValues(&pres,&time,&num);
+        subdomain ->SetBoundPresWave(time, pres, num);
+
+      }else if(boundT == BoundCondTypeScope::CORONARY){// Jongmin & Hyunjin
+        double* time;
+        double* p_lv;
+        int num;
+        seg->getBoundCoronaryValues(&p_lv, &time, &num);
+        subdomain->SetBoundCoronaryValues(time, p_lv,num);
+        cout<<"CORONARY boundary condition"<<endl;
+
       }else{
         subdomain -> SetBoundValue(boundV);
       }

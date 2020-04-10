@@ -121,6 +121,26 @@ class cvOneDSegment{
       }
     }
 
+    // SET VALUE OF CORONARY BOUNDARY CONDITION
+     void SetBoundCoronaryValues(double *p_lv, double *time, int num) {
+       presLength = num;
+       //printf("Setting Segment Coronary BC...\n");
+       if(values != NULL){
+         delete [] values;
+         values = NULL;
+       }
+       if(times != NULL){
+         delete [] times;
+         times = NULL;
+       }
+       values = new double[num];
+       times = new double[num];
+       for(int loopA=0;loopA<num;loopA++){
+         values[loopA] = p_lv[loopA];
+         times[loopA] = time[loopA];
+       }
+     } // added Jongmin Seo & Hyunjin Kim 04062020
+
     // SET RCR BOUNDARY CONDITION
     void setBoundRCRValue(double* rcr, int num){//added IV 050803
       rpCapRdLength = num;
@@ -152,6 +172,11 @@ class cvOneDSegment{
       *num = rpCapRdLength;
     }
 
+    void getBoundCoronaryValues(double** value, double **time,int* num ){
+        *value=values,
+        *time=times,
+        *num=presLength;
+    }
     // Segment Connectivity -- These index into the 
     // global Joint list.
     void     setInOutJoints(long inJoint, long outJoint);
