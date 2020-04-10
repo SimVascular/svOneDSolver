@@ -56,7 +56,7 @@ SET(PY_DIR "./py")
 
 # INCLUDE SOURCE AND HEADER FILES
 FILE(GLOB SRC_C "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.c"
-                "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.cpp")
+                "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.cxx")
 FILE(GLOB SRC_H "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.h")
 
 # COPY DATASET FOLDER
