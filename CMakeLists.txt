@@ -56,8 +56,16 @@ SET(PY_DIR "./py")
 
 # INCLUDE SOURCE AND HEADER FILES
 FILE(GLOB SRC_C "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.c"
-                "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.cxx")
-FILE(GLOB SRC_H "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.h")
+                "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.cxx"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/*.cxx"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/superlu/*.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/superlu/*.cxx"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/csparse/*.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/csparse/*.cxx")
+FILE(GLOB SRC_H "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.h"
+	        "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/superlu/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/csparse/*.h")
 
 # COPY DATASET FOLDER
 FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/test" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")

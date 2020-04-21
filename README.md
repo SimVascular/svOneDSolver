@@ -102,8 +102,11 @@ For a different operating system and if you want to link SuperLU_MT to a differe
 
 1. **Delete** your file make.inc.
 2. **Copy** the file MAKE_INC/make.pthread one folder up and rename it as make.inc.
-3. **Install** the BLAS library on your system and edit the BLASLIB entry in make.inc so that it points to the correct location of your system BLAS library.
-4. **Build** the code by typing "make". 
+3. **Install** the BLAS library on your system and edit the BLASLIB entry in make.inc so that it points to the correct location of your system BLAS library:
+~~~
+BLASLIB = /YOUR-BLAS-PATH/libblas.a
+~~~
+4. **Build** the code by typing "make blaslib" and then "make". 
 
 #### CSparse
 

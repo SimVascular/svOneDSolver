@@ -45,13 +45,13 @@
 # endif
 
 # ifdef USE_SUPERLU
-  # include "cvOneDSparseMatrix.h"
-  # include "cvOneDSparseLinearSolver.h"
+  # include "sparse/cvOneDSparseMatrix.h"
+  # include "sparse/cvOneDSparseLinearSolver.h"
 # endif
 
 # ifdef USE_CSPARSE
-  # include "cvOneDSparseMatrix.h"
-  # include "cvOneDSparseLinearSolver.h"
+  # include "sparse/cvOneDSparseMatrix.h"
+  # include "sparse/cvOneDSparseLinearSolver.h"
 # endif
 
 # define baryeTommHg 0.0007500615613026439
@@ -1562,7 +1562,7 @@ void cvOneDBFSolver::GenerateSolution(void){
 
   // Save solution if needed
   if(step % stepSize == 0){
-    sprintf( String2, "%ld", step);
+    sprintf( String2, "%ld", (unsigned long)step);
     title = String1 + String2;
     currentSolution->Rename(title.data());
 
