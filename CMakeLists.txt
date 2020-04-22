@@ -55,17 +55,31 @@ SET(DOCS_DIR "./docs")
 SET(PY_DIR "./py")
 
 # INCLUDE SOURCE AND HEADER FILES
-FILE(GLOB SRC_C "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.c"
-                "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.cxx"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/*.cxx"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/superlu/*.c"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/superlu/*.cxx"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/csparse/*.c"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/csparse/*.cxx")
-FILE(GLOB SRC_H "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.h"
-	        "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/*.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/superlu/*.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/csparse/*.h")
+IF(sparseSolverType STREQUAL "skyline")
+	FILE(GLOB SRC_C "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.c"
+        	        "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.cxx")
+	FILE(GLOB SRC_H "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.h")
+
+ELSEIF(sparseSolverType STREQUAL "superlu")
+	FILE(GLOB SRC_C "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.c"
+	                "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.cxx"
+     		        "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/*.cxx"
+	                "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/superlu/*.c"
+	                "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/superlu/*.cxx")
+	FILE(GLOB SRC_H "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.h"
+        	        "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/*.h"
+                	"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/superlu/*.h")
+
+ELSEIF(sparseSolverType STREQUAL "csparse")
+	FILE(GLOB SRC_C "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.c"
+        	        "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.cxx"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/*.cxx"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/csparse/*.c"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/csparse/*.cxx")
+	FILE(GLOB SRC_H "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/*.h"
+		        "${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/*.h"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Code/Source/sparse/csparse/*.h")
+ENDIF()
 
 # COPY DATASET FOLDER
 FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/test" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
