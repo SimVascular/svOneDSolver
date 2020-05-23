@@ -113,3 +113,6 @@ BLASLIB = /YOUR-BLAS-PATH/libblas.a
 CSparse is a coincise sparse linear algebra package. 
 The source codes are publicly available at [this link](http://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.html).
 For convenience, these source code have been included in the svOneDSolver source code.
+
+# Build status on Travis
+[![Build Status](https://travis-ci.org/SimVascular/svOneDSolver.svg?branch=master)](https://travis-ci.org/SimVascular/svOneDSolver)

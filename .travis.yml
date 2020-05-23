@@ -23,6 +23,6 @@ before_install:
   - export SCRIPTS=$cwd/travis
   - export BUILD_DIR=$cwd/build_skyline
   - export SV_TOP_DIR=$cwd
-  - if $WITH_CMAKE; then $SCRIPTS/travis_get_cmake_latest.sh; fi
+  - $SCRIPTS/travis_get_cmake_latest.sh
 
 script: $SCRIPTS/travis_build.sh
