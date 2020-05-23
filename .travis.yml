@@ -1,0 +1,28 @@
+ilanguage: cpp
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      dist: bionic
+      sudo: required
+    - os: linux
+      compiler: gcc
+      dist: xenial
+      sudo: required
+    - os: osx
+      compiler: clang
+      osx_image: xcode9.4
+      sudo: required
+
+git:
+  submodules: false
+
+before_install:
+  - echo "CWD=$cwd"
+  - export SCRIPTS=$cwd/travis
+  - export BUILD_DIR=$cwd/build_skyline
+  - export SV_TOP_DIR=$cwd
+  - if $WITH_CMAKE; then $SCRIPTS/travis_get_cmake_latest.sh; fi
+
+script: $SCRIPTS/travis_build.sh
