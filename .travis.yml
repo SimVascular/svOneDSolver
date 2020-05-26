@@ -10,10 +10,6 @@ matrix:
       compiler: gcc
       dist: xenial
       sudo: required
-    - os: osx
-      compiler: clang
-      osx_image: xcode9.4
-      sudo: required
 
 git:
   submodules: false
@@ -27,5 +23,6 @@ before_install:
   - export BUILD_DIR=$cwd/build_skyline
   - export SV_TOP_DIR=$cwd
   - $SCRIPTS/travis_get_cmake_latest.sh
+  - sudo apt-get -y install libboost
 
 script: $SCRIPTS/travis_build.sh
