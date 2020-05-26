@@ -19,6 +19,7 @@ git:
   submodules: false
 
 before_install:
+  - export NUM_THREADS=4
   - export cwd=$(pwd)
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cwd=$(pwd -W); fi
   - echo "CWD=$cwd"
