@@ -160,7 +160,7 @@ void cvOneDMthModelBase::SetBoundaryConditions(){
   */
     switch(sub->GetBoundCondition()){
     case BoundCondTypeScope::PRESSURE:
-      (*currSolution)[eqNumbers[0]] = sub->GetBoundAreabyPresWave(currentTime);
+      (*currSolution)[eqNumbers[0]] = sub->GetBoundFlowRate();
       break;
     case BoundCondTypeScope::FLOW:
       (*currSolution)[eqNumbers[1]] = sub->GetBoundFlowRate();
@@ -260,7 +260,8 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
       switch(sub->GetBoundCondition()){
         case BoundCondTypeScope::PRESSURE:
         case BoundCondTypeScope::PRESSURE_WAVE:
-
+          cvOneDGlobal::solver->SetSolution( eqNumbers[0], value);
+          break;
         case BoundCondTypeScope::FLOW:
           cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
           break;
@@ -387,6 +388,8 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
           // so same treatment as regular Essential BC like in Brooke's
           case BoundCondTypeScope::PRESSURE:
           case BoundCondTypeScope::PRESSURE_WAVE:
+            cvOneDGlobal::solver->SetSolution( eqNumbers[0], value);
+            break;
           case BoundCondTypeScope::FLOW:
             cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
             break;
