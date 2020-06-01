@@ -1,0 +1,39 @@
+MODEL results_pressure_
+
+NODE 0 0.0 0.0 0.0
+NODE 1 0.0 0.0 10.0
+
+SEGMENT seg 0 10.0 50 0 1 1.0 1.0 0.0 MAT1 NONE 0.0 0 0 PRESSURE OUTLETDATA
+
+DATATABLE INLETDATA LIST
+0.0 100.0
+10.0 100.0
+ENDDATATABLE
+
+# warning: pressure boundary condition converts pressure by multiplying with 1333.2237
+# 7.50061673821 mmHg = 10000 dyn/cm2
+DATATABLE OUTLETDATA LIST
+0.0 7.50061673821
+ENDDATATABLE
+
+SOLVEROPTIONS 0.001 1000 1000 2 INLETDATA FLOW 1.0e-8 1 1
+
+MATERIAL MAT1 OLUFSEN 1.06 0.04 0 2.0 1.0e15 -20 1e9
+
+OUTPUT TEXT
+
+# analytical solution
+
+# parameters
+# viscosity		mu	0.04
+# vessel length		L	10
+# vessel cross-section	A	1
+# vessel radius		r	0.5641895835
+# pressure outlet       Pout	10000
+# prescribed inflow	Q	100
+
+# reference solution
+# vessel resistance	R1 = 8*mu*L*PI/A^2 = 10.05309649
+
+# results to be checked
+# pressure inlet	Pin = Pout + Q*R1 = 11005.30965
