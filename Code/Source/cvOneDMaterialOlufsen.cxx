@@ -276,7 +276,7 @@ double cvOneDMaterialOlufsen::GetN(double S)const{
   double del  = sqrt(kinematicViscosity*T/2.0/PI); // from Lighthill, olufsen's thesis, pg56
   double altN = -2.0*PI*kinematicViscosity*R/del; // == -1.45838*r
 
-  return altN;
+  return N;
 
 }
 
