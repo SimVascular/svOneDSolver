@@ -1,0 +1,109 @@
+# ================================
+# Bifurcation_RCR_stat_ MODEL - UNITS IN CGS
+# ================================
+
+# ==========
+# MODEL CARD
+# ==========
+# - Name of the model (string)
+
+MODEL Bifurcation_RCR_stat_
+
+# Modelled from aortic bifurcation test case from 
+# Xiao, N., Alastruey, J., Figueroa, C.A. A systematic comparison between 1-D and 3-D hemodynamics in compliant arterial models. Int J Numer Meth Bio, 2014; 30:204-231
+
+NODE 0 0.0 0.0 0.0
+NODE 1 0.0 0.0 -8.6
+NODE 2 0.0 -3.25280917510326 -7.85297602634594
+NODE 3 0.0 3.25280917510326 -7.85297602634594
+
+JOINT JOINT1 1 INSEGS OUTSEGS
+JOINTINLET INSEGS 1 0
+JOINTOUTLET OUTSEGS 2 1 2
+
+SEGMENT seg0 0 8.6 50 0 1 2.32352192659501 2.32352192659501 0.0 MAT1 NONE 0.0 0 0 NOBOUND NONE
+SEGMENT seg1 1 8.5 50 1 3 1.13097335529233 1.13097335529233 0.0 MAT1 NONE 0.0 0 0 RCR RCR_VALS
+SEGMENT seg2 2 8.5 50 1 2 1.13097335529233 1.13097335529233 0.0 MAT1 NONE 0.0 0 0 RCR RCR_VALS
+
+# Emulating R boundary condition for static testing
+# C = 0
+DATATABLE RCR_VALS LIST
+0.0 681.23
+0.0 0.000
+0.0 310.13
+ENDDATATABLE
+
+DATATABLE STEADY_FLOW LIST
+0.0 7.985
+1.0 7.985
+ENDDATATABLE
+
+DATATABLE PULS_FLOW LIST
+0.0 -2.771464
+0.0453 -5.428778
+0.0906 -0.831727
+0.1359 22.769021
+0.1812 61.189255
+0.2265 85.102185
+0.2717 76.253549
+0.317 49.82679
+0.3623 18.281302
+0.4076 -11.231435
+0.4529 -23.049651
+0.4982 -17.567573
+0.5435 -8.840747
+0.5888 -3.709619
+0.6341 -3.070026
+0.6794 -5.165859
+0.7247 -8.097845
+0.77 -8.892455
+0.8153 -6.543064
+0.8605 -5.715826
+0.9058 -6.591712
+0.9511 -6.406703
+0.9964 -5.173448
+1.0417 -2.825325
+1.087 -2.771464
+ENDDATATABLE
+
+
+# Ref Pressure 1333.22*85 where 85 is in mmHg
+# Rigid for now, but can be elastic with the following parameters:
+# h_0 = 1.032mm, E_0 = 500 kPa, h_1 = h_2 = 0.72 mm, E_1 = E_2 = 700 kPa
+MATERIAL MAT1 OLUFSEN 1.06 0.04 0 2.0 1.0e15 -20 1e9
+
+SOLVEROPTIONS 0.001087 10 2000 2 STEADY_FLOW FLOW 1.0e-8 1 1 
+
+OUTPUT TEXT
+
+
+# analytical solution
+
+# parameters
+# viscosity		mu	0.04
+# seg0 length		L_0	8.6
+# seg0 radius		r_0	0.86
+# seg1 length		L_1	8.5 (same as seg2 length)
+# seg1 radius		r_1	0.6 (same as seg2 radius)
+# resistance BC		R	991.36
+# steady Inlet Flow	Q_0	7.985
+# Distal pressure	Pd	0
+
+# reference solution
+# assumes no pressure losses at bifurcation and purely parallel resistances
+# total 1D model resistance	Rtot = (R_0 + 0.5*(R_2 + R)
+# Pressure at junction		P_0_out = P_1_in = P_2_in
+
+# Results to be checked
+# P_0_in	3997.46433118937
+# P_0_out	3984.67700709878
+# P_1_in	3984.67700709878 (same as P_2_in)
+# P_1_out	3958.0048 (same as P_2_out because symmetric)
+# Q_1_in	3.9925 (same as Q_1_out, Q_2_in, Q_2_out)
+
+
+
+
+
+
+
