@@ -52,7 +52,7 @@ def get_tests():
     tests['tube_r']['node'] = [0, -1]
     tests['tube_r']['time'] = [-1, -1]
     tests['tube_r']['res'] = [11005.30965, 10000]
-    tests['tube_r']['tol'] = [1.0e-17, 1.0e-8]
+    tests['tube_r']['tol'] = [1.0e-7, 1.0e-8]
     return tests
 
 
