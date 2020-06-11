@@ -106,7 +106,7 @@ def run_test(name, check, solver='skyline'):
     exe = os.path.join(os.environ['BUILD_DIR'], 'bin', 'OneDSolver')
 
     # name of input file
-    inp = name + '.in'
+    inp = os.path.join(os.environ['TEST_DIR'], name + '.in')
 
     # run simulation
     try:
