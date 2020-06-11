@@ -98,15 +98,15 @@ def run_check(results, c):
         return False
 
 
-def run_test(name, check, solver='skyline'):
+def run_test(build_dir, test_dir, name, check):
     """
     Run a test case and check the results
     """
     # name of svOneDSolver executable
-    exe = os.path.join(os.environ['BUILD_DIR'], 'bin', 'OneDSolver')
+    exe = os.path.join(build_dir, 'bin', 'OneDSolver')
 
     # name of input file
-    inp = os.path.join(os.environ['TEST_DIR'], name + '.in')
+    inp = os.path.join(test_dir, name + '.in')
 
     # run simulation
     try:
@@ -133,9 +133,19 @@ def main(solver='skyline'):
     """
     Loop over all test cases and check if all results match
     """
+    if 'BUILD_DIR' not in os.environ and 'TEST_DIR' not in os.environ:
+        # run locally
+        fpath = os.path.dirname(os.path.realpath(__file__))
+        build_dir = os.path.join(fpath, '..', 'build_' + solver)
+        test_dir = fpath
+    else:
+        # run on Travis
+        build_dir = os.environ['BUILD_DIR']
+        test_dir = os.environ['TEST_DIR']
+
     for name, check in get_tests().items():
         print('Running test ' + name)
-        err = run_test(name, check, solver)
+        err = run_test(build_dir, test_dir, name, check)
         if err:
             print(err)
             return True
