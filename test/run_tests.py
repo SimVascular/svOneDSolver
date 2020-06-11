@@ -98,7 +98,7 @@ def run_check(results, c):
         return False
 
 
-def run_test(name, check, solver='superlu'):
+def run_test(name, check, solver='skyline'):
     """
     Run a test case and check the results
     """
@@ -129,7 +129,7 @@ def run_test(name, check, solver='superlu'):
     return res
 
 
-def main(solver='superlu'):
+def main(solver='skyline'):
     """
     Loop over all test cases and check if all results match
     """
