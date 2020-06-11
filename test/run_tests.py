@@ -28,7 +28,7 @@ def get_tests():
     tests[<NAME>]['node'] = [FE nodes to check (usually 0 or -1)]
     tests[<NAME>]['time'] = [time steps to check (usually -1)]
     tests[<NAME>]['res'] = [results to check]
-    tests[<NAME>]['tol'] = [tolerances for result check]
+    tests[<NAME>]['tol'] = [relative tolerances for result check]
 
     """
     tests = defaultdict(dict)
@@ -74,7 +74,7 @@ def read_results_1d(res_dir, name):
                     res[field][int(re.findall(r'\d+', f_res)[-1])] += [[float(m) for m in line if m][1:]]
             os.remove(f_res)
 
-    # convert to numpy array
+    # convert results to numpy array
     for f in res.keys():
         for s in res[f].keys():
             res[f][s] = np.array(res[f][s])
@@ -86,10 +86,12 @@ def run_check(results, c):
     """
     Check the results of a test
     """
+    # loop all results
     for field, seg, node, time, ref, tol in zip(c['field'], c['seg'], c['node'], c['time'], c['res'], c['tol']):
         res = results[field][seg][node, time]
         diff = np.abs(res - ref) / ref
 
+        # check if difference in results is larger than given tolerance
         if diff > tol:
             err = 'Test failed. ' + field + ' in segment ' + str(seg) + ', node ' + str(node) + ', time ' + str(time)
             err += '. expected: ' + str(ref) + '. got: ' + str(res) + '. abs rel diff: ' + str(diff) + ' > ' + str(tol)
@@ -129,34 +131,42 @@ def run_test(build_dir, test_dir, name, check):
     return res
 
 
-def main(solver='skyline'):
+def main(solver='_skyline'):
     """
     Loop over all test cases and check if all results match
     """
     if 'BUILD_DIR' not in os.environ and 'TEST_DIR' not in os.environ:
         # run locally
         fpath = os.path.dirname(os.path.realpath(__file__))
-        build_dir = os.path.join(fpath, '..', 'build_' + solver)
+        build_dir = os.path.join(fpath, '..', 'build' + solver)
         test_dir = fpath
     else:
         # run on Travis
         build_dir = os.environ['BUILD_DIR']
         test_dir = os.environ['TEST_DIR']
 
+    # loop all test cases
     for name, check in get_tests().items():
         print('Running test ' + name)
         err = run_test(build_dir, test_dir, name, check)
+
+        # check if errors occured
         if err:
             print(err)
             return True
         else:
             print('Test passed')
+
+    # no tests failed
     else:
         return False
 
 
 if __name__ == '__main__':
+    # tests fail
     if main():
         exit(1)
+
+    # tests passs
     else:
         exit(0)
