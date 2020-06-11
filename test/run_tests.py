@@ -103,7 +103,7 @@ def run_test(name, check, solver='skyline'):
     Run a test case and check the results
     """
     # name of svOneDSolver executable
-    exe = os.path.join('..', 'build_' + solver, 'bin', 'OneDSolver')
+    exe = os.path.join(os.environ['BUILD_DIR'], 'bin', 'OneDSolver')
 
     # name of input file
     inp = name + '.in'
