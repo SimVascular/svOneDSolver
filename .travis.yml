@@ -26,3 +26,4 @@ before_install:
   - sudo apt-get -y install libboost-all-dev
 
 script: $SCRIPTS/travis_build.sh
+script: #SCRIPTS/travis_result_test.sh
