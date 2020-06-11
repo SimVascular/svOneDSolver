@@ -65,7 +65,7 @@ def read_results_1d(res_dir, name):
     Returns:
         dictionary res[result field][segment id][node, time step]
     """
-    # read from files and store in dict
+    # read from files, store in dict, and remove files
     res = defaultdict(lambda: defaultdict(list))
     for field in ['flow', 'pressure', 'area', 'wss', 'Re']:
         for f_res in glob.glob(os.path.join(res_dir, name + '_' + field + '.dat')):
@@ -83,6 +83,9 @@ def read_results_1d(res_dir, name):
 
 
 def run_check(results, c):
+    """
+    Check the results of a test
+    """
     for field, seg, node, time, ref, tol in zip(c['field'], c['seg'], c['node'], c['time'], c['res'], c['tol']):
         res = results[field][seg][node, time]
         diff = np.abs(res - ref) / ref
@@ -96,6 +99,9 @@ def run_check(results, c):
 
 
 def run_test(name, check, solver='superlu'):
+    """
+    Run a test case and check the results
+    """
     # name of svOneDSolver executable
     exe = os.path.join('..', 'build_' + solver, 'bin', 'OneDSolver')
 
@@ -115,15 +121,21 @@ def run_test(name, check, solver='superlu'):
         return 'Test failed. Result extraction failed:\n' + str(err)
 
     # compare to stored results
-    err = run_check(res, check)
+    try:
+        res = run_check(res, check)
+    except Exception as err:
+        return 'Test failed. Result check failed:\n' + str(err)
 
-    return err
+    return res
 
 
-def main():
+def main(solver='superlu'):
+    """
+    Loop over all test cases and check if all results match
+    """
     for name, check in get_tests().items():
         print('Running test ' + name)
-        err = run_test(name, check)
+        err = run_test(name, check, solver)
         if err:
             print(err)
             return True
