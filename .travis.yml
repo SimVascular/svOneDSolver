@@ -14,6 +14,9 @@ matrix:
 git:
   submodules: false
 
+python:
+  - "3.6"
+
 before_install:
   - export NUM_THREADS=4
   - export cwd=$(pwd)
@@ -25,7 +28,7 @@ before_install:
   - export SV_TOP_DIR=$cwd
   - $SCRIPTS/travis_get_cmake_latest.sh
   - sudo apt-get -y install libboost-all-dev
-  - pip install numpy
+  - pip install --user numpy
 
 script:
   - $SCRIPTS/travis_build.sh
