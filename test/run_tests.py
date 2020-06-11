@@ -147,6 +147,6 @@ def main(solver='skyline'):
 
 if __name__ == '__main__':
     if main():
-        exit(-1)
+        exit(1)
     else:
         exit(0)

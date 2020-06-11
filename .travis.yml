@@ -25,6 +25,7 @@ before_install:
   - export SV_TOP_DIR=$cwd
   - $SCRIPTS/travis_get_cmake_latest.sh
   - sudo apt-get -y install libboost-all-dev
+  - pip3 install numpy
 
 script: $SCRIPTS/travis_build.sh
 script: $SCRIPTS/travis_result_test.sh
