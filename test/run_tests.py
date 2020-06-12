@@ -22,38 +22,106 @@ def get_tests():
         SEGMENT seg1 ...
       - add test case to the dictionary below
       - all dictionary values are lists, so add as many results as you like
-
-    tests[<NAME>]['field'] = [fields to check ('flow', 'pressure', 'area', 'wss', 'Re')]
-    tests[<NAME>]['seg'] = [segments to check]
-    tests[<NAME>]['node'] = [FE nodes to check (usually 0 or -1)]
-    tests[<NAME>]['time'] = [time steps to check (usually -1)]
-    tests[<NAME>]['res'] = [results to check]
-    tests[<NAME>]['tol'] = [relative tolerances for result check]
-
+      - see the documentation of the Test class below on how to set up a test case
     """
-    tests = defaultdict(dict)
+    tests = {}
 
-    tests['tube_pressure']['field'] = ['pressure', 'pressure']
-    tests['tube_pressure']['seg'] = [0, 0]
-    tests['tube_pressure']['node'] = [0, -1]
-    tests['tube_pressure']['time'] = [-1, -1]
-    tests['tube_pressure']['res'] = [11005.30965, 10000]
-    tests['tube_pressure']['tol'] = [1.0e-7, 1.0e-9]
+    tests['tube_pressure'] = [Test('pressure', 0, 0, -1, 11005.30965, 1.0e-7, 'point'),
+                              Test('pressure', 0, -1, -1, 10000.0, 1.0e-8, 'point'),
+                              Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
+                              Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
 
-    tests['tube_rcr']['field'] = ['pressure', 'pressure']
-    tests['tube_rcr']['seg'] = [0, 0]
-    tests['tube_rcr']['node'] = [0, -1]
-    tests['tube_rcr']['time'] = [-1, -1]
-    tests['tube_rcr']['res'] = [11005.30965, 10000]
-    tests['tube_rcr']['tol'] = [1.0e-7, 1.0e-8]
+    tests['tube_rcr'] = [Test('pressure', 0, 0, -1, 11005.30965, 1.0e-7, 'point'),
+                         Test('pressure', 0, -1, -1, 10000.0, 1.0e-8, 'point'),
+                         Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
+                         Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
 
-    tests['tube_r']['field'] = ['pressure', 'pressure']
-    tests['tube_r']['seg'] = [0, 0]
-    tests['tube_r']['node'] = [0, -1]
-    tests['tube_r']['time'] = [-1, -1]
-    tests['tube_r']['res'] = [11005.30965, 10000]
-    tests['tube_r']['tol'] = [1.0e-7, 1.0e-8]
+    tests['tube_r'] = [Test('pressure', 0, 0, -1, 11005.30965, 1.0e-7, 'point'),
+                       Test('pressure', 0, -1, -1, 10000.0, 1.0e-8, 'point'),
+                       Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
+                       Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
+
     return tests
+
+
+class Test:
+    """
+    Class to define (and check) test cases
+    """
+
+    def __init__(self, field, seg, node, time, res, tol, fun):
+        """
+        Args:
+            field: field to check ('flow', 'pressure', 'area', 'wss', 'Re')
+            seg: segment to check
+            node: FE nodes to check (usually 0 or -1)
+            time: individual time step to check (usually -1) or list of time steps (e.g. np.arange(5,10))
+            res: result to check (float)
+            tol: relative tolerance for result check
+            fun: type of result comparison to perform in time ('point', 'mean', 'max', 'min')
+                 specifiy an interval for 'time' when chosing 'mean', 'max', or 'min'
+        """
+        # sanity checks
+        if field not in ['flow', 'pressure', 'area', 'wss', 'Re']:
+            raise ValueError('Field ' + field + ' unknown. Please select from flow, pressure, area, wss, Re')
+        if fun not in ['point', 'mean', 'max', 'min']:
+            raise ValueError('Function ' + fun + ' unknown. Please select from point, mean, max, min')
+        if not np.isscalar(time) and fun == 'point':
+            raise ValueError('Specify a single time point when selecting result type ' + fun)
+        if np.isscalar(time) and (fun == 'mean' or fun == 'max' or fun == 'min'):
+            raise ValueError('Specify a time interval when selecting result type ' + fun)
+
+        self.field = field
+        self.seg = seg
+        self.node = node
+        self.time = time
+        self.res = res
+        self.tol = tol
+        self.fun = fun
+
+    def check(self, results):
+        """
+        Perform the actual result check
+        """
+        # read result from svOneDSolver
+        res = self.read_result(results)
+
+        # calculate relative difference
+        diff = np.abs(res - self.res) / self.res
+
+        # check if difference in results is larger than given tolerance
+        if diff > self.tol:
+            return self.print_err(res, diff)
+
+        return False
+
+    def read_result(self, results):
+        """
+        Read results and select function
+        """
+        # extract result
+        res = results[self.field][self.seg][self.node, self.time]
+
+        # select result type
+        if self.fun == 'point':
+            return res
+        elif self.fun == 'mean':
+            return np.mean(res)
+        elif self.fun == 'max':
+            return np.max(res)
+        elif self.fun == 'min':
+            return np.min(res)
+        else:
+            raise ValueError('Unknown result type ' + self.fun)
+
+    def print_err(self, res, diff):
+        """
+        Create error string for user
+        """
+        err = 'Test failed. ' + self.field + ' in segment ' + str(self.seg)
+        err += ', node ' + str(self.node) + ', time ' + str(self.time) + '. expected: ' + str(self.res)
+        err += '. got: ' + str(res) + '. abs rel diff: ' + str(diff) + ' > ' + str(self.tol)
+        return err
 
 
 def read_results_1d(res_dir, name):
@@ -82,22 +150,19 @@ def read_results_1d(res_dir, name):
     return res
 
 
-def run_check(results, c):
+def run_check(results, result_checks):
     """
     Check the results of a test
     """
     # loop all results
-    for field, seg, node, time, ref, tol in zip(c['field'], c['seg'], c['node'], c['time'], c['res'], c['tol']):
-        res = results[field][seg][node, time]
-        diff = np.abs(res - ref) / ref
-
-        # check if difference in results is larger than given tolerance
-        if diff > tol:
-            err = 'Test failed. ' + field + ' in segment ' + str(seg) + ', node ' + str(node) + ', time ' + str(time)
-            err += '. expected: ' + str(ref) + '. got: ' + str(res) + '. abs rel diff: ' + str(diff) + ' > ' + str(tol)
+    for test in result_checks:
+        err = test.check(results)
+        if err:
+            # test failed
             return err
-    else:
-        return False
+
+    # all tests passed
+    return False
 
 
 def run_test(build_dir, test_dir, name, check):
@@ -135,6 +200,7 @@ def main(solver='_skyline'):
     """
     Loop over all test cases and check if all results match
     """
+    # set paths
     if 'BUILD_DIR' not in os.environ and 'TEST_DIR' not in os.environ:
         # run locally
         fpath = os.path.dirname(os.path.realpath(__file__))
@@ -145,8 +211,15 @@ def main(solver='_skyline'):
         build_dir = os.environ['BUILD_DIR']
         test_dir = os.environ['TEST_DIR']
 
+    # get test cases
+    try:
+        test_cases = get_tests()
+    except Exception as err:
+        print(err)
+        return True
+
     # loop all test cases
-    for name, check in get_tests().items():
+    for name, check in test_cases.items():
         print('Running test ' + name)
         err = run_test(build_dir, test_dir, name, check)
 
@@ -158,8 +231,7 @@ def main(solver='_skyline'):
             print('Test passed')
 
     # no tests failed
-    else:
-        return False
+    return False
 
 
 if __name__ == '__main__':
