@@ -1,4 +1,4 @@
-ilanguage: cpp
+language: cpp
 
 matrix:
   include:
@@ -14,6 +14,9 @@ matrix:
 git:
   submodules: false
 
+python:
+  - "3.6"
+
 before_install:
   - export NUM_THREADS=4
   - export cwd=$(pwd)
@@ -21,8 +24,12 @@ before_install:
   - echo "CWD=$cwd"
   - export SCRIPTS=$cwd/travis
   - export BUILD_DIR=$cwd/build_skyline
+  - export TEST_DIR=$cwd/test
   - export SV_TOP_DIR=$cwd
   - $SCRIPTS/travis_get_cmake_latest.sh
   - sudo apt-get -y install libboost-all-dev
+  - pip install --user numpy
 
-script: $SCRIPTS/travis_build.sh
+script:
+  - $SCRIPTS/travis_build.sh
+  - $SCRIPTS/travis_result_test.sh
