@@ -36,10 +36,75 @@ def get_tests():
                          Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
                          Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
 
+    tests['tube_rcr_Pd'] = [Test('pressure', 0, 0, -1, 12005.30965, 1.0e-7, 'point'),
+                            Test('pressure', 0, -1, -1, 11000, 1.0e-8, 'point'),
+                            Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
+                            Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
+
     tests['tube_r'] = [Test('pressure', 0, 0, -1, 11005.30965, 1.0e-7, 'point'),
                        Test('pressure', 0, -1, -1, 10000.0, 1.0e-8, 'point'),
                        Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
                        Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
+
+    tests['tube_r_Pd'] = [Test('pressure', 0, 0, -1, 12005.30965, 1.0e-7, 'point'),
+                          Test('pressure', 0, -1, -1, 11000.0, 1.0e-8, 'point'),
+                          Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
+                          Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
+
+    tests['tube_r_stab'] = [Test('pressure', 0, 0, -1, 11005.30965, 1.0e-7, 'point'),
+                            Test('pressure', 0, -1, -1, 10000.0, 1.0e-8, 'point'),
+                            Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
+                            Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
+
+    tests['bifurcation_P'] = [Test('pressure', 0, 0, -1, 4039.45953118937, 1e-5, 'point'),
+                              Test('pressure', 0, -1, -1, 4026.67220709878, 1e-5, 'point'),
+                              Test('pressure', 1, 0, -1, 4026.67220709878, 1e-5, 'point'),
+                              Test('pressure', 2, 0, -1, 4026.67220709878, 1e-5, 'point'),
+                              Test('pressure', 1, -1, -1, 4000.00, 1e-5, 'point'),
+                              Test('pressure', 2, -1, -1, 4000.00, 1e-5, 'point')
+                              Test('flow', 1, -1, -1, 3.9925, 1e-6, 'point'),
+                              Test('flow', 2, -1, -1, 3.9925, 1e-6, 'point')]
+
+    tests['bifurcation_R'] = [Test('pressure', 0, 0, -1, 3997.46433118937, 1e-5, 'point'),
+                              Test('pressure', 0, -1, -1, 3984.67700709878, 1e-5, 'point'),
+                              Test('pressure', 1, 0, -1, 3984.67700709878, 1e-5, 'point'),
+                              Test('pressure', 2, 0, -1, 3984.67700709878, 1e-5, 'point'),
+                              Test('pressure', 1, -1, -1, 3958.0048, 1e-5, 'point'),
+                              Test('pressure', 2, -1, -1, 3958.0048, 1e-5, 'point')
+                              Test('flow', 1, -1, -1, 3.9925, 1e-6, 'point'),
+                              Test('flow', 2, -1, -1, 3.9925, 1e-6, 'point')]
+
+    tests['bifurcation_R_stab'] = [Test('pressure', 0, 0, -1, 3997.46433118937, 1e-6, 'point'),
+                                   Test('pressure', 0, -1, -1, 3984.67700709878, 1e-6, 'point'),
+                                   Test('pressure', 1, 0, -1, 3984.67700709878, 1e-6, 'point'),
+                                   Test('pressure', 2, 0, -1, 3984.67700709878, 1e-6, 'point'),
+                                   Test('pressure', 1, -1, -1, 3958.0048, 1e-7, 'point'),
+                                   Test('pressure', 2, -1, -1, 3958.0048, 1e-7, 'point')
+                                   Test('flow', 1, -1, -1, 3.9925, 1e-6, 'point'),
+                                   Test('flow', 2, -1, -1, 3.9925, 1e-6, 'point')]
+
+    tests['bifurcation_RCR'] = [Test('pressure', 0, 0, np.arange(100, 200), 3997.46433118937, 1e-1, 'mean'),
+                                Test('pressure', 0, 0, np.arange(100,200), 42677.4427818, 1e-1, 'max'),
+                                Test('pressure', 0, 0, np.arange(100,200), -11395.5385549, 1e-1, 'min'),
+                                Test('pressure', 1, -1, np.arange(100,200), 3692.90057132024, 1e-1, 'mean'),
+                                Test('pressure', 1, -1, np.arange(100,200), 42253.7660003, 1e-1, 'max'),
+                                Test('pressure', 1, -1, np.arange(100,200), -11281.151197, 1e-1, 'min'),
+                                Test('pressure', 2, -1, np.arange(100,200), 3692.90057132024, 1e-1, 'mean'),
+                                Test('pressure', 2, -1, np.arange(100,200), 42253.7660003, 1e-1, 'max'),
+                                Test('pressure', 2, -1, np.arange(100,200), -11281.151197, 1e-1, 'min'),
+                                Test('flow', 0, 0, np.arange(100,200), 7.44861365948971, 1e-1, 'mean'),
+                                Test('flow', 1, -1, np.arange(100,200), 3.72430682974396, 1e-1, 'mean')
+                                Test('flow', 1, -1, np.arange(100,200), 42.8674517708, 1e-1, 'max'),
+                                Test('flow', 1, -1, np.arange(100,200), -11.573668327, 1e-1, 'min')]
+
+    tests['bifurcation_RCR_staticFunc'] = [Test('pressure', 0, 0, -1, 3997.46433118937, 1e-6, 'point'),
+                                           Test('pressure', 0, -1, -1, 3984.67700709878, 1e-6, 'point'),
+                                           Test('pressure', 1, 0, -1, 3984.67700709878, 1e-6, 'point'),
+                                           Test('pressure', 2, 0, -1, 3984.67700709878, 1e-6, 'point'),
+                                           Test('pressure', 1, -1, -1, 3958.0048, 1e-7, 'point'),
+                                           Test('pressure', 2, -1, -1, 3958.0048, 1e-7, 'point')
+                                           Test('flow', 1, -1, -1, 3.9925, 1e-6, 'point'),
+                                           Test('flow', 2, -1, -1, 3.9925, 1e-6, 'point')]
 
     return tests
 
