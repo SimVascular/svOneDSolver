@@ -7,7 +7,7 @@
 # ==========
 # - Name of the model (string)
 
-MODEL Bifurcation_RCR_
+MODEL results_bifurcation_RCR_
 
 # Modelled from aortic bifurcation test case from 
 # Xiao, N., Alastruey, J., Figueroa, C.A. A systematic comparison between 1-D and 3-D hemodynamics in compliant arterial models. Int J Numer Meth Bio, 2014; 30:204-231
@@ -91,13 +91,16 @@ OUTPUT TEXT
 # analytical pressures and flows based on RCR solution
 
 # Results to be checked
-# mean P_0_in	2.7975114746837 (mmHg)
-# max P_0_in	32.010706964321 (mmHg)
-# mean P_1_out	2.76990256050014 (mmHg) - same as mean P_2_out
-# max P_1_out	31.6929233199372 (mmHg) - same as max P_2_out
-# mean Q_1_out	0.002793459185961 (ml/s)
-# max Q_1_out	0.032153225392582 (ml/s)
-
+# mean P_0_in	3729.7094383237 (barye)
+# max P_0_in	42677.4427818 (barye)
+# min P_0_in	-11395.5385549 (barye)
+# mean P_1_out	3692.90057132024 (barye) - same as mean P_2_out
+# max P_1_out	42253.7660003 (barye) - same as max P_2_out
+# min P_1_out	-11281.151197 (barye) - same as min P_2_out
+# mean Q_0_in 	7.44861365948971 (ml/s)
+# mean Q_1_out	3.72430682974396 (ml/s) - same as mean Q_2_out
+# max Q_1_out	42.8674517708 (ml/s) - same as max Q_2_out
+# min Q_1_out 	-11.573668327 (ml/s) - same as Q_2_out
 
 
 

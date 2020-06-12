@@ -1,7 +1,7 @@
 # Modelled from aortic bifurcation test case from 
 # Xiao, N., Alastruey, J., Figueroa, C.A. A systematic comparison between 1-D and 3-D hemodynamics in compliant arterial models. Int J Numer Meth Bio, 2014; 30:204-231
 
-MODEL Bifurcation_R_
+MODEL results_bifurcation_P_
 
 NODE 0 0.0 0.0 0.0
 NODE 1 0.0 0.0 -8.6
@@ -16,6 +16,7 @@ SEGMENT seg0 0 8.6 50 0 1 2.32352192659501 2.32352192659501 0.0 MAT1 NONE 0.0 0 
 SEGMENT seg1 1 8.5 50 1 3 1.13097335529233 1.13097335529233 0.0 MAT1 NONE 0.0 0 0 PRESSURE P_OUT
 SEGMENT seg2 2 8.5 50 1 2 1.13097335529233 1.13097335529233 0.0 MAT1 NONE 0.0 0 0 PRESSURE P_OUT
 
+# Pressures from datatable list are in mmHg units
 DATATABLE P_OUT LIST
 0.0 3.00024602017365
 ENDDATATABLE
@@ -71,7 +72,7 @@ ENDDATATABLE
 # h_0 = 1.032mm, E_0 = 500 kPa, h_1 = h_2 = 0.72 mm, E_1 = E_2 = 700 kPa
 MATERIAL MAT1 OLUFSEN 1.06 0.04 0 2.0 1.0e15 -20 1e9
 
-SOLVEROPTIONS 0.001087 50 1000 2 STEADY_FLOW FLOW 1.0e-8 1 1 
+SOLVEROPTIONS 0.001087 100 500 2 STEADY_FLOW FLOW 1.0e-8 1 1 
 
 OUTPUT TEXT
 

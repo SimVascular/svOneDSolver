@@ -1,7 +1,7 @@
 # Modelled from aortic bifurcation test case from 
 # Xiao, N., Alastruey, J., Figueroa, C.A. A systematic comparison between 1-D and 3-D hemodynamics in compliant arterial models. Int J Numer Meth Bio, 2014; 30:204-231
 
-MODEL Bifurcation_R_
+MODEL results_bifurcation_R_
 
 NODE 0 0.0 0.0 0.0
 NODE 1 0.0 0.0 -8.6

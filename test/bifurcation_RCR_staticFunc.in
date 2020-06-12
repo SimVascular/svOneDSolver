@@ -7,7 +7,7 @@
 # ==========
 # - Name of the model (string)
 
-MODEL Bifurcation_RCR_stat_
+MODEL results_bifurcation_RCR_staticFunc_
 
 # Modelled from aortic bifurcation test case from 
 # Xiao, N., Alastruey, J., Figueroa, C.A. A systematic comparison between 1-D and 3-D hemodynamics in compliant arterial models. Int J Numer Meth Bio, 2014; 30:204-231
@@ -72,7 +72,7 @@ ENDDATATABLE
 # h_0 = 1.032mm, E_0 = 500 kPa, h_1 = h_2 = 0.72 mm, E_1 = E_2 = 700 kPa
 MATERIAL MAT1 OLUFSEN 1.06 0.04 0 2.0 1.0e15 -20 1e9
 
-SOLVEROPTIONS 0.001087 10 2000 2 STEADY_FLOW FLOW 1.0e-8 1 1 
+SOLVEROPTIONS 0.001087 10 100 2 STEADY_FLOW FLOW 1.0e-8 1 1 
 
 OUTPUT TEXT
 
