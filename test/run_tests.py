@@ -61,7 +61,7 @@ def get_tests():
                               Test('pressure', 1, 0, -1, 4026.67220709878, 1e-5, 'point'),
                               Test('pressure', 2, 0, -1, 4026.67220709878, 1e-5, 'point'),
                               Test('pressure', 1, -1, -1, 4000.00, 1e-5, 'point'),
-                              Test('pressure', 2, -1, -1, 4000.00, 1e-5, 'point')
+                              Test('pressure', 2, -1, -1, 4000.00, 1e-5, 'point'),
                               Test('flow', 1, -1, -1, 3.9925, 1e-6, 'point'),
                               Test('flow', 2, -1, -1, 3.9925, 1e-6, 'point')]
 
@@ -70,16 +70,16 @@ def get_tests():
                               Test('pressure', 1, 0, -1, 3984.67700709878, 1e-5, 'point'),
                               Test('pressure', 2, 0, -1, 3984.67700709878, 1e-5, 'point'),
                               Test('pressure', 1, -1, -1, 3958.0048, 1e-5, 'point'),
-                              Test('pressure', 2, -1, -1, 3958.0048, 1e-5, 'point')
-                              Test('flow', 1, -1, -1, 3.9925, 1e-6, 'point'),
-                              Test('flow', 2, -1, -1, 3.9925, 1e-6, 'point')]
+                              Test('pressure', 2, -1, -1, 3958.0048, 1e-5, 'point'),
+                              Test('flow', 1, -1, -1, 3.9925, 1e-5, 'point'),
+                              Test('flow', 2, -1, -1, 3.9925, 1e-5, 'point')]
 
     tests['bifurcation_R_stab'] = [Test('pressure', 0, 0, -1, 3997.46433118937, 1e-6, 'point'),
                                    Test('pressure', 0, -1, -1, 3984.67700709878, 1e-6, 'point'),
                                    Test('pressure', 1, 0, -1, 3984.67700709878, 1e-6, 'point'),
                                    Test('pressure', 2, 0, -1, 3984.67700709878, 1e-6, 'point'),
                                    Test('pressure', 1, -1, -1, 3958.0048, 1e-7, 'point'),
-                                   Test('pressure', 2, -1, -1, 3958.0048, 1e-7, 'point')
+                                   Test('pressure', 2, -1, -1, 3958.0048, 1e-7, 'point'),
                                    Test('flow', 1, -1, -1, 3.9925, 1e-6, 'point'),
                                    Test('flow', 2, -1, -1, 3.9925, 1e-6, 'point')]
 
@@ -93,7 +93,7 @@ def get_tests():
                                 Test('pressure', 2, -1, np.arange(100,200), 42253.7660003, 1e-1, 'max'),
                                 Test('pressure', 2, -1, np.arange(100,200), -11281.151197, 1e-1, 'min'),
                                 Test('flow', 0, 0, np.arange(100,200), 7.44861365948971, 1e-1, 'mean'),
-                                Test('flow', 1, -1, np.arange(100,200), 3.72430682974396, 1e-1, 'mean')
+                                Test('flow', 1, -1, np.arange(100,200), 3.72430682974396, 1e-1, 'mean'),
                                 Test('flow', 1, -1, np.arange(100,200), 42.8674517708, 1e-1, 'max'),
                                 Test('flow', 1, -1, np.arange(100,200), -11.573668327, 1e-1, 'min')]
 
@@ -102,7 +102,7 @@ def get_tests():
                                            Test('pressure', 1, 0, -1, 3984.67700709878, 1e-6, 'point'),
                                            Test('pressure', 2, 0, -1, 3984.67700709878, 1e-6, 'point'),
                                            Test('pressure', 1, -1, -1, 3958.0048, 1e-7, 'point'),
-                                           Test('pressure', 2, -1, -1, 3958.0048, 1e-7, 'point')
+                                           Test('pressure', 2, -1, -1, 3958.0048, 1e-7, 'point'),
                                            Test('flow', 1, -1, -1, 3.9925, 1e-6, 'point'),
                                            Test('flow', 2, -1, -1, 3.9925, 1e-6, 'point')]
 
