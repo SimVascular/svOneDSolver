@@ -31,6 +31,11 @@ def get_tests():
                               Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
                               Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
 
+    tests['tube_pressure_wave'] = [Test('pressure', 0, 0, -1, 10000.0, 1.0e-8, 'point'),
+                                   Test('pressure', 0, -1, -1, 9086.52306835, 1.0e-4, 'point'),
+                                   Test('flow', 0, -1, -1, 90.8652306835, 1.0e-4, 'point'),
+                                   Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
+
     tests['tube_rcr'] = [Test('pressure', 0, 0, -1, 11005.30965, 1.0e-7, 'point'),
                          Test('pressure', 0, -1, -1, 10000.0, 1.0e-8, 'point'),
                          Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
