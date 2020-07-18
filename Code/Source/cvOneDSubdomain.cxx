@@ -104,7 +104,7 @@ void cvOneDSubdomain::SetupMaterial(int matID){
 void cvOneDSubdomain::SetBoundValue(double boundV){
   switch(boundType){
     case BoundCondTypeScope::PRESSURE:
-      boundValue = mat->GetArea(boundV*1333.2237, fabs(z_out-z_in));
+      boundValue = mat->GetArea(boundV, fabs(z_out-z_in));
       break;
     default:
       boundValue = boundV;
@@ -206,7 +206,7 @@ void cvOneDSubdomain::SetBoundPresWave(double *time, double *pres, int num){
   pressureTime = new double[num];
   for(i = 0; i < num; i++){
       pressureTime[i] = time[i];
-      pressureWave[i] = pres[i]*1333.2237;
+      pressureWave[i] = pres[i];
   }
   numPressurePts = num;
 }
