@@ -6,7 +6,5 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   tut_simpleArtery
-   tut_bifurcation
-   tut_aortoFemoral
-   
+   test_tube_r
+   test_bifurcation_rcr.rst   

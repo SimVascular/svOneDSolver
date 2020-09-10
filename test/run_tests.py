@@ -88,19 +88,19 @@ def get_tests():
                                    Test('flow', 1, -1, -1, 3.9925, 1e-6, 'point'),
                                    Test('flow', 2, -1, -1, 3.9925, 1e-6, 'point')]
 
-    tests['bifurcation_RCR'] = [Test('pressure', 0, 0, np.arange(100, 200), 3997.46433118937, 1e-1, 'mean'),
-                                Test('pressure', 0, 0, np.arange(100,200), 42677.4427818, 1e-1, 'max'),
-                                Test('pressure', 0, 0, np.arange(100,200), -11395.5385549, 1e-1, 'min'),
-                                Test('pressure', 1, -1, np.arange(100,200), 3692.90057132024, 1e-1, 'mean'),
-                                Test('pressure', 1, -1, np.arange(100,200), 42253.7660003, 1e-1, 'max'),
-                                Test('pressure', 1, -1, np.arange(100,200), -11281.151197, 1e-1, 'min'),
-                                Test('pressure', 2, -1, np.arange(100,200), 3692.90057132024, 1e-1, 'mean'),
-                                Test('pressure', 2, -1, np.arange(100,200), 42253.7660003, 1e-1, 'max'),
-                                Test('pressure', 2, -1, np.arange(100,200), -11281.151197, 1e-1, 'min'),
-                                Test('flow', 0, 0, np.arange(100,200), 7.44861365948971, 1e-1, 'mean'),
-                                Test('flow', 1, -1, np.arange(100,200), 3.72430682974396, 1e-1, 'mean'),
-                                Test('flow', 1, -1, np.arange(100,200), 42.8674517708, 1e-1, 'max'),
-                                Test('flow', 1, -1, np.arange(100,200), -11.573668327, 1e-1, 'min')]
+    tests['bifurcation_RCR'] = [Test('pressure', 0,  0, np.arange(100, 200), 123878.022943, 1e-7, 'mean'),
+                                Test('pressure', 0,  0, np.arange(100, 200), 168182.372624, 1e-7, 'max'),
+                                Test('pressure', 0,  0, np.arange(100, 200), 89237.6441223, 1e-7, 'min'),
+                                Test('pressure', 1, -1, np.arange(100, 200), 123855.677783, 1e-7, 'mean'),
+                                Test('pressure', 1, -1, np.arange(100, 200), 171598.373528, 1e-7, 'max'),
+                                Test('pressure', 1, -1, np.arange(100, 200), 87624.0897929, 1e-7, 'min'),
+                                Test('pressure', 2, -1, np.arange(100, 200), 123855.677783, 1e-7, 'mean'),
+                                Test('pressure', 2, -1, np.arange(100, 200), 171598.373528, 1e-7, 'max'),
+                                Test('pressure', 2, -1, np.arange(100, 200), 87624.0897929, 1e-7, 'min'),
+                                Test('flow', 0,  0, np.arange(100, 200), 7.557147487534, 1e-7, 'mean'),
+                                Test('flow', 1, -1, np.arange(100, 200), 3.839024865141, 1e-7, 'mean'),
+                                Test('flow', 1, -1, np.arange(100, 200), 24.0553490482, 1e-7, 'max'),
+                                Test('flow', 1, -1, np.arange(100, 200), -3.35028925666, 1e-7, 'min')]
 
     tests['bifurcation_RCR_staticFunc'] = [Test('pressure', 0, 0, -1, 3997.46433118937, 1e-6, 'point'),
                                            Test('pressure', 0, -1, -1, 3984.67700709878, 1e-6, 'point'),
@@ -157,7 +157,7 @@ class Test:
         res = self.read_result(results)
 
         # calculate relative difference
-        diff = np.abs(res - self.res) / self.res
+        diff = np.abs((res - self.res) / self.res)
 
         # check if difference in results is larger than given tolerance
         if diff > self.tol:
