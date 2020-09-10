@@ -132,13 +132,11 @@ The following fields are required:
 12. Branch Angle (double)
 13. Upstream Segment ID (int)
 14. Branch Segment ID (int)
-15. Boundary Condition Type. The following boundary conditions are supported, with additional BC in development:
+15. *Outlet* Boundary Condition Type. The following *outlet* boundary conditions are supported:
 
-  * *NOBOUND*. No outlet boundary condition.
-  * *PRESSURE*. Constant pressure in the model units. 
+  * *NOBOUND*. No outlet boundary condition (used for internal segment outlets).
   * *FLOW*. Time-varying outlet flow rate. 
   * *RESISTANCE*. Constant resistance in model units. 
-  * *RESISTANCE_TIME*. Time-varying resistance in model units. 
   * *RCR*. Boundary condition specified through an RCR circuit.
 
 16. Data Table Name for boundary condition (string)
@@ -207,14 +205,10 @@ The following fields are required:
 3. Maximum Number of Steps (int)
 4. Number of quadrature points for finite elements (int), 
 5. Name of Data Table for inlet conditions (string)
-6. Type of boundary condition. The following boundary conditions are supported:
+6. Type of *inlet* boundary condition. The following *inlet* boundary conditions are supported:
 
-  * *NOBOUND*. No outlet boundary condition
-  * *PRESSURE*. Constant outlet pressure
-  * *FLOW*. Time varying outlet flow rate. 
-  * *RESISTANCE*. Constant resistance at outlet. 
-  * *RESISTANCE_TIME*. Time-varying resistance at the outlet. 
-  * *RCR*. Boundary RCR circuit. 
+  * *FLOW*. Time varying inflow rate.
+  * *PRESSURE_WAVE*. Time varying inlet pressure.
   
 7. Convergence tolerance (double)
 8. Formulation Type. The following formulations are supported: 
@@ -271,4 +265,4 @@ The following fields are required:
 
 **NOTE**: The reference pressure is the pressure associated with the undeformed area of the vessel. Typically this is the diastolic pressure for a specific vessel. Multiple reference pressures can be assigned to segments using multiple material models.
 
-**NOTE**: For the OLUFSEN material model, all three parameters need to be defined, i.e., :math:`k_1`,:math:`k_2`,:math:`k_3`. For a LINEAR material model instead only the first material parameter :math:`k_1` is used and set equal to :math:`E\,h/r`, i.e., the product of elastic modulus and thickness divided by the radius.
+**NOTE**: For the OLUFSEN material model, all three parameters need to be defined, i.e., :math:`k_1`, :math:`k_2`, :math:`k_3`. For a LINEAR material model instead only the first material parameter :math:`k_1` is used and set equal to :math:`E\,h/r`, i.e., the product of elastic modulus and thickness divided by the radius.
