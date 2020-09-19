@@ -327,7 +327,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
     // Trim String
     boost::trim(buffer);
     // Tokenize String
-    boost::split(tokenizedString, buffer, boost::is_any_of(" ,"), boost::token_compress_on);
+    boost::split(tokenizedString, buffer, boost::is_any_of(" ,\t"), boost::token_compress_on);
     // Check for Empty buffer
     if(!buffer.empty()){
       // CHECK THE ELEMENT TYPE
@@ -538,7 +538,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
             // Trim String
             boost::trim(buffer);
             // Tokenize String
-            boost::split(tokenizedString, buffer, boost::is_any_of(" ,"), boost::token_compress_on);
+            boost::split(tokenizedString, buffer, boost::is_any_of(" ,\t"), boost::token_compress_on);
             // Check for Empty buffer
             if(!buffer.empty()){
               if(boost::to_upper_copy(tokenizedString[0]) == std::string("ENDDATATABLE")){
