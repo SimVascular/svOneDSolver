@@ -61,6 +61,12 @@ def get_tests():
                             Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
                             Test('area', 0, -1, -1, 1.0, 1.0e-5, 'point')]
 
+    tests['tube_stenosis_r'] = [Test('pressure', 0, 0, -1, 10150.68211, 1.0e-6, 'point'),
+                                Test('pressure', 2, -1, -1, 10000.0, 1.0e-8, 'point'),
+                                Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
+                                Test('area', 0, -1, -1, 10.0, 1.0e-4, 'point')]
+
+
     tests['bifurcation_P'] = [Test('pressure', 0, 0, -1, 4039.45953118937, 1e-5, 'point'),
                               Test('pressure', 0, -1, -1, 4026.67220709878, 1e-5, 'point'),
                               Test('pressure', 1, 0, -1, 4026.67220709878, 1e-5, 'point'),
