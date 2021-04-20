@@ -97,6 +97,18 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
   // convert char string to boundary condition type
   if (!strcmp(lossType, "NONE")){
     loss = MinorLossScope::NONE;
+  }else if(!strcmp(lossType, "STENOSIS")){
+    loss = MinorLossScope::STENOSIS;
+  }else if(!strcmp(lossType, "BRANCH_THROUGH_DIVIDING")){
+    loss = MinorLossScope::BRANCH_THROUGH_DIVIDING;
+  }else if(!strcmp(lossType, "BRANCH_SIDE_DIVIDING")){
+    loss = MinorLossScope::BRANCH_SIDE_DIVIDING;
+  }else if(!strcmp(lossType, "BRANCH_THROUGH_CONVERGING")){
+    loss = MinorLossScope::BRANCH_THROUGH_CONVERGING;
+  }else if(!strcmp(lossType, "BRANCH_SIDE_CONVERGING")){
+    loss = MinorLossScope::BRANCH_SIDE_CONVERGING;
+  }else if(!strcmp(lossType, "BIFURCATION_BRANCH")){
+    loss = MinorLossScope::BIFURCATION_BRANCH;
   }else{
     return CV_ERROR;
   }

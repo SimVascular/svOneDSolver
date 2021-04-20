@@ -1,0 +1,64 @@
+MODEL results_tube_stenosis_r_
+
+NODE 0 0.0 0.0 0.0
+NODE 1 0.0 0.0 10.0
+NODE 2 0.0 0.0 20.0
+NODE 3 0.0 0.0 30.0
+
+JOINT JOINT0 1 IN0 OUT0
+JOINTINLET IN0 1 0
+JOINTOUTLET OUT0 1 1
+
+JOINT JOINT1 2 IN1 OUT1
+JOINTINLET IN1 1 1
+JOINTOUTLET OUT1 1 2
+
+SEGMENT seg0 0 10.0 50 0 1 10.0 10.0 0.0 MAT1 NONE 0.0 0 0 NOBOUND NONE
+SEGMENT seg1 1 10.0 50 1 2  5.0  5.0 0.0 MAT1 STENOSIS 0.0 0 0 NOBOUND NONE
+SEGMENT seg2 2 10.0 50 2 3 10.0 10.0 0.0 MAT1 NONE 0.0 0 0 RESISTANCE OUTLETDATA
+
+DATATABLE INLETDATA LIST
+0.0 100.0
+10.0 100.0
+ENDDATATABLE
+
+DATATABLE OUTLETDATA LIST
+0.0 100.0
+ENDDATATABLE
+
+SOLVEROPTIONS 0.001 1000 1000 2 INLETDATA FLOW 1.0e-8 1 1
+
+MATERIAL MAT1 OLUFSEN 1.06 0.04 0 2.0 1.0e15 -20 1e9
+
+OUTPUT TEXT
+
+# analytical solution
+
+# parameters
+# viscosity			mu	0.04
+# vessel length			L	10
+# vessel cross-section normal	S0	10
+# vessel cross-section stenosis	S1	5
+# resistance BC			R_BC	100
+# prescribed inflow		Q	100
+# loss factor			Kt	1.52
+
+# derived parameters
+# vessel diameter normal	D0	3.568248232
+# vessel diameter stenosis	D1	2.523132522
+# kinematic visocity		nu	0.03773584906
+
+# stenosis loss model
+# corrected length		La = 0.83*L + 1.64*D1 = 12.43793734
+# loss factor			Kv = 32*La/D0*(S0/S1)^2 = 446.1729889
+# Reynolds number		Re0 = D0*Q/S0/nu
+# loss factor			K = 2*(Kv/Re0 + Kt/2 * (S0/S1 - 1)^2) * (S1/S0)^2
+
+# reference solution
+# resistance normal vessels	R1 = R3 = 8*mu*L*PI/A^2 = 10.05309649
+# pressure drop stenosis	delta P = K/2*rho * (Q/S1)^2 = 130.5759137
+
+
+# results to be checked
+# pressure inlet	Pin 	= Q*(R1+R3+R_BC) + delta P	= 10150.68211
+# pressure outlet	Pout	= Q*R_BC			= 10000
