@@ -249,16 +249,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
   S[1] = currSolution->Get(eqNumbers[2]);
   Q[1] = currSolution->Get(eqNumbers[3]);
 
-  if(cvOneDGlobal::debugMode){
-    printf("(Debug) Assembling Element %ld\n",element);
-    printf("--- End node solutions\n");
-    printf("S[0]: %e\n",S[0]);
-    printf("Q[0]: %e\n",Q[0]);
-    printf("S[1]: %e\n",S[1]);
-    printf("Q[1]: %e\n",Q[1]);
-    //getchar();
-  }
-
   // set the equation numbers for the element matrix
   elementMatrix->SetEquationNumbers( eqNumbers);
   elementMatrix->Clear();
@@ -285,20 +275,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     double DOutflowDp = material->GetDOutflowDp( pressure, z);// 0.0
     double IntegralpD2S = 0.0;
 
-    if(cvOneDGlobal::debugMode){
-      printf("(Debug) Assembling Element %ld\n",element);
-      printf("--- Element Values\n");
-      printf("z: %e\n",z);
-      printf("pressure: %e\n",pressure);
-      printf("Outflow: %e\n",Outflow);
-      printf("DpDS: %e\n",DpDS);
-      printf("DpDz: %e\n",DpDz);
-      printf("DOutflowDp: %e\n",DOutflowDp);
-      printf("IntegralpD2S: %e\n",IntegralpD2S);
-      //getchar();
-    }
-
-
     if(cvOneDGlobal::CONSERVATION_FORM == 1) {
       IntegralpD2S = material->GetIntegralpD2S( U[0], z);//IV added IntegralpD2S 01-18-03
     }
@@ -317,20 +293,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     double C22 = N / U[0];
     double K22 = kinViscosity;
 
-    if(cvOneDGlobal::debugMode){
-      printf("(Debug) Assembling Element %ld\n",element);
-      printf("--- Element Values 2\n");
-      printf("aux: %e\n",aux);
-      printf("A12: %e\n",A12);
-      printf("A21: %e\n",A21);
-      printf("A22: %e\n",A22);
-      printf("C11: %e\n",C11);
-      printf("C21: %e\n",C21);
-      printf("C22: %e\n",C22);
-      printf("K22: %e\n",K22);
-      //getchar();
-    }
-
     // K22=0.0;
 
     // 01-18-03
@@ -343,15 +305,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     double CF21 = 1.0/density/U[0]*IntegralpD2S;//sign error corrected by IV 06-15-04
     double CF22 = N / U[0];
 
-    if(cvOneDGlobal::debugMode){
-      printf("(Debug) Assembling Element %ld\n",element);
-      printf("--- Element Values 2\n");
-      printf("CF11: %e\n",CF11);
-      printf("CF21: %e\n",CF21);
-      printf("CF22: %e\n",CF22);
-      //getchar();
-    }
-
     // evaluate the tau matrix
     double tau[4];
     double h = nodes[1] - nodes[0];
@@ -360,17 +313,7 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
     double modA[4];
     double modC[4];
 
-    if(cvOneDGlobal::debugMode){
-      printf("(Debug) Assembling Element %ld\n",element);
-      printf("C[0]: %e\n",C[0]);
-      printf("C[1]: %e\n",C[1]);
-      printf("C[2]: %e\n",C[2]);
-      printf("C[3]: %e\n",C[3]);
-      getchar();
-    }
-
     if(STABILIZATION == 1){
-
       GetModulus(A, modA);
       // stabilization parameter blows up if you have a very small or zero
       // kinematic viscosity
@@ -389,22 +332,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
       tau[2] = 2.0/h*modA[2] + modC[2];
       tau[3] = (2.0/deltaTime) + 2.0/h*modA[3] + 12.0/(h*h)*K22 + modC[3];
 
-
-      if(cvOneDGlobal::debugMode){
-        printf("(Debug) Assembling Element %ld\n",element);
-        printf("kinViscosity: %e\n",kinViscosity);
-        printf("SMALL_KINEMATIC_VISCOSITY: %e\n",SMALL_KINEMATIC_VISCOSITY);
-        printf("h: %e\n",h);
-        printf("modA[0]: %e\n",modA[0]);
-        printf("modC[0]: %e\n",modC[0]);
-        printf("modA[1]: %e\n",modA[1]);
-        printf("modC[1]: %e\n",modC[2]);
-        printf("modA[2]: %e\n",modA[2]);
-        printf("modA[3]: %e\n",modA[3]);
-        printf("modC[3]: %e\n",modC[3]);
-        getchar();
-      }
-
       double det = tau[0]*tau[3]-tau[1]*tau[2];
 
       // correcting tau...
@@ -413,16 +340,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
       tau[1] = -tau[1]/det;
       tau[2] = -tau[2]/det;
       tau[3] =  temp/det;
-
-      if(cvOneDGlobal::debugMode){
-        printf("(Debug) Assembling Element %ld\n",element);
-        printf("tau[0]: %e\n",tau[0]);
-        printf("tau[1]: %e\n",tau[1]);
-        printf("tau[2]: %e\n",tau[2]);
-        printf("tau[3]: %e\n",tau[3]);
-        getchar();
-      }
-
     } // end STABILIZATION
 
 
@@ -464,19 +381,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
           auxb[2] = DxShape[b]*A21-shape[b]*C21;
           auxb[3] = DxShape[b]*A22-shape[b]*C22;
 
-          if(cvOneDGlobal::debugMode){
-            printf("(Debug) Assembling Element %ld\n",element);
-            printf("auxa[0]: %e\n",auxa[0]);
-            printf("auxa[1]: %e\n",auxa[1]);
-            printf("auxa[2]: %e\n",auxa[2]);
-            printf("auxa[3]: %e\n",auxa[3]);
-            printf("auxb[0]: %e\n",auxb[0]);
-            printf("auxb[1]: %e\n",auxb[1]);
-            printf("auxb[2]: %e\n",auxb[2]);
-            printf("auxb[3]: %e\n",auxb[3]);
-            getchar();
-          }
-
           //
           // Multiply the matrices to obtain the GLS contribution into auxa
           //
@@ -493,21 +397,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
           auxa[2] = auxc[2]*auxb[0]+auxc[3]*auxb[2];
           auxa[3] = auxc[2]*auxb[1]+auxc[3]*auxb[3];
 
-          if(cvOneDGlobal::debugMode){
-            printf("(Debug) Assembling Element %ld\n",element);
-            printf("auxa[0]: %e\n",auxa[0]);
-            printf("auxa[1]: %e\n",auxa[1]);
-            printf("auxa[2]: %e\n",auxa[2]);
-            printf("auxa[3]: %e\n",auxa[3]);
-            printf("auxc[0]: %e\n",auxc[0]);
-            printf("auxc[1]: %e\n",auxc[1]);
-            printf("auxc[2]: %e\n",auxc[2]);
-            printf("auxc[3]: %e\n",auxc[3]);
-            printf("deltaTime: %e\n",deltaTime);
-            getchar();
-          }
-
-
           //
           // now sum the GLS terms to the DG terms
           //
@@ -517,16 +406,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
           k22 += deltaTime*auxa[3];
 
         } // end stabilization
-
-        if(cvOneDGlobal::debugMode){
-          printf("(Debug) Assembling Element %ld\n",element);
-          printf("--- Element Values 2\n");
-          printf("k11: %e\n",k11);
-          printf("k12: %e\n",k12);
-          printf("k21: %e\n",k21);
-          printf("k22: %e\n",k22);
-          getchar();
-        }
 
         elementMatrix->Add( 2*a  , 2*b  , k11*jw);
         elementMatrix->Add( 2*a  , 2*b+1, k12*jw);
