@@ -72,7 +72,7 @@ class cvOneDMthSegmentModel : public cvOneDMthModelBase{
     void FormMixedBCLHS(int ith, cvOneDSubdomain* sub, cvOneDDenseMatrix* elementMatrix){;}
     void FormMixedBCRHS(int ith, cvOneDSubdomain* sub, cvOneDDenseMatrix* elementMatrix){;}
     double N_Stenosis( long ith);
-    double N_MinorLoss(long ith);
+    void N_MinorLoss(long ith, double* N_vec);
     double GetInflowRate();
 
   private:
