@@ -157,8 +157,8 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
       // modify to lessen stenosis
       D[0] = sqrt(4*S[0]/3.14159265358979323846);
       D[1] = sqrt(4*S[1]/3.14159265358979323846);
-//      La = 0.83*L + 1.64*D[1];
-      La = L;
+      La = 0.83*L + 1.64*D[1];
+//      La = L;
       Kv = 32. * La / D[0] * 1.0/a*1.0/a;
       Re0 = D[0] * Q[0] / (S[0] * kinViscosity0);
       func= Kv/Re0 + Kt / 2. * (1.0/a - 1.) * (1.0/a - 1.);
@@ -170,7 +170,7 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
       const double mult = (8.0 * pi * kinViscosity0 / Q[0] + 0.5 * Kt / L * (1.0 - a) * (1.0 - a));
 
       // N
-      N_vec[0] = - mult * Q[0] * Q[0] / Q[1];
+      N_vec[0] = -N;// - mult * Q[0] * Q[0] / Q[1];
 
       // dN/dS1
       N_vec[1] =   Kt / L * (1.0 - a)     / q / q * Q[1] / S[0];
@@ -202,6 +202,9 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
   }
 
   // cout << " -N " << -N << " Q(1) :"<< Q[1] << endl;
+}
+
+void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector* elementVector, cvOneDDenseMatrix* elementMatrix){
 }
 
 void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elementMatrix, long ith){
@@ -341,9 +344,6 @@ void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elem
       tau[2] = -tau[2]/det;
       tau[3] =  temp/det;
     } // end STABILIZATION
-
-
-
 
     for( int a = 0; a < numberOfNodes; a++){
 
@@ -652,7 +652,6 @@ void cvOneDMthSegmentModel::FormElementRHS(long element, cvOneDFEAVector* elemen
         rDG1 = deltaTime*(DxShape[a]*F1+shape[a]*GF1)-shape[a]*(U[0]-Un[0]);
         // GF2 contains NNN
         rDG2 = deltaTime*(DxShape[a]*F2-DxShape[a]*K22*DxU[1]+shape[a]*GF2)-shape[a]*(U[1]-Un[1]);
-        // if(element==0 && a==0) cout<<"rDG2"<<" "<<DxShape[a]*F2<<" "<<-DxShape[a]*K22*DxU[1]<<" "<<shape[a]*GF2<<" "<<-shape[a]*(U[1]-Un[1])<<endl;
       }else{
 
         // Brooke's formulation that I am not using IV 01-31-03

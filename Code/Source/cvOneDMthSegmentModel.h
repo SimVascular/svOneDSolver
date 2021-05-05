@@ -56,6 +56,7 @@ class cvOneDMthSegmentModel : public cvOneDMthModelBase{
                           long quadPoints_);
     ~cvOneDMthSegmentModel();
 
+    void FormNewton(cvOneDFEAVector* rhsVector, cvOneDFEAMatrix* lhsMatrix);
     void FormNewtonLHS( cvOneDFEAMatrix* lhsMatrix);
     // forms an approximation to the global consistent tangent
     void FormNewtonRHS( cvOneDFEAVector* rhsVector);
@@ -67,6 +68,7 @@ class cvOneDMthSegmentModel : public cvOneDMthModelBase{
 
   private:
 
+    void FormElement(long element, long ith, cvOneDFEAVector* elementVector, cvOneDDenseMatrix* elementMatrix);
     void FormElementLHS(long element, cvOneDDenseMatrix* elementMatrix, long ithSubdomain);
     void FormElementRHS(long element, cvOneDFEAVector* elementVector, long ithSubdomain);
     void FormMixedBCLHS(int ith, cvOneDSubdomain* sub, cvOneDDenseMatrix* elementMatrix){;}
