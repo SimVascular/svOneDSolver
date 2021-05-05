@@ -1417,13 +1417,7 @@ void cvOneDBFSolver::GenerateSolution(void){
       tstart_iter=clock();
 
       for(i = 0; i < numMath; i++){
-        mathModels[i]->FormNewtonRHS(rhs);
-
-      }
-
-      for(i = 0; i < numMath; i++){
-        mathModels[i]->FormNewtonLHS(lhs);
-
+        mathModels[i]->FormNewton(lhs, rhs);
       }
 
       // PRINT RHS BEFORE BC APP

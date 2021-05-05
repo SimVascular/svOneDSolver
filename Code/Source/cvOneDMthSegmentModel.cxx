@@ -62,31 +62,25 @@ void cvOneDMthSegmentModel::SetEquationNumbers(long element, cvOneDDenseMatrix* 
   elementMatrix->SetEquationNumbers(eqNumbers);
 }
 
-void cvOneDMthSegmentModel::FormNewtonLHS(cvOneDFEAMatrix* lhsMatrix){
-  int i;
-  lhsMatrix->Clear();
 
-  cvOneDDenseMatrix elementMatrix(4, "eLhsMatrix");
-  // no boundary related terms
-  for(i = 0; i < subdomainList.size(); i++){
-    for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
-      FormElementLHS(element, &elementMatrix, i);
-      lhsMatrix->Add(elementMatrix);
-      // cout<< elementMatrix << endl;
-    }
-  }
+void cvOneDMthSegmentModel::FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVector* rhsVector){
+	lhsMatrix->Clear();
+	rhsVector->Clear();
+
+	cvOneDFEAVector elementVector(4, "eRhsVector");
+	cvOneDDenseMatrix elementMatrix(4, "eLhsMatrix");
+
+	// no boundary related terms
+	for(int i = 0; i < subdomainList.size(); i++){
+		for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
+			FormElementRHS( element, &elementVector, i);
+			FormElementLHS(element, &elementMatrix, i);
+			lhsMatrix->Add(elementMatrix);
+			rhsVector->Add( elementVector);
+		}
+	}
 }
 
-void cvOneDMthSegmentModel::FormNewtonRHS(cvOneDFEAVector* rhsVector){
-  rhsVector->Clear();
-  cvOneDFEAVector elementVector(4, "eRhsVector");
-  for(int i = 0; i < subdomainList.size(); i++){
-    for(long element = 0; element<subdomainList[i]->GetNumberOfElements(); element++){
-      FormElementRHS( element, &elementVector, i);
-      rhsVector->Add( elementVector);
-    }
-  }
-}
 
 double cot(double x){
   return cos(x)/sin(x);

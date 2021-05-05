@@ -56,11 +56,8 @@ class cvOneDMthSegmentModel : public cvOneDMthModelBase{
                           long quadPoints_);
     ~cvOneDMthSegmentModel();
 
-    void FormNewton(cvOneDFEAVector* rhsVector, cvOneDFEAMatrix* lhsMatrix);
-    void FormNewtonLHS( cvOneDFEAMatrix* lhsMatrix);
-    // forms an approximation to the global consistent tangent
-    void FormNewtonRHS( cvOneDFEAVector* rhsVector);
-    // forms minus the global residual vector
+    // forms minus the global residual vector and an approximation to the global consistent tangent
+    void FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVector* rhsVector);
     void SetEquationNumbers( long element, cvOneDDenseMatrix* elementMatrix, int ith);
     long GetUpmostEqnNumber(long ele, long ith) { return -2;}
     // 1=Brooke's one, 0=none IV 04-28-03
