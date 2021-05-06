@@ -168,17 +168,17 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
       // N
       N_vec[0] = -N;// - mult * Q[0] * Q[0] / Q[1];
 
-      // dN/dS1
-      N_vec[1] =   Kt / L * (1.0 - a)     / q / q * Q[1] / S[0];
-
       // dN/dS0
-      N_vec[3] = - Kt / L * (1.0 - a) * a / q / q * Q[1] / S[0];
+      N_vec[1] = - Kt / L * (1.0 - a) * a / q / q * Q[1] / S[0];
 
-      // dN/dQ1
-      N_vec[2] = mult / q / q;
+      // dN/dS1
+      N_vec[3] =   Kt / L * (1.0 - a)     / q / q * Q[1] / S[0];
 
       // dN/dQ0
-      N_vec[4] = mult * 2.0 / q - 8.0 * pi * kinViscosity0 / Q[1];
+      N_vec[2] = mult * 2.0 / q - 8.0 * pi * kinViscosity0 / Q[1];
+
+      // dN/dQ1
+      N_vec[4] = mult / q / q;
 
       break;
     }
@@ -219,8 +219,15 @@ void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector*
 
 	// N plus linearization
 	double N_vec[5];
+	double dN_dS[2];
+	double dN_dQ[2];
+
 	N_MinorLoss(ith, N_vec);
 	const double N = N_vec[0];
+	dN_dS[0] = N_vec[1];
+	dN_dQ[0] = N_vec[2];
+	dN_dS[1] = N_vec[3];
+	dN_dQ[1] = N_vec[4];
 
 	double k11,k12,k21,k22;
 	BoundCondType bound = sub->GetBoundCondition();
@@ -284,6 +291,11 @@ void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector*
 		DxU[0] = DxShape[0]*S[0]+DxShape[1]*S[1];
 		DxU[1] = DxShape[0]*Q[0]+DxShape[1]*Q[1];
 
+		// evaluate N linearization at integration point
+		double dN[2];
+		dN[0] = finiteElement->Interpolate( xi[l], dN_dS);
+		dN[1] = finiteElement->Interpolate( xi[l], dN_dQ);
+
 		// get position corresponding to quadrature point
 		double z = finiteElement->Interpolate( xi[l], nodes);
 
@@ -314,7 +326,6 @@ void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector*
 		double C21 = -1.0/density*DpDz;
 		double C22 = N/U[0];
 		double K22 = kinViscosity;
-		// K22=0.0;
 
 		double G1 = -Outflow;
 		double G2 = N*aux-U[0]/density*DpDz;
@@ -335,7 +346,6 @@ void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector*
 		// we begin by calculating the residual
 		double F1  = U[1];
 		double F2  = (1.0+ delta)*U[1]*aux+IntegralpS/density;
-		// double K22 = kinViscosity;
 		double GF1 = -Outflow;
 		double GF2 = N*aux+IntegralpD2S/density;
 
@@ -440,8 +450,8 @@ void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector*
 					// IV's formulation 01-18-03
 					k11 = deltaTime*(shape[a]*CF11*shape[b])-shape[a]*shape[b];
 					k12 = deltaTime*(A12*shape[b]*DxShape[a]);
-					k21 = deltaTime*(DxShape[a]*A21*shape[b]+shape[a]*CF21*shape[b]);
-					k22 = deltaTime*(DxShape[a]*A22*shape[b]-DxShape[a]*(K22)*DxShape[b]+shape[a]*CF22*shape[b]) - shape[a]*shape[b];
+					k21 = deltaTime*(DxShape[a]*A21*shape[b]+shape[a]*CF21*shape[b]+shape[a]*dN[0]*aux*shape[b]);
+					k22 = deltaTime*(DxShape[a]*A22*shape[b]-DxShape[a]*(K22)*DxShape[b]+shape[a]*CF22*shape[b]+shape[a]*dN[1]*aux*shape[b]) - shape[a]*shape[b];
 				} else{
 					// Here is Brooke's version that I am not using IV 01-30-03
 					k11 = deltaTime*(-shape[a]*C11*shape[b])+shape[a]*shape[b];
@@ -462,8 +472,8 @@ void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector*
 					double auxb[4];
 					auxb[0] = -shape[b]*C11; // A11 = 0.0
 					auxb[1] = DxShape[b]; // A12 = 1.0, C12 = 0.0
-					auxb[2] = DxShape[b]*A21-shape[b]*C21;
-					auxb[3] = DxShape[b]*A22-shape[b]*C22;
+					auxb[2] = DxShape[b]*A21-shape[b]*C21-shape[b]*dN[0]*aux;
+					auxb[3] = DxShape[b]*A22-shape[b]*C22-shape[b]*dN[1]*aux;
 
 					// Multiply the matrices to obtain the GLS contribution into auxa
 					// Contains the product: auxa * tau
