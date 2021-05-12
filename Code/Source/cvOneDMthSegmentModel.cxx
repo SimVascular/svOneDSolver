@@ -68,18 +68,26 @@ void cvOneDMthSegmentModel::FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVect
 	rhsVector->Clear();
 
 	cvOneDFEAVector elementVector(4, "eRhsVector");
+	cvOneDFEAVector elementVector_FD(4, "eRhsVector_FD");
 	cvOneDDenseMatrix elementMatrix(4, "eLhsMatrix");
+	cvOneDDenseMatrix elementMatrix_FD(4, "eLhsMatrix_FD");
 
 	// no boundary related terms
 	for(int i = 0; i < subdomainList.size(); i++){
 		for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
-//			FormElementRHS( element, &elementVector, i);
-//			FormElementLHS(element, &elementMatrix, i);
 			FormElement(element, i, &elementVector, &elementMatrix);
+			FormElement_FD(element, i, &elementVector_FD, &elementMatrix_FD);
+			rhsVector->Add(elementVector);
 			lhsMatrix->Add(elementMatrix);
-			rhsVector->Add( elementVector);
 		}
 	}
+	
+	// debug output
+	ofstream ofsLHS;
+	ofsLHS.open("lhs_1.txt");
+	lhsMatrix->print(ofsLHS);
+	ofsLHS.close();
+//	exit(0);
 }
 
 
@@ -201,6 +209,68 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
   }
 
   // cout << " -N " << -N << " Q(1) :"<< Q[1] << endl;
+}
+
+
+void cvOneDMthSegmentModel::FormElement_FD(long element, long ith, cvOneDFEAVector* elementVector, cvOneDDenseMatrix* elementMatrix){
+	// number of unknowns per element
+	const int n_eq = 4;
+	
+	// step size for finite differences
+	const double eps = 0.0000001;
+
+	// localize the values of the current approximation for U on this element
+	long eqNumbers[n_eq];
+	GetEquationNumbers(element, eqNumbers, ith);
+	
+	// unused element matrix
+	cvOneDDenseMatrix elementMatrix_dummy(4, "eLhsMatrix_dummy");
+	elementMatrix_dummy.SetEquationNumbers(eqNumbers);
+	
+	// output element matrix
+	elementMatrix->SetEquationNumbers(eqNumbers);
+	elementMatrix->Clear();
+	
+	// calculate residual (and tangent matrix - unused)
+	FormElement(element, ith, elementVector, &elementMatrix_dummy);
+	
+	// store current solution
+	double U_orig[n_eq];
+	for (int i=0; i<n_eq; i++)
+		U_orig[i] = currSolution->Get(eqNumbers[i]);
+	
+	// element vector for variation in unknown i
+	cvOneDFEAVector elementVector_ith(4, "eRhsVector_ith");
+	elementVector_ith.SetEquationNumbers(eqNumbers);
+	
+	// calculate finite difference vector for each unknown
+	for (int i=0; i<n_eq; i++){
+		// reset element vector
+		elementVector_ith.Clear();
+
+		// restore original solution
+		for (int j=0; j<n_eq; j++)
+			currSolution->Set(eqNumbers[j], U_orig[j]);
+		
+		// add variation in i-th direction
+		currSolution->Add(eqNumbers[i], eps);
+		
+		// calculate residual with variation
+		FormElement(element, ith, &elementVector_ith, &elementMatrix_dummy);
+		
+		// calculate finite difference
+		for (int j=0; j<n_eq; j++){
+			// tangent matrix is derivative of negative residual
+			double diff = - (elementVector_ith.Get(j) - elementVector->Get(j)) / eps;
+			
+			// assign finite difference to tangent matrix
+			elementMatrix->Set(j, i, diff);
+		}
+	}
+	
+	// restore original solution
+	for (int i=0; i<n_eq; i++)
+		currSolution->Set(eqNumbers[i], U_orig[i]);
 }
 
 void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector* elementVector, cvOneDDenseMatrix* elementMatrix){

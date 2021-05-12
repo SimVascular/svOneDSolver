@@ -65,6 +65,7 @@ class cvOneDMthSegmentModel : public cvOneDMthModelBase{
 
   private:
 
+    void FormElement_FD(long element, long ith, cvOneDFEAVector* elementVector, cvOneDDenseMatrix* elementMatrix);
     void FormElement(long element, long ith, cvOneDFEAVector* elementVector, cvOneDDenseMatrix* elementMatrix);
     void FormMixedBCLHS(int ith, cvOneDSubdomain* sub, cvOneDDenseMatrix* elementMatrix){;}
     void FormMixedBCRHS(int ith, cvOneDSubdomain* sub, cvOneDDenseMatrix* elementMatrix){;}

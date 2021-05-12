@@ -367,7 +367,7 @@ void cvOneDSkylineMatrix::print(std::ostream &os){
   for( i = 0; i < dimension; i++){ // upper diagonal entries
     height = position[i + 1] - position[i]; // number of elements in the skyline
     row = i + 1 - height;
-    printf("Height: %ld, row: %ld\n",height,row);
+//    printf("Height: %ld, row: %ld\n",height,row);
     while( height--){
       rowid[temp++] = row++;
     }
@@ -422,8 +422,8 @@ void cvOneDSkylineMatrix::print(std::ostream &os){
   }
   // Create Full Matrix
   for(i = 0; i < temp; i++){
-    printf("i: %ld, temp: %d\n",i,temp);
-    printf("rowid-1: %d, colid-1: %d\n",rowid[i]-1,colid[i]-1);
+//    printf("i: %ld, temp: %d\n",i,temp);
+//    printf("rowid-1: %d, colid-1: %d\n",rowid[i]-1,colid[i]-1);
     fullmatrix[rowid[i]-1][colid[i]-1] = value[i];
   }
   // Print Full Matrix
