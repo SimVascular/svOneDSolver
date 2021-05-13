@@ -404,9 +404,6 @@ double cvOneDSubdomain::GetBoundAreabyPresWave(double currentTime){
 }
 
 
-void cvOneDSubdomain::SaveK(double k, int i){
-  K[i]=k;
-}
 
 
 
