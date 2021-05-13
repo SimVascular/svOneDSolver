@@ -315,8 +315,6 @@ double cvOneDMthSegmentModel::N_MinorLoss(long ith){
 
   N = func *  Q[1]  / (2 * L);
 
-  sub->SaveK(N,(int)(cvOneDBFSolver::currentTime / cvOneDBFSolver::deltaTime) );
-
   // don't want to have less than the default Puoseille
   strcpy(propName,"N");
   double std= sub->GetMaterial()->GetProperty(propName);

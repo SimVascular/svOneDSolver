@@ -215,9 +215,6 @@ void cvOneDBFSolver::postprocess_Text(){
           fwrite(&val, sizeof(double),1,fp3);
         }
 
-        // write minor loss coefficient,radius, and Reynolds number
-        val = (double) subdomainList[fileIter]->K[i];
-
         if(ASCII){
           reynolds << Re << " ";
         }else{
