@@ -55,10 +55,6 @@ cvOneDSubdomain::cvOneDSubdomain(){
   PressLVWave=NULL;
   PressLVTime=NULL;
   numPressLVPts=0;
-  K = new double[1000];
-  for(int i=0;i<1000;i++){
-      K[i]=0.0;
-  }
   branchAngle = 90.0;
 }
 

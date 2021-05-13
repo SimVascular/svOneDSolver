@@ -215,9 +215,6 @@ void cvOneDBFSolver::postprocess_Text(){
           fwrite(&val, sizeof(double),1,fp3);
         }
 
-        // write minor loss coefficient,radius, and Reynolds number
-        val = (double) subdomainList[fileIter]->K[i];
-
         if(ASCII){
           reynolds << Re << " ";
         }else{
@@ -1394,6 +1391,7 @@ void cvOneDBFSolver::GenerateSolution(void){
   long q=1;
   double checkMass = 0;
   int numberOfCycle = 1;
+  long iter_total = 0;
 
   // Time stepping
   for(long step = 1; step <= maxStep; step++){
@@ -1569,5 +1567,8 @@ void cvOneDBFSolver::GenerateSolution(void){
     q++;
   }
   *previousSolution = *currentSolution;
+  iter_total += iter;
   } // End global loop
+
+  cout << "\nAvgerage number of Newton-Raphson iterations per time step = "<<(double)iter_total / (double)maxStep<<"\n"<< endl;
 }

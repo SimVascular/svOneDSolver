@@ -68,26 +68,17 @@ void cvOneDMthSegmentModel::FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVect
 	rhsVector->Clear();
 
 	cvOneDFEAVector elementVector(4, "eRhsVector");
-	cvOneDFEAVector elementVector_FD(4, "eRhsVector_FD");
 	cvOneDDenseMatrix elementMatrix(4, "eLhsMatrix");
-	cvOneDDenseMatrix elementMatrix_FD(4, "eLhsMatrix_FD");
 
 	// no boundary related terms
 	for(int i = 0; i < subdomainList.size(); i++){
 		for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
-			FormElement(element, i, &elementVector, &elementMatrix);
-			FormElement_FD(element, i, &elementVector_FD, &elementMatrix_FD);
+//			FormElement(element, i, &elementVector, &elementMatrix);
+			FormElement_FD(element, i, &elementVector, &elementMatrix);
 			rhsVector->Add(elementVector);
 			lhsMatrix->Add(elementMatrix);
 		}
 	}
-	
-	// debug output
-	ofstream ofsLHS;
-	ofsLHS.open("lhs_1.txt");
-	lhsMatrix->print(ofsLHS);
-	ofsLHS.close();
-//	exit(0);
 }
 
 
@@ -199,8 +190,6 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
   // N = func * Q[0] * Q[0] * S[1] * S[1] / (S[0] * S[0] * Q[1] * L);
   // mine.. simple
 
-  sub->SaveK(N,(int)(cvOneDBFSolver::currentTime / cvOneDBFSolver::deltaTime) );
-
   // don't want to have less than the default Puoseille
   strcpy(propName,"N");
   double std= sub->GetMaterial()->GetProperty(propName);
@@ -217,7 +206,7 @@ void cvOneDMthSegmentModel::FormElement_FD(long element, long ith, cvOneDFEAVect
 	const int n_eq = 4;
 	
 	// step size for finite differences
-	const double eps = 0.0000001;
+	const double eps = 1.0e-7;
 
 	// localize the values of the current approximation for U on this element
 	long eqNumbers[n_eq];
