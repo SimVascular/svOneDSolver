@@ -200,8 +200,6 @@ class cvOneDSubdomain{
 	void SetBranchSeg(int seg){branch = seg;}
 	int GetBranchSeg(void){return branch;}
 
-	void SaveK(double K, int i);
-	double* K;
 	double* impedancePressure;
 	double  lastImpedancePressure;
 
