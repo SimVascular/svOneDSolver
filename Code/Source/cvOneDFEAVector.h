@@ -68,7 +68,7 @@ class cvOneDFEAVector{
     void Clear();
     void Rename(const char* tit);
     void Add(long component, double value);
-    void Add(cvOneDFEAVector& vector);				
+    void Add(cvOneDFEAVector& vector);
     // add the components of vector in the global vector in the 
     // positions specified by its equation numbers
     long GetDimension() const {return dimension;}

@@ -73,12 +73,18 @@ void cvOneDMthSegmentModel::FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVect
 	// no boundary related terms
 	for(int i = 0; i < subdomainList.size(); i++){
 		for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
-//			FormElement(element, i, &elementVector, &elementMatrix);
+//			FormElement(element, i, &elementVector, &elementMatrix, true, true);
 			FormElement_FD(element, i, &elementVector, &elementMatrix);
 			rhsVector->Add(elementVector);
 			lhsMatrix->Add(elementMatrix);
 		}
 	}
+	// debug output
+//	ofstream ofsLHS;
+//	ofsLHS.open("central_lhs_FD.txt");
+//	lhsMatrix->print(ofsLHS);
+//	ofsLHS.close();
+//	exit(0);
 }
 
 
@@ -207,7 +213,7 @@ void cvOneDMthSegmentModel::FormElement_FD(long element, long ith, cvOneDFEAVect
 	
 	// step size for finite differences
 	const double eps = 1.0e-7;
-
+	
 	// localize the values of the current approximation for U on this element
 	long eqNumbers[n_eq];
 	GetEquationNumbers(element, eqNumbers, ith);
@@ -221,7 +227,7 @@ void cvOneDMthSegmentModel::FormElement_FD(long element, long ith, cvOneDFEAVect
 	elementMatrix->Clear();
 	
 	// calculate residual (and tangent matrix - unused)
-	FormElement(element, ith, elementVector, &elementMatrix_dummy);
+	FormElement(element, ith, elementVector, &elementMatrix_dummy, true, false);
 	
 	// store current solution
 	double U_orig[n_eq];
@@ -245,7 +251,7 @@ void cvOneDMthSegmentModel::FormElement_FD(long element, long ith, cvOneDFEAVect
 		currSolution->Add(eqNumbers[i], eps);
 		
 		// calculate residual with variation
-		FormElement(element, ith, &elementVector_ith, &elementMatrix_dummy);
+		FormElement(element, ith, &elementVector_ith, &elementMatrix_dummy, true, false);
 		
 		// calculate finite difference
 		for (int j=0; j<n_eq; j++){
@@ -262,7 +268,12 @@ void cvOneDMthSegmentModel::FormElement_FD(long element, long ith, cvOneDFEAVect
 		currSolution->Set(eqNumbers[i], U_orig[i]);
 }
 
-void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector* elementVector, cvOneDDenseMatrix* elementMatrix){
+void cvOneDMthSegmentModel::FormElement(long element, 
+										long ith, 
+										cvOneDFEAVector* elementVector, 
+										cvOneDDenseMatrix* elementMatrix,
+										bool get_vec,
+										bool get_mat){
 	char propName[256];
 	//Framework
 	cvOneDSubdomain *sub = subdomainList[ith];
@@ -445,231 +456,238 @@ void cvOneDMthSegmentModel::FormElement(long element, long ith, cvOneDFEAVector*
 		}// end STABILIZATION
 
 		for( int a = 0; a < numberOfNodes; a++){
-			// DG terms
-			double rDG1=0.0;
-			double rDG2=0.0;
-
-			if(cvOneDGlobal::CONSERVATION_FORM){
-				// IV formulation 01-31-03
-				rDG1 = deltaTime*(DxShape[a]*F1+shape[a]*GF1)-shape[a]*(U[0]-Un[0]);
-				// GF2 contains NNN
-				rDG2 = deltaTime*(DxShape[a]*F2-DxShape[a]*K22*DxU[1]+shape[a]*GF2)-shape[a]*(U[1]-Un[1]);
-			}
-			else{
-				// Brooke's formulation that I am not using IV 01-31-03
-				rDG1 = deltaTime*(shape[a]*(DxU[1])-shape[a]*G1)+shape[a]*(U[0]-Un[0]);
-				// G2 contains NNN
-				rDG2 = deltaTime*(shape[a]*(A21*DxU[0]+A22*DxU[1])+DxShape[a]*K22*DxU[1]-shape[a]*G2)+shape[a]*(U[1]-Un[1]);
-			}
-
-			double rGLS1 = 0.0;
-			double rGLS2 = 0.0;
-
-
-			if (STABILIZATION == 1){
-				// GLS terms
-				// create an auxiliary matrix to handle some of the terms
-				double auxa[4];
-				auxa[0] = -shape[a]*C11;    // A11 = 0.0
-				auxa[1] = DxShape[a];    // A12 = 1.0, C12 = 0.0
-				auxa[2] = DxShape[a]*A21-shape[a]*C21;
-				auxa[3] = DxShape[a]*A22-shape[a]*C22;
-
-				double auxb[2];
-				auxb[0] = DxU[1]-G1;
-				// G2 contains NNN
-				auxb[1] = A21*DxU[0]+A22*DxU[1]-G2;
-
-				//multiply the matrices to obtain the GLS contribution
-				//into auxa
-				double auxc[4];  // contains the product: auxa * tau
-				auxc[0] = auxa[0]*tau[0]+auxa[1]*tau[2];
-				auxc[1] = auxa[0]*tau[1]+auxa[1]*tau[3];
-				auxc[2] = auxa[2]*tau[0]+auxa[3]*tau[2];
-				auxc[3] = auxa[2]*tau[1]+auxa[3]*tau[3];
-
-				// sum the GLS terms to the DG terms
-				rGLS1 = deltaTime*(auxc[0]*auxb[0]+auxc[1]*auxb[1]);
-				rGLS2 = deltaTime*(auxc[2]*auxb[0]+auxc[3]*auxb[1]);
-
-			}//end stabilization
-
-			double r1 = rDG1 + rGLS1;
-			double r2 = rDG2 + rGLS2;
-
-			// now RHS= -residual , comment added by IV 01-24-03
-			elementVector->Add( 2*a  , -r1*jw);
-			elementVector->Add( 2*a+1, -r2*jw);
-
-			// linearization
-			for( int b = 0; b < numberOfNodes; b++){
-
+			if (get_vec){
 				// DG terms
-				if(cvOneDGlobal::CONSERVATION_FORM == 1){
-					// IV's formulation 01-18-03
-					k11 = deltaTime*(shape[a]*CF11*shape[b])-shape[a]*shape[b];
-					k12 = deltaTime*(A12*shape[b]*DxShape[a]);
-					k21 = deltaTime*(DxShape[a]*A21*shape[b]+shape[a]*CF21*shape[b]+shape[a]*dN[0]*aux*shape[b]);
-					k22 = deltaTime*(DxShape[a]*A22*shape[b]-DxShape[a]*(K22)*DxShape[b]+shape[a]*CF22*shape[b]+shape[a]*dN[1]*aux*shape[b]) - shape[a]*shape[b];
-				} else{
-					// Here is Brooke's version that I am not using IV 01-30-03
-					k11 = deltaTime*(-shape[a]*C11*shape[b])+shape[a]*shape[b];
-					k12 = deltaTime*(shape[a]*DxShape[b]);
-					k21 = deltaTime*(shape[a]*A21*DxShape[b]-shape[a]*C21*shape[b]);
-					k22 = deltaTime*(shape[a]*A22*DxShape[b]+DxShape[a]*(K22)*DxShape[b]-shape[a]*C22*shape[b]) + shape[a]*shape[b];
+				double rDG1=0.0;
+				double rDG2=0.0;
+
+				if(cvOneDGlobal::CONSERVATION_FORM){
+					// IV formulation 01-31-03
+					rDG1 = deltaTime*(DxShape[a]*F1+shape[a]*GF1)-shape[a]*(U[0]-Un[0]);
+					// GF2 contains NNN
+					rDG2 = deltaTime*(DxShape[a]*F2-DxShape[a]*K22*DxU[1]+shape[a]*GF2)-shape[a]*(U[1]-Un[1]);
+				}
+				else{
+					// Brooke's formulation that I am not using IV 01-31-03
+					rDG1 = deltaTime*(shape[a]*(DxU[1])-shape[a]*G1)+shape[a]*(U[0]-Un[0]);
+					// G2 contains NNN
+					rDG2 = deltaTime*(shape[a]*(A21*DxU[0]+A22*DxU[1])+DxShape[a]*K22*DxU[1]-shape[a]*G2)+shape[a]*(U[1]-Un[1]);
 				}
 
-				if(STABILIZATION == 1){
+				double rGLS1 = 0.0;
+				double rGLS2 = 0.0;
+
+
+				if (STABILIZATION == 1){
 					// GLS terms
-					// Create an auxiliary matrix to handle some of the terms
+					// create an auxiliary matrix to handle some of the terms
 					double auxa[4];
-					auxa[0] = -shape[a]*C11; // A11 = 0.0
-					auxa[1] = DxShape[a]; // A12 = 1.0, C12 = 0.0
+					auxa[0] = -shape[a]*C11;    // A11 = 0.0
+					auxa[1] = DxShape[a];    // A12 = 1.0, C12 = 0.0
 					auxa[2] = DxShape[a]*A21-shape[a]*C21;
 					auxa[3] = DxShape[a]*A22-shape[a]*C22;
 
-					double auxb[4];
-					auxb[0] = -shape[b]*C11; // A11 = 0.0
-					auxb[1] = DxShape[b]; // A12 = 1.0, C12 = 0.0
-					auxb[2] = DxShape[b]*A21-shape[b]*C21-shape[b]*dN[0]*aux;
-					auxb[3] = DxShape[b]*A22-shape[b]*C22-shape[b]*dN[1]*aux;
+					double auxb[2];
+					auxb[0] = DxU[1]-G1;
+					// G2 contains NNN
+					auxb[1] = A21*DxU[0]+A22*DxU[1]-G2;
 
-					// Multiply the matrices to obtain the GLS contribution into auxa
-					// Contains the product: auxa * tau
-					double auxc[4];
+					//multiply the matrices to obtain the GLS contribution
+					//into auxa
+					double auxc[4];  // contains the product: auxa * tau
 					auxc[0] = auxa[0]*tau[0]+auxa[1]*tau[2];
 					auxc[1] = auxa[0]*tau[1]+auxa[1]*tau[3];
 					auxc[2] = auxa[2]*tau[0]+auxa[3]*tau[2];
 					auxc[3] = auxa[2]*tau[1]+auxa[3]*tau[3];
 
-					// auxa will contain the product: auxa * tau * auxb
-					auxa[0] = auxc[0]*auxb[0]+auxc[1]*auxb[2];
-					auxa[1] = auxc[0]*auxb[1]+auxc[1]*auxb[3];
-					auxa[2] = auxc[2]*auxb[0]+auxc[3]*auxb[2];
-					auxa[3] = auxc[2]*auxb[1]+auxc[3]*auxb[3];
+					// sum the GLS terms to the DG terms
+					rGLS1 = deltaTime*(auxc[0]*auxb[0]+auxc[1]*auxb[1]);
+					rGLS2 = deltaTime*(auxc[2]*auxb[0]+auxc[3]*auxb[1]);
 
-					// now sum the GLS terms to the DG terms
-					k11 += deltaTime*auxa[0];
-					k12 += deltaTime*auxa[1];
-					k21 += deltaTime*auxa[2];
-					k22 += deltaTime*auxa[3];
+				}//end stabilization
 
-				} // end stabilization
+				double r1 = rDG1 + rGLS1;
+				double r2 = rDG2 + rGLS2;
 
-				elementMatrix->Add( 2*a  , 2*b  , k11*jw);
-				elementMatrix->Add( 2*a  , 2*b+1, k12*jw);
-				elementMatrix->Add( 2*a+1, 2*b  , k21*jw);
-				elementMatrix->Add( 2*a+1, 2*b+1, k22*jw);
+				// now RHS= -residual , comment added by IV 01-24-03
+				elementVector->Add( 2*a  , -r1*jw);
+				elementVector->Add( 2*a+1, -r2*jw);
+			}
+			
 
+			// linearization
+			if (get_mat){
+				for( int b = 0; b < numberOfNodes; b++){
+
+					// DG terms
+					if(cvOneDGlobal::CONSERVATION_FORM == 1){
+						// IV's formulation 01-18-03
+						k11 = deltaTime*(shape[a]*CF11*shape[b])-shape[a]*shape[b];
+						k12 = deltaTime*(A12*shape[b]*DxShape[a]);
+						k21 = deltaTime*(DxShape[a]*A21*shape[b]+shape[a]*CF21*shape[b]+shape[a]*dN[0]*aux*shape[b]);
+						k22 = deltaTime*(DxShape[a]*A22*shape[b]-DxShape[a]*(K22)*DxShape[b]+shape[a]*CF22*shape[b]+shape[a]*dN[1]*aux*shape[b]) - shape[a]*shape[b];
+					} else{
+						// Here is Brooke's version that I am not using IV 01-30-03
+						k11 = deltaTime*(-shape[a]*C11*shape[b])+shape[a]*shape[b];
+						k12 = deltaTime*(shape[a]*DxShape[b]);
+						k21 = deltaTime*(shape[a]*A21*DxShape[b]-shape[a]*C21*shape[b]);
+						k22 = deltaTime*(shape[a]*A22*DxShape[b]+DxShape[a]*(K22)*DxShape[b]-shape[a]*C22*shape[b]) + shape[a]*shape[b];
+					}
+
+					if(STABILIZATION == 1){
+						// GLS terms
+						// Create an auxiliary matrix to handle some of the terms
+						double auxa[4];
+						auxa[0] = -shape[a]*C11; // A11 = 0.0
+						auxa[1] = DxShape[a]; // A12 = 1.0, C12 = 0.0
+						auxa[2] = DxShape[a]*A21-shape[a]*C21;
+						auxa[3] = DxShape[a]*A22-shape[a]*C22;
+
+						double auxb[4];
+						auxb[0] = -shape[b]*C11; // A11 = 0.0
+						auxb[1] = DxShape[b]; // A12 = 1.0, C12 = 0.0
+						auxb[2] = DxShape[b]*A21-shape[b]*C21-shape[b]*dN[0]*aux;
+						auxb[3] = DxShape[b]*A22-shape[b]*C22-shape[b]*dN[1]*aux;
+
+						// Multiply the matrices to obtain the GLS contribution into auxa
+						// Contains the product: auxa * tau
+						double auxc[4];
+						auxc[0] = auxa[0]*tau[0]+auxa[1]*tau[2];
+						auxc[1] = auxa[0]*tau[1]+auxa[1]*tau[3];
+						auxc[2] = auxa[2]*tau[0]+auxa[3]*tau[2];
+						auxc[3] = auxa[2]*tau[1]+auxa[3]*tau[3];
+
+						// auxa will contain the product: auxa * tau * auxb
+						auxa[0] = auxc[0]*auxb[0]+auxc[1]*auxb[2];
+						auxa[1] = auxc[0]*auxb[1]+auxc[1]*auxb[3];
+						auxa[2] = auxc[2]*auxb[0]+auxc[3]*auxb[2];
+						auxa[3] = auxc[2]*auxb[1]+auxc[3]*auxb[3];
+
+						// now sum the GLS terms to the DG terms
+						k11 += deltaTime*auxa[0];
+						k12 += deltaTime*auxa[1];
+						k21 += deltaTime*auxa[2];
+						k22 += deltaTime*auxa[3];
+
+					} // end stabilization
+
+					elementMatrix->Add( 2*a  , 2*b  , k11*jw);
+					elementMatrix->Add( 2*a  , 2*b+1, k12*jw);
+					elementMatrix->Add( 2*a+1, 2*b  , k21*jw);
+					elementMatrix->Add( 2*a+1, 2*b+1, k22*jw);
+
+				}
 			}
 		}
+
+		if(cvOneDGlobal::CONSERVATION_FORM){
+
+			//Inlet flux term (at z=z_inlet) which is the linearized F-KU IV 01-28-03
+			if (element == 0){
+				long node = 0;
+				double z = sub->GetNodalCoordinate( node);
+				double aux = Q[0]/S[0];
+				double DpDS = material->GetDpDS( S[0], z);
+				finiteElement->Evaluate( z, shape, DxShape, &jacobian);
+
+				int a = 0;
+				for( int b = 0; b < numberOfNodes; b++){
+					//(1-b)= trick because shape is note defined in z coord;
+					//has to be changed if other shape functions are used IV 02-07-03
+					//double x=(1.0-(double)b);
+					double Inlet11 = 0;
+					double Inlet12 = (1.0-(double)b);
+					double Inlet21 = (1.0-(double)b)*(-(1.0+ delta)*aux*aux + S[0]/density*DpDS);
+					//double Inlet22 = 2*(1.0+ delta)*aux*(1.0-(double)b)- kinViscosity*DxShape[b];
+					double Inlet22 = 2*(1.0+ delta)*aux*(1.0-(double)b);//without viscosity in flux term
+
+					elementMatrix->Add( 2*a  , 2*b  , Inlet11*deltaTime);
+					elementMatrix->Add( 2*a  , 2*b+1, Inlet12*deltaTime);
+					elementMatrix->Add( 2*a+1, 2*b  , Inlet21*deltaTime);
+					elementMatrix->Add( 2*a+1, 2*b+1, Inlet22*deltaTime);
+				}
+			}
+
+			if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
+					||bound==BoundCondTypeScope::FLOW){
+				//Outlet flux term (at z=z_outlet) which is the linearized F-KU
+				if (element == (sub->GetNumberOfElements())-1){
+					double z = sub->GetOutletZ();
+					finiteElement->Evaluate( z, shape, DxShape, &jacobian);
+					double Pressure= material->GetPressure( S[1], z);
+					double aux= Q[1]/S[1];
+					double DpDS = material->GetDpDS( S[1], z);
+					int a = 1;
+
+					for( int b = 0; b < numberOfNodes; b++){
+						// b= trick because shape is note defined in z coord;
+						//has to be changed if other shape functions are used
+						double Outlet11 = 0.0;
+						double Outlet12 = (double)b;
+						double Outlet21 = (double)b*(-(1.0+ delta)*aux*aux + S[1]/density*DpDS);
+						double Outlet22 = 2*(1.0+ delta)*aux*(double)b ;//without viscosity in flux
+
+						elementMatrix->Add( 2*a  , 2*b  , -Outlet11*deltaTime);
+						elementMatrix->Add( 2*a  , 2*b+1, -Outlet12*deltaTime);
+						elementMatrix->Add( 2*a+1, 2*b  , -Outlet21*deltaTime);
+						elementMatrix->Add( 2*a+1, 2*b+1, -Outlet22*deltaTime);
+					}//end for
+				}//end outlet term
+			}//end for compute full flux if no outlet BC or Dirichlet BC
+		}//end if(CONSERVATION_FORM)
 	}
 
-	if(cvOneDGlobal::CONSERVATION_FORM){
+	if (get_vec){
+		if(cvOneDGlobal::CONSERVATION_FORM){
+			//Inlet flux term (at z=z_inlet) which is the linearized F-KU
+			if(element == 0){
+				long node = 0;
+				double z = sub->GetNodalCoordinate( node);
+				double aux = Q[0]/S[0];
 
-		//Inlet flux term (at z=z_inlet) which is the linearized F-KU IV 01-28-03
-		if (element == 0){
-			long node = 0;
-			double z = sub->GetNodalCoordinate( node);
-			double aux = Q[0]/S[0];
-			double DpDS = material->GetDpDS( S[0], z);
-			finiteElement->Evaluate( z, shape, DxShape, &jacobian);
-
-			int a = 0;
-			for( int b = 0; b < numberOfNodes; b++){
-				//(1-b)= trick because shape is note defined in z coord;
-				//has to be changed if other shape functions are used IV 02-07-03
-				//double x=(1.0-(double)b);
-				double Inlet11 = 0;
-				double Inlet12 = (1.0-(double)b);
-				double Inlet21 = (1.0-(double)b)*(-(1.0+ delta)*aux*aux + S[0]/density*DpDS);
-				//double Inlet22 = 2*(1.0+ delta)*aux*(1.0-(double)b)- kinViscosity*DxShape[b];
-				double Inlet22 = 2*(1.0+ delta)*aux*(1.0-(double)b);//without viscosity in flux term
-
-				elementMatrix->Add( 2*a  , 2*b  , Inlet11*deltaTime);
-				elementMatrix->Add( 2*a  , 2*b+1, Inlet12*deltaTime);
-				elementMatrix->Add( 2*a+1, 2*b  , Inlet21*deltaTime);
-				elementMatrix->Add( 2*a+1, 2*b+1, Inlet22*deltaTime);
-			}
-		}
-
-		if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
-				||bound==BoundCondTypeScope::FLOW){
-			//Outlet flux term (at z=z_outlet) which is the linearized F-KU
-			if (element == (sub->GetNumberOfElements())-1){
-				double z = sub->GetOutletZ();
-				finiteElement->Evaluate( z, shape, DxShape, &jacobian);
-				double Pressure= material->GetPressure( S[1], z);
-				double aux= Q[1]/S[1];
-				double DpDS = material->GetDpDS( S[1], z);
-				int a = 1;
-
-				for( int b = 0; b < numberOfNodes; b++){
-					// b= trick because shape is note defined in z coord;
-					//has to be changed if other shape functions are used
-					double Outlet11 = 0.0;
-					double Outlet12 = (double)b;
-					double Outlet21 = (double)b*(-(1.0+ delta)*aux*aux + S[1]/density*DpDS);
-					double Outlet22 = 2*(1.0+ delta)*aux*(double)b ;//without viscosity in flux
-
-					elementMatrix->Add( 2*a  , 2*b  , -Outlet11*deltaTime);
-					elementMatrix->Add( 2*a  , 2*b+1, -Outlet12*deltaTime);
-					elementMatrix->Add( 2*a+1, 2*b  , -Outlet21*deltaTime);
-					elementMatrix->Add( 2*a+1, 2*b+1, -Outlet22*deltaTime);
-				}//end for
-			}//end outlet term
-		}//end for compute full flux if no outlet BC or Dirichlet BC
-	}//end if(CONSERVATION_FORM)
-
-	if(cvOneDGlobal::CONSERVATION_FORM){
-		//Inlet flux term (at z=z_inlet) which is the linearized F-KU
-		if(element == 0){
-			long node = 0;
-			double z = sub->GetNodalCoordinate( node);
-			double aux = Q[0]/S[0];
-
-			finiteElement->Evaluate(z,shape,DxShape,&jacobian);
-			double dQdz = Q[1]*DxShape[1]+Q[0]*DxShape[0];
-			double IntegralpS = material->GetIntegralpS(S[0],z);
-			int a = 0;
-
-			double InletR1 = Q[0];
-			double InletR2 = (1.0+delta)*Q[0]*aux + IntegralpS/density;//without viscosity in flux
-			elementVector->Add(2*a  , -InletR1*deltaTime);
-			elementVector->Add(2*a+1, -InletR2*deltaTime);
-		}// end inlet flux
-
-		if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
-				||bound==BoundCondTypeScope::FLOW){
-			//If no outlet BC or Dirichlet outlet BC, compute the Outlet full flux term (at z=z_outlet) which is the linearized F-KU IV 02-03-03
-			if (element == (sub->GetNumberOfElements())-1){
-				double z = sub->GetOutletZ();//checked IV 02-03-03
-				double pressure = material->GetPressure( S[1], z);
-				finiteElement->Evaluate( z, shape, DxShape, &jacobian);//careful: shape is in the natural coord system (xi)
-
-				int a = 1;
-
+				finiteElement->Evaluate(z,shape,DxShape,&jacobian);
 				double dQdz = Q[1]*DxShape[1]+Q[0]*DxShape[0];
-				double IntegralpS = material->GetIntegralpS( S[1], z);
-				double OutletR1= Q[1];
-				// double OutletR2= (1.0+delta)*pow(Q[1],2)/S[1] + IntegralpS/density - kinViscosity*dQdz;
+				double IntegralpS = material->GetIntegralpS(S[0],z);
+				int a = 0;
 
-				// without viscosity in flux
-				double OutletR2= (1.0+delta)*pow(Q[1],2)/S[1] + IntegralpS/density;
-				// without adv term
-				// double OutletR2= IntegralpS/density;
-				// without M2H2
-				// double OutletR2= 0;
+				double InletR1 = Q[0];
+				double InletR2 = (1.0+delta)*Q[0]*aux + IntegralpS/density;//without viscosity in flux
+				elementVector->Add(2*a  , -InletR1*deltaTime);
+				elementVector->Add(2*a+1, -InletR2*deltaTime);
+			}// end inlet flux
 
-				// try linear downstream domain-Hughes
-				// double Cp=1.0;
-				/*  double Cp = material->GetLinCompliance(z);
+			if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
+					||bound==BoundCondTypeScope::FLOW){
+				//If no outlet BC or Dirichlet outlet BC, compute the Outlet full flux term (at z=z_outlet) which is the linearized F-KU IV 02-03-03
+				if (element == (sub->GetNumberOfElements())-1){
+					double z = sub->GetOutletZ();//checked IV 02-03-03
+					double pressure = material->GetPressure( S[1], z);
+					finiteElement->Evaluate( z, shape, DxShape, &jacobian);//careful: shape is in the natural coord system (xi)
+
+					int a = 1;
+
+					double dQdz = Q[1]*DxShape[1]+Q[0]*DxShape[0];
+					double IntegralpS = material->GetIntegralpS( S[1], z);
+					double OutletR1= Q[1];
+					// double OutletR2= (1.0+delta)*pow(Q[1],2)/S[1] + IntegralpS/density - kinViscosity*dQdz;
+
+					// without viscosity in flux
+					double OutletR2= (1.0+delta)*pow(Q[1],2)/S[1] + IntegralpS/density;
+					// without adv term
+					// double OutletR2= IntegralpS/density;
+					// without M2H2
+					// double OutletR2= 0;
+
+					// try linear downstream domain-Hughes
+					// double Cp=1.0;
+					/*  double Cp = material->GetLinCompliance(z);
 	        // double Cp = material->GetnonLinCompliance( S[1],z);//tried 02-13-03 worse results
 	        double OutletR2 = S[1]*S[1]/(2.0*density*Cp) - pow(material->GetArea(material->p1,z),2)/(2*density*Cp);//linear downstream domain-Hughes
-				 */
-				elementVector->Add( 2*a  , OutletR1*deltaTime);
-				elementVector->Add( 2*a+1, OutletR2*deltaTime);
-			}//end outlet flux term
-		}//end if no outletBC or Dirichlet
-	}//end   if(CONSERVATION_FORM)
+					 */
+					elementVector->Add( 2*a  , OutletR1*deltaTime);
+					elementVector->Add( 2*a+1, OutletR2*deltaTime);
+				}//end outlet flux term
+			}//end if no outletBC or Dirichlet
+		}//end   if(CONSERVATION_FORM)
+	}
 }
