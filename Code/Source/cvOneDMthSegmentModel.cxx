@@ -71,6 +71,18 @@ void cvOneDMthSegmentModel::FormNewtonLHS(cvOneDFEAMatrix* lhsMatrix){
   for(i = 0; i < subdomainList.size(); i++){
     for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
       FormElementLHS(element, &elementMatrix, i);
+      // std::cout << "...." << std::endl << std::flush;
+      auto entries1 = elementMatrix.GetPointerToEntries();
+      double copy[16];
+      for (int ii = 0; ii < 16; ii++)
+        copy[ii] = entries1[ii];
+      FormElementLHSFD(element, &elementMatrix, i);
+      auto entries2 = elementMatrix.GetPointerToEntries();
+      for (int ii = 0; ii < 16; ii++)
+      {
+        std::cout << (entries1[ii] - copy[ii])/entries1[ii] << std::endl << std::flush;
+      }
+      exit(1);
       lhsMatrix->Add(elementMatrix);
       // cout<< elementMatrix << endl;
     }
@@ -325,6 +337,39 @@ double cvOneDMthSegmentModel::N_MinorLoss(long ith){
   // cout << " -N " << -N << " Q(1) :"<< Q[1] << endl;
   return -N;
 
+}
+
+void cvOneDMthSegmentModel::FormElementLHSFD(long element, cvOneDDenseMatrix* elementMatrix, long ith){
+  long eqNumbers[4];
+  GetEquationNumbers(element, eqNumbers, ith);
+
+  cvOneDFEAVector res(4, "res");
+  cvOneDFEAVector respeps(4, "respeps");
+
+  FormElementRHS(element, &res, ith);
+
+  double U[4];
+  for (int i = 0; i < 4; i++)
+    U[i] = currSolution->Get(eqNumbers[i]);
+
+  const double eps = 1e-8;
+
+  elementMatrix->SetEquationNumbers( eqNumbers);
+  elementMatrix->Clear();
+
+  for (int i = 0; i < 4; i++)
+  {
+    currSolution->Set(eqNumbers[i], U[i] + eps);
+    FormElementRHS(element, &respeps, ith);
+    // for (int k = 0; k < 4; k++)
+    // {
+    //   std::cout << (respeps[k] - res[k])/eps << std::endl << std::flush;
+    // }
+    for (int j = 0; j < 4; j++)
+      elementMatrix->Add(j, i, -(respeps[j] - res[j])/eps);
+
+    currSolution->Set(eqNumbers[i], U[i]);
+  }
 }
 
 void cvOneDMthSegmentModel::FormElementLHS(long element, cvOneDDenseMatrix* elementMatrix, long ith){
