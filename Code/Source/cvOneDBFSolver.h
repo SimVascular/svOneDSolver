@@ -65,7 +65,7 @@ class cvOneDBFSolver{
     static void SetInletBCType(BoundCondType bc);
     static void SetMaxStep(long maxs);
     static void SetQuadPoints(long quadPoints_);
-	static void SetConvergenceCriteria(double convCriteria);
+    static void SetConvergenceCriteria(double convCriteria);
 
     // Set the Model Pointer
     static void SetModelPtr(cvOneDModel *mdl);
@@ -82,11 +82,12 @@ class cvOneDBFSolver{
 
     static void DefineInletFlow(double* time, double* flrt, int num);
 
-	static void QuerryModelInformation(void);
+    static void QuerryModelInformation(void);
     static double currentTime;
     static double deltaTime;
-	static BoundCondType inletBCtype;
-	static int ASCII;
+    static BoundCondType inletBCtype;
+    static bool useFiniteDifferencesTangent;
+    static int ASCII;
 
     // Result Output
     static void postprocess_Text();
@@ -136,9 +137,8 @@ class cvOneDBFSolver{
     static long numFlowPts;
     static double *flowRate;
     static double *flowTime;
-	static double Period;
-	static double convCriteria;
-
+    static double Period;
+    static double convCriteria;
 };
 
 #endif //CVONEDBFSOLVER_H

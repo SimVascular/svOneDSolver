@@ -67,24 +67,22 @@ void cvOneDMthSegmentModel::FormNewtonLHS(cvOneDFEAMatrix* lhsMatrix){
   lhsMatrix->Clear();
 
   cvOneDDenseMatrix elementMatrix(4, "eLhsMatrix");
-  // no boundary related terms
-  for(i = 0; i < subdomainList.size(); i++){
-    for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
-      FormElementLHS(element, &elementMatrix, i);
-      // std::cout << "...." << std::endl << std::flush;
-      auto entries1 = elementMatrix.GetPointerToEntries();
-      double copy[16];
-      for (int ii = 0; ii < 16; ii++)
-        copy[ii] = entries1[ii];
-      FormElementLHSFD(element, &elementMatrix, i);
-      auto entries2 = elementMatrix.GetPointerToEntries();
-      for (int ii = 0; ii < 16; ii++)
-      {
-        std::cout << (entries1[ii] - copy[ii])/entries1[ii] << std::endl << std::flush;
+  if (cvOneDBFSolver::useFiniteDifferencesTangent)
+  {
+    for(i = 0; i < subdomainList.size(); i++){
+      for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
+        FormElementLHSFD(element, &elementMatrix, i);
+        lhsMatrix->Add(elementMatrix);
       }
-      exit(1);
-      lhsMatrix->Add(elementMatrix);
-      // cout<< elementMatrix << endl;
+    }
+  }
+  else
+  {
+    for(i = 0; i < subdomainList.size(); i++){
+      for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
+        FormElementLHS(element, &elementMatrix, i);
+        lhsMatrix->Add(elementMatrix);
+      }
     }
   }
 }
@@ -361,10 +359,6 @@ void cvOneDMthSegmentModel::FormElementLHSFD(long element, cvOneDDenseMatrix* el
   {
     currSolution->Set(eqNumbers[i], U[i] + eps);
     FormElementRHS(element, &respeps, ith);
-    // for (int k = 0; k < 4; k++)
-    // {
-    //   std::cout << (respeps[k] - res[k])/eps << std::endl << std::flush;
-    // }
     for (int j = 0; j < 4; j++)
       elementMatrix->Add(j, i, -(respeps[j] - res[j])/eps);
 

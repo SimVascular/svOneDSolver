@@ -89,6 +89,7 @@ long                          cvOneDBFSolver::numFlowPts = 0;
 double                        cvOneDBFSolver::convCriteria = 0;
 BoundCondType                 cvOneDBFSolver::inletBCtype;
 int                           cvOneDBFSolver::ASCII = 1;
+bool                          cvOneDBFSolver::useFiniteDifferencesTangent = false;
 
 // SET MODE PTR
 void cvOneDBFSolver::SetModelPtr(cvOneDModel *mdl){
@@ -1391,7 +1392,7 @@ void cvOneDBFSolver::GenerateSolution(void){
   long q=1;
   double checkMass = 0;
   int numberOfCycle = 1;
-
+  bool recomputeTimestep = true;
   // Time stepping
   for(long step = 1; step <= maxStep; step++){
     increment->Clear();
@@ -1404,11 +1405,14 @@ void cvOneDBFSolver::GenerateSolution(void){
     double normf = 1.0;
     double norms = 1.0;
 
-    if(fmod(currentTime, cycleTime) <5.0E-6 || -(fmod(currentTime,cycleTime)-cycleTime)<5.0E-6) {
+    if((fmod(currentTime, cycleTime) <5.0E-6 || -(fmod(currentTime,cycleTime)-cycleTime)<5.0E-6)
+        && !recomputeTimestep) {
       checkMass = 0;
       cout << "**** Time cycle " << numberOfCycle++ << endl;
     }
     currentTime += deltaTime;
+
+    recomputeTimestep = false;
 
     while(true){
       tstart_iter=clock();
@@ -1486,7 +1490,7 @@ void cvOneDBFSolver::GenerateSolution(void){
           int fileIter = 0;
           //check if area <0 or =nan
           if (currentSolution->Get(i) < 0.0 || (currentSolution->Get(i) != currentSolution->Get(i))){
-           negArea=1;
+            negArea=1;
             while (fileIter < model -> getNumberOfSegments()){
               cvOneDSegment *curSeg = model -> getSegment(fileIter);
               long numEls = curSeg -> getNumElements();
@@ -1495,22 +1499,37 @@ void cvOneDBFSolver::GenerateSolution(void){
               char *modelname;
               char *segname;
               if (startOut <= i && i <= finishOut) {
-                 modelname = model-> getModelName();
-                 segname = curSeg -> getSegmentName();
-                 std::string msg = "ERROR: The area of segment '" + std::string(segname) + "' is negative.";
-                 throw cvException(msg.c_str());
+                modelname = model-> getModelName();
+                segname = curSeg -> getSegmentName();
+                cout << "WARNING: The area of segment '" + std::string(segname) + "' is negative." << endl;
+                if (!useFiniteDifferencesTangent)
+                {
+                  cout << "Trying with finite difference approximation of tangent matrix." << endl;
+                  useFiniteDifferencesTangent = true;
+                  recomputeTimestep = true;
+                  break;
+                }
+                else{
+                  std::string msg = "ERROR: Negative area even with finite differences. Aborting.";
+                  throw cvException(msg.c_str());
+                }
               }
               elCount += 2*(numEls+1);
               fileIter++;
-             }
-           }
-         }
+            }
+          }
+          if (recomputeTimestep)
+            break;
         }
+      }
 
-        if(negArea==1) {
-        postprocess_Text();
-        assert(0);
-        }
+      if (recomputeTimestep)
+        break;
+
+      if(negArea==1) {
+      postprocess_Text();
+      assert(0);
+      }
 
       if(cvOneDGlobal::debugMode){
         printf("(Debug) Printing Solution...\n");
@@ -1550,27 +1569,34 @@ void cvOneDBFSolver::GenerateSolution(void){
     // Increment Iteration Number
     iter++;
 
-  }// End while
+    }// End while
 
-  checkMass += mathModels[0]->CheckMassBalance() * deltaTime;
-  cout << "  Time = " << currentTime << ", ";
-  cout << "Mass = " << checkMass << ", ";
-  cout << "Tot iters = " << (int)iter << endl;
-
-  // Save solution if needed
-  if(step % stepSize == 0){
-    sprintf( String2, "%ld", (unsigned long)step);
-    title = String1 + String2;
-    currentSolution->Rename(title.data());
-
-    double * tmp = currentSolution -> GetEntries();
-    int j;
-
-    for(j=0;j<currentSolution -> GetDimension(); j++){
-      TotalSolution[q][j] = tmp[j];
+    if (recomputeTimestep){
+      *currentSolution = *previousSolution;
+      step--;
+      currentTime -= deltaTime;
     }
-    q++;
-  }
-  *previousSolution = *currentSolution;
+    else{
+      checkMass += mathModels[0]->CheckMassBalance() * deltaTime;
+      cout << "  Time = " << currentTime << ", ";
+      cout << "Mass = " << checkMass << ", ";
+      cout << "Tot iters = " << (int)iter << endl;
+
+      // Save solution if needed
+      if(step % stepSize == 0){
+        sprintf( String2, "%ld", (unsigned long)step);
+        title = String1 + String2;
+        currentSolution->Rename(title.data());
+
+        double * tmp = currentSolution -> GetEntries();
+        int j;
+
+        for(j=0;j<currentSolution -> GetDimension(); j++){
+          TotalSolution[q][j] = tmp[j];
+        }
+        q++;
+      }
+      *previousSolution = *currentSolution;
+    }
   } // End global loop
 }
