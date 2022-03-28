@@ -133,6 +133,12 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
   seg -> setMaterialID(matID);
   // Set minor Loss coefficient type
   seg->SetMinorLossType(loss);
+  // Define Branch Angle even with no pressure losses to plot VTK // DES
+  seg->SetBranchAngle(branchAngle);
+  if(loss != MinorLossScope::NONE){
+     seg->SetUpstreamSeg(upstreamSegment);
+     seg->SetBranchSeg(branchSegment);
+  }
 
   // Set the Boundary Conditions
   seg -> setBoundCondition(boundT);
