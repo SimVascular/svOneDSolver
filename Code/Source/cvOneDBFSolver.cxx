@@ -1161,8 +1161,13 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       subdomain->SetupMaterial(matID);
       subdomain->GetMaterial()->SetPeriod(Period);
 
-      // Set up Minor Loss - Only for NO MINOR LOSS TYPE
+      // Set up Minor Loss
       subdomain->SetMinorLossType(seg->GetMinorLossType());
+      if(seg->GetMinorLossType() != MinorLossScope::NONE){
+        subdomain->SetBranchAngle(seg->GetBranchAngle());
+        subdomain->SetUpstreamSeg(seg->GetUpstreamSeg());
+        subdomain->SetBranchSeg(seg->GetBranchSeg());
+      }
 
       // Set up boundary condition
       if (boundT == BoundCondTypeScope::RESISTANCE_TIME){
