@@ -73,18 +73,15 @@ void cvOneDMthSegmentModel::FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVect
 	// no boundary related terms
 	for(int i = 0; i < subdomainList.size(); i++){
 		for(long element = 0; element < subdomainList[i]->GetNumberOfElements();element++){
+			// analytical jacobian (missing terms)
 //			FormElement(element, i, &elementVector, &elementMatrix, true, true);
+
+			// finite difference jacobian
 			FormElement_FD(element, i, &elementVector, &elementMatrix);
 			rhsVector->Add(elementVector);
 			lhsMatrix->Add(elementMatrix);
 		}
 	}
-	// debug output
-//	ofstream ofsLHS;
-//	ofsLHS.open("central_lhs_FD.txt");
-//	lhsMatrix->print(ofsLHS);
-//	ofsLHS.close();
-//	exit(0);
 }
 
 
