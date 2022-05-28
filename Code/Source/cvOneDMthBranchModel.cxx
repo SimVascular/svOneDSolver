@@ -97,15 +97,10 @@ long cvOneDMthBranchModel::GetUpmostEqnNumber(long ele, long ithJoint){
   return minimum;
 }
 
-void cvOneDMthBranchModel::FormNewtonLHS(cvOneDFEAMatrix* lhsMatrix){
+void cvOneDMthBranchModel::FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVector* rhsVector){
   for(long i = 0; i < jointList.size(); i++){
     FormLagrangeLHSbyP(i, lhsMatrix);
     FormLagrangeLHSbyQ(i, lhsMatrix);
-  }
-}
-
-void cvOneDMthBranchModel::FormNewtonRHS(cvOneDFEAVector* rhsVector){
-  for(long i = 0; i < jointList.size(); i++){
     FormLagrangeRHSbyQ(i, rhsVector);
     FormLagrangeRHSbyP(i, rhsVector);
   }

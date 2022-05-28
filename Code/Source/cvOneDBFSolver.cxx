@@ -1396,6 +1396,7 @@ void cvOneDBFSolver::GenerateSolution(void){
   long q=1;
   double checkMass = 0;
   int numberOfCycle = 1;
+  long iter_total = 0;
 
   // Time stepping
   for(long step = 1; step <= maxStep; step++){
@@ -1419,13 +1420,7 @@ void cvOneDBFSolver::GenerateSolution(void){
       tstart_iter=clock();
 
       for(i = 0; i < numMath; i++){
-        mathModels[i]->FormNewtonRHS(rhs);
-
-      }
-
-      for(i = 0; i < numMath; i++){
-        mathModels[i]->FormNewtonLHS(lhs);
-
+        mathModels[i]->FormNewton(lhs, rhs);
       }
 
       // PRINT RHS BEFORE BC APP
@@ -1577,5 +1572,8 @@ void cvOneDBFSolver::GenerateSolution(void){
     q++;
   }
   *previousSolution = *currentSolution;
+  iter_total += iter;
   } // End global loop
+
+  cout << "\nAvgerage number of Newton-Raphson iterations per time step = "<<(double)iter_total / (double)maxStep<<"\n"<< endl;
 }

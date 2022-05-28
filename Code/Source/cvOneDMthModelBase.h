@@ -63,10 +63,8 @@ class cvOneDMthModelBase{
     virtual long GetTotalNumberOfEquations() const {return numberOfEquations;}
     virtual int  GetNumberOfElementEquations() const {return 4;}
     virtual void TimeUpdate(double pTime, double deltaT);
-    virtual void FormNewtonLHS(cvOneDFEAMatrix* lhsMatrix) = 0;
-    // forms an approximation to the global consistent tangent
-    virtual void FormNewtonRHS(cvOneDFEAVector* rhsVector) = 0;
-    // forms minus the global residual vector
+    // forms minus the global residual vector and an approximation to the global consistent tangent
+    virtual void FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVector* rhsVector) = 0;
     virtual void SetBoundaryConditions();
     virtual double CheckMassBalance();
     virtual void ApplyBoundaryConditions();

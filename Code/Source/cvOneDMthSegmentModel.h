@@ -56,10 +56,8 @@ class cvOneDMthSegmentModel : public cvOneDMthModelBase{
                           long quadPoints_);
     ~cvOneDMthSegmentModel();
 
-    void FormNewtonLHS( cvOneDFEAMatrix* lhsMatrix);
-    // forms an approximation to the global consistent tangent
-    void FormNewtonRHS( cvOneDFEAVector* rhsVector);
-    // forms minus the global residual vector
+    // forms minus the global residual vector and an approximation to the global consistent tangent
+    void FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVector* rhsVector);
     void SetEquationNumbers( long element, cvOneDDenseMatrix* elementMatrix, int ith);
     long GetUpmostEqnNumber(long ele, long ith) { return -2;}
     // 1=Brooke's one, 0=none IV 04-28-03
@@ -67,12 +65,20 @@ class cvOneDMthSegmentModel : public cvOneDMthModelBase{
 
   private:
 
-    void FormElementLHS(long element, cvOneDDenseMatrix* elementMatrix, long ithSubdomain);
-    void FormElementRHS(long element, cvOneDFEAVector* elementVector, long ithSubdomain);
+    void FormElement_FD(long element,
+    					long ith,
+						cvOneDFEAVector* elementVector,
+						cvOneDDenseMatrix* elementMatrix);
+    void FormElement(long element,
+    			     long ith,
+					 cvOneDFEAVector* elementVector,
+					 cvOneDDenseMatrix* elementMatrix,
+					 bool get_vec,
+					 bool get_mat);
     void FormMixedBCLHS(int ith, cvOneDSubdomain* sub, cvOneDDenseMatrix* elementMatrix){;}
     void FormMixedBCRHS(int ith, cvOneDSubdomain* sub, cvOneDDenseMatrix* elementMatrix){;}
     double N_Stenosis( long ith);
-    double N_MinorLoss(long ith);
+    void N_MinorLoss(long ith, double* N_vec);
     double GetInflowRate();
 
   private:

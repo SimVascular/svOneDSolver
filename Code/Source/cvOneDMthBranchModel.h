@@ -53,8 +53,7 @@ class cvOneDMthBranchModel: public cvOneDMthModelBase{
                          const vector<cvOneDFEAJoint*> &jtList, const vector<int>& outletList);
     ~cvOneDMthBranchModel(){}
     int GetNumberOfJoints() {return numOfJoints;}
-    void FormNewtonLHS(cvOneDFEAMatrix* lhsMatrix);
-    void FormNewtonRHS(cvOneDFEAVector* rhsVector);
+    void FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVector* rhsVector);
     void GetEquationNumbers(long ele, long* eqNumbers, long ithJoint);
     long GetUpmostEqnNumber(long ele, long ithJoint);
 
