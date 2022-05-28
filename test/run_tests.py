@@ -63,7 +63,7 @@ def get_tests():
 
     tests['tube_stenosis_r'] = [Test('pressure', 0, 0, -1, 10150.68211, 1.0e-6, 'point'),
                                 Test('pressure', 2, -1, -1, 10000.0, 1.0e-8, 'point'),
-                                Test('flow', 0, -1, -1, 100.0, 1.0e-16, 'point'),
+                                Test('flow', 0, -1, -1, 100.0, 1.0e-10, 'point'),
                                 Test('area', 0, -1, -1, 10.0, 1.0e-4, 'point')]
 
 
@@ -106,7 +106,7 @@ def get_tests():
                                 Test('flow', 0,  0, np.arange(100, 200), 7.557147487534, 1e-7, 'mean'),
                                 Test('flow', 1, -1, np.arange(100, 200), 3.839024865141, 1e-7, 'mean'),
                                 Test('flow', 1, -1, np.arange(100, 200), 24.0553490482, 1e-7, 'max'),
-                                Test('flow', 1, -1, np.arange(100, 200), -3.35028925666, 1e-7, 'min')]
+                                Test('flow', 1, -1, np.arange(100, 200), -3.35029015773, 1e-7, 'min')]
 
     tests['bifurcation_RCR_staticFunc'] = [Test('pressure', 0, 0, -1, 3997.46433118937, 1e-6, 'point'),
                                            Test('pressure', 0, -1, -1, 3984.67700709878, 1e-6, 'point'),
