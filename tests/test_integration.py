@@ -117,7 +117,7 @@ def test_tube_pressure_wave(tmpdir):
 
 
 def test_tube_rcr(tmpdir):
-    results = run_test_case_by_name('tube_tube_rcr', tmpdir)
+    results = run_test_case_by_name('tube_rcr', tmpdir)
     assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 11005.30965, rtol=1.0e-7)
     assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
     assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
@@ -160,8 +160,8 @@ def test_tube_stenosis_r(tmpdir):
     results = run_test_case_by_name('tube_stenosis_r', tmpdir)
     assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 10150.68211, rtol=1.0e-6)
     assert np.isclose(get_result(results, 'pressure', 2, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
-    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 1.0e-10, rtol=1.0e-10)
-    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0e-4, rtol=1.0e-4)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-10)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 10.0, rtol=1.0e-4)
 
 
 def test_bifurcation_P(tmpdir):
