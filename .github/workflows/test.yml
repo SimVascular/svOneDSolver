@@ -8,6 +8,7 @@ jobs:
       - name: build
         shell: bash
         run: |
+          sudo apt-get -y install libboost-all-dev
           mkdir build_skyline
           cd build_skyline
           cmake ..
