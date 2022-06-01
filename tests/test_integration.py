@@ -1,12 +1,13 @@
 import os
 
 import shutil
-import numpy as np
 import csv
 import glob
 import os
 import re
 import subprocess
+import numpy as np
+from collections import defaultdict
 
 RTOL_PRES = 1.0e-7
 RTOL_FLOW = 1.0e-8
