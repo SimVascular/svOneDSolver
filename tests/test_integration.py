@@ -1,5 +1,3 @@
-import os
-
 import shutil
 import csv
 import glob
@@ -8,9 +6,6 @@ import re
 import subprocess
 import numpy as np
 from collections import defaultdict
-
-RTOL_PRES = 1.0e-7
-RTOL_FLOW = 1.0e-8
 
 
 def run_test_case_by_name(name, testdir):
