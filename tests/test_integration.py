@@ -44,7 +44,7 @@ def run_oned(build_dir, name):
     exe = os.path.join(build_dir, 'bin', 'OneDSolver')
 
     # name of input file
-    inp = os.path.join('cases', name + '.in')
+    inp = os.path.join('cases', name)
 
     # run simulation
     try:
