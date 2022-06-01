@@ -12,10 +12,11 @@ jobs:
           mkdir build_skyline
           cd build_skyline
           cmake ..
-          make
+          make -j2
       - name: install dependencies
         run: |
-          pip install numpy pytest pytest-cov pytest-mock
+          pip install pytest pytest-cov pytest-mock
+          pip install numpy
       - name: result tests
         run: |
           pytest
