@@ -103,8 +103,8 @@ def get_result(results, field, seg, node, time, fun):
 def test_tube_pressure(tmpdir):
     results = run_test_case_by_name('tube_pressure', tmpdir)
     assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 11005.30965, rtol=1.0e-7)
-    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 10000.0, rtol=1.0e-8)
-    assert np.isclose(get_result(results, 'flow', 0, 0, -1, 'point'), 100.0, rtol=1.0e-16)
-    assert np.isclose(get_result(results, 'area', 0, 0, -1, 'point'), 1.0, rtol=1.0e-5)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
 
     # assert np.isclose(get_result(results, '', 0, 0, -1, 'point'), , rtol=)
