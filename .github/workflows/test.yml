@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: build
+      - name: build solver
         shell: bash
         run: |
           sudo apt-get -y install libboost-all-dev
@@ -13,3 +13,9 @@ jobs:
           cd build_skyline
           cmake ..
           make
+      - name: result tests
+        shell: bash
+        run: |
+          pip install numpy
+          cd test
+          python run_tests.py
