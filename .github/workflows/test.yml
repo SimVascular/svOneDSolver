@@ -1,0 +1,13 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  build-ubuntu-18:
+    steps:
+      - uses: actions/checkout@v2
+      - name: build
+        shell: bash
+        run: |
+          mkdir build_skyline
+          cd build_skyline
+          cmake ..
+          make
