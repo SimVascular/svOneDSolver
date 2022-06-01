@@ -1,0 +1,22 @@
+name: test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: build solver
+        shell: bash
+        run: |
+          sudo apt-get -y install libboost-all-dev
+          mkdir build_skyline
+          cd build_skyline
+          cmake ..
+          make
+      - name: install dependencies
+        run: |
+          pip install pytest pytest-cov pytest-mock
+          pip install numpy
+      - name: result tests
+        run: |
+          pytest
