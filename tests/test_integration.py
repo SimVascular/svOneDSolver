@@ -107,6 +107,7 @@ def test_tube_pressure(tmpdir):
     assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
     assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
 
+
 def test_tube_pressure_wave(tmpdir):
     results = run_test_case_by_name('tube_pressure_wave', tmpdir)
     assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 10000.0 , rtol=1.0e-8)
@@ -115,38 +116,114 @@ def test_tube_pressure_wave(tmpdir):
     assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
 
 
+def test_tube_rcr(tmpdir):
+    results = run_test_case_by_name('tube_tube_rcr', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 11005.30965, rtol=1.0e-7)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
 
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    #
-    #
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    #
-    #
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    #
-    #
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    #
-    #
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    #
-    #
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
-    # assert np.isclose(get_result(results, 'point'), , rtol=)
+
+def test_tube_rcr_Pd(tmpdir):
+    results = run_test_case_by_name('tube_rcr_Pd', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 12005.30965, rtol=1.0e-7)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 11000.0, rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
+
+
+def test_tube_r(tmpdir):
+    results = run_test_case_by_name('tube_r', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 11005.30965, rtol=1.0e-7)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
+
+
+def test_tube_r_Pd(tmpdir):
+    results = run_test_case_by_name('tube_r_Pd', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 12005.30965, rtol=1.0e-7)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 11000.0, rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
+
+
+def test_tube_r_stab(tmpdir):
+    results = run_test_case_by_name('tube_r_stab', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 11005.30965, rtol=1.0e-7)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
+
+
+def test_tube_stenosis_r(tmpdir):
+    results = run_test_case_by_name('tube_stenosis_r', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 10150.68211, rtol=1.0e-6)
+    assert np.isclose(get_result(results, 'pressure', 2, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 1.0e-10, rtol=1.0e-10)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0e-4, rtol=1.0e-4)
+
+
+def test_bifurcation_P(tmpdir):
+    results = run_test_case_by_name('bifurcation_P', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 4039.45953118937, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 4026.67220709878, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 1, 0, -1, 'point'), 4026.67220709878, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 2, 0, -1, 'point'), 4026.67220709878, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 1, -1, -1, 'point'), 4000.00, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 2, -1, -1, 'point'), 4000.00, rtol=1e-5)
+    assert np.isclose(get_result(results, 'flow', 1, -1, -1, 'point'), 3.9925, rtol=1e-6)
+    assert np.isclose(get_result(results, 'flow', 2, -1, -1, 'point'), 3.9925, rtol=1e-6)
+
+
+def test_bifurcation_R(tmpdir):
+    results = run_test_case_by_name('bifurcation_R', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 3997.46433118937, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 3984.67700709878, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 1, 0, -1, 'point'), 3984.67700709878, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 2, 0, -1, 'point'), 3984.67700709878, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 1, -1, -1, 'point'), 3958.0048, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 2, -1, -1, 'point'), 3958.0048, rtol=1e-5)
+    assert np.isclose(get_result(results, 'flow', 1, -1, -1, 'point'), 3.9925, rtol=1e-5)
+    assert np.isclose(get_result(results, 'flow', 2, -1, -1, 'point'), 3.9925, rtol=1e-5)
+
+
+def test_bifurcation_R_stab(tmpdir):
+    results = run_test_case_by_name('bifurcation_R_stab', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 3997.46433118937, rtol=1e-6)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 3984.67700709878, rtol=1e-6)
+    assert np.isclose(get_result(results, 'pressure', 1, 0, -1, 'point'), 3984.67700709878, rtol=1e-6)
+    assert np.isclose(get_result(results, 'pressure', 2, 0, -1, 'point'), 3984.67700709878, rtol=1e-6)
+    assert np.isclose(get_result(results, 'pressure', 1, -1, -1, 'point'), 3958.0048, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 2, -1, -1, 'point'), 3958.0048, rtol=1e-7)
+    assert np.isclose(get_result(results, 'flow', 1, -1, -1, 'point'), 3.9925, rtol=1e-6)
+    assert np.isclose(get_result(results, 'flow', 2, -1, -1, 'point'), 3.9925, rtol=1e-6)
+
+
+def test_bifurcation_RCR(tmpdir):
+    results = run_test_case_by_name('bifurcation_RCR', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0,  0, np.arange(100, 200), 'mean'), 123878.022943, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 0,  0, np.arange(100, 200), 'max'), 168182.372624, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 0,  0, np.arange(100, 200), 'min'), 89237.6441223, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 1, -1, np.arange(100, 200), 'mean'), 123855.677783, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 1, -1, np.arange(100, 200), 'max'), 171598.373528, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 1, -1, np.arange(100, 200), 'min'), 87624.0897929, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 2, -1, np.arange(100, 200), 'mean'), 123855.677783, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 2, -1, np.arange(100, 200), 'max'), 171598.373528, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 2, -1, np.arange(100, 200), 'min'), 87624.0897929, rtol=1e-7)
+    assert np.isclose(get_result(results, 'flow', 0,  0, np.arange(100, 200), 'mean'), 7.557147487534, rtol=1e-7)
+    assert np.isclose(get_result(results, 'flow', 1, -1, np.arange(100, 200), 'mean'), 3.839024865141, rtol=1e-7)
+    assert np.isclose(get_result(results, 'flow', 1, -1, np.arange(100, 200), 'max'), 24.0553490482, rtol=1e-7)
+    assert np.isclose(get_result(results, 'flow', 1, -1, np.arange(100, 200), 'min'), -3.35029015773, rtol=1e-7)
+
+
+def test_bifurcation_RCR_staticFunc(tmpdir):
+    results = run_test_case_by_name('bifurcation_RCR_staticFunc', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 3997.46433118937, rtol=1e-6,)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 3984.67700709878, rtol=1e-6,)
+    assert np.isclose(get_result(results, 'pressure', 1, 0, -1, 'point'), 3984.67700709878, rtol=1e-6,)
+    assert np.isclose(get_result(results, 'pressure', 2, 0, -1, 'point'), 3984.67700709878, rtol=1e-6,)
+    assert np.isclose(get_result(results, 'pressure', 1, -1, -1, 'point'), 3958.0048, rtol=1e-7)
+    assert np.isclose(get_result(results, 'pressure', 2, -1, -1, 'point'), 3958.0048, rtol=1e-7)
+    assert np.isclose(get_result(results, 'flow', 1, -1, -1, 'point'), 3.9925, rtol=1e-6,)
+    assert np.isclose(get_result(results, 'flow', 2, -1, -1, 'point'), 3.9925, rtol=1e-6,)
