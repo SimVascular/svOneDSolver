@@ -1,7 +1,7 @@
 name: test
 on: [push, pull_request]
 jobs:
-  build-ubuntu-18:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,9 +13,9 @@ jobs:
           cd build_skyline
           cmake ..
           make
-      - name: result tests
-        shell: bash
+      - name: install dependencies
         run: |
-          pip install numpy
-          cd test
-          python run_tests.py
+          pip install numpy pytest pytest-cov pytest-mock
+      - name: result tests
+        run: |
+          pytest
