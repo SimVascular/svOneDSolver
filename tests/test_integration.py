@@ -107,4 +107,46 @@ def test_tube_pressure(tmpdir):
     assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
     assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
 
-    # assert np.isclose(get_result(results, '', 0, 0, -1, 'point'), , rtol=)
+def test_tube_pressure_wave(tmpdir):
+    results = run_test_case_by_name('tube_pressure_wave', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 10000.0 , rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 9086.52306835, rtol=1.0e-4)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 90.8652306835, rtol=1.0e-4)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
+
+
+
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    #
+    #
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    #
+    #
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    #
+    #
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    #
+    #
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    #
+    #
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
+    # assert np.isclose(get_result(results, 'point'), , rtol=)
