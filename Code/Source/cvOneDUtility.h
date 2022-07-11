@@ -43,12 +43,14 @@
 # include <cassert>
 # include <string>
 
-# include <boost/algorithm/string.hpp>
-
 # include "cvOneDTypes.h"
 # include "cvOneDException.h"
 
 const int MaxChar = 128;
+
+std::vector<std::string> split_string(std::string& s, const std::string& delims);
+std::string trim_string(const std::string& s);
+std::string upper_string(const std::string& s);
 
 long min(long a, long b);
 long max( long a, long b);	

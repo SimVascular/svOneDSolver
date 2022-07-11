@@ -29,7 +29,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-# include "main.h"
+#include "main.h"
+#include <strings.h>
 
 using namespace std;
 
@@ -50,7 +51,7 @@ int getDataTableIDFromStringKey(string key){
   bool found = false;
   int count = 0;
   while((!found)&&(count<cvOneDGlobal::gDataTables.size())){
-    found = (boost::to_upper_copy(key) == boost::to_upper_copy(cvOneDGlobal::gDataTables[count]->getName()));
+    found = (strcasecmp(key.c_str(), cvOneDGlobal::gDataTables[count]->getName().c_str()) == 0);
     // Update Counter
     if(!found){
       count++;
@@ -157,7 +158,7 @@ void createAndRunModel(cvOneDOptions* opts){
   string currMatType = "MATERIAL_OLUFSEN";
   int numParams = 0;
   for(int loopA=0;loopA<totMaterials;loopA++){
-    if(boost::to_upper_copy(opts->materialType[loopA]) == "OLUFSEN"){
+    if(upper_string(opts->materialType[loopA]) == "OLUFSEN"){
       currMatType = "MATERIAL_OLUFSEN";
       numParams = 3;
     }else{
@@ -215,7 +216,8 @@ void createAndRunModel(cvOneDOptions* opts){
 
     // GET CURVE DATA
     curveName = opts->segmentDataTableName[loopA];
-    if(boost::to_upper_copy(curveName) != "NONE"){
+
+    if(upper_string(curveName) != "NONE") {
       dtIDX = getDataTableIDFromStringKey(curveName);
       curveTotals = cvOneDGlobal::gDataTables[dtIDX]->getSize();
       curveTime = new double[curveTotals];
@@ -325,13 +327,14 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
   std::string buffer;
   while (std::getline(infile,buffer)){
     // Trim String
-    boost::trim(buffer);
+    buffer = trim_string(buffer);
     // Tokenize String
-    boost::split(tokenizedString, buffer, boost::is_any_of(" ,\t"), boost::token_compress_on);
+    tokenizedString = split_string(buffer, " ,\t");
+
     // Check for Empty buffer
     if(!buffer.empty()){
       // CHECK THE ELEMENT TYPE
-      if(boost::to_upper_copy(tokenizedString[0]) == string("MODEL")){
+      if(upper_string(tokenizedString[0]) == "MODEL"){
         //printf("Found Model.\n");
         if(opts->modelNameDefined){
           throw cvException("ERROR: Model name already defined\n");
@@ -347,7 +350,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
           throw cvException(string("ERROR: Invalid Model Name. Line " + to_string(lineCount) + "\n").c_str());
         }
         opts->modelNameDefined = true;
-      }else if(boost::to_upper_copy(tokenizedString[0]) == string("NODE")){
+      }else if(upper_string(tokenizedString[0]) == "NODE"){
         // printf("Found Joint.\n");
         if(tokenizedString.size() > 5){
           throw cvException(string("ERROR: Too many parameters for NODE token. Line " + to_string(lineCount) + "\n").c_str());
@@ -363,7 +366,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         }catch(...){
           throw cvException(string("ERROR: Invalid NODE Format. Line " + to_string(lineCount) + "\n").c_str());
         }
-      }else if(boost::to_upper_copy(tokenizedString[0]) == string("JOINT")){
+      }else if(upper_string(tokenizedString[0]) == "JOINT"){
         // printf("Found Joint.\n");
         if(tokenizedString.size() > 5){
           throw cvException(string("ERROR: Too many parameters for JOINT token. Line " + to_string(lineCount) + "\n").c_str());
@@ -380,7 +383,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         }catch(...){
           throw cvException(string("ERROR: Invalid JOINT Format. Line " + to_string(lineCount) + "\n").c_str());
         }
-      }else if(boost::to_upper_copy(tokenizedString[0]) == string("JOINTINLET")){
+      }else if(upper_string(tokenizedString[0]) == "JOINTINLET"){
         // printf("Found JointInlet.\n");
         if(tokenizedString.size() < 3){
           throw cvException(string("ERROR: Not enough parameters for JOINTINLET token. Line " + to_string(lineCount) + "\n").c_str());
@@ -400,7 +403,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         }catch(...){
           throw cvException(string("ERROR: Invalid JOINTINLET Format. Line " + to_string(lineCount) + "\n").c_str());
         }
-      }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("JOINTOUTLET")){
+      }else if(upper_string(tokenizedString[0]) == "JOINTOUTLET"){
         // printf("Found JointOutlet.\n");
         if(tokenizedString.size() < 3){
           throw cvException(string("ERROR: Not enough parameters for JOINTOUTLET token. Line " + to_string(lineCount) + "\n").c_str());
@@ -420,7 +423,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         }catch(...){
           throw cvException(string("ERROR: Invalid JOINTOUTLET Format. Line " + to_string(lineCount) + "\n").c_str());
         }
-      }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("SEGMENT")){
+      }else if(upper_string(tokenizedString[0]) == "SEGMENT"){
         // printf("Found Segment.\n");
         if(tokenizedString.size() > 17){
           throw cvException(string("ERROR: Too many parameters for SEGMENT token. Line " + to_string(lineCount) + "\n").c_str());
@@ -466,7 +469,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         }catch(...){
           throw cvException(string("ERROR: Invalid SEGMENT Format. Line " + to_string(lineCount) + "\n").c_str());
         }
-      }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("SOLVEROPTIONS")){
+      }else if(upper_string(tokenizedString[0]) == "SOLVEROPTIONS"){
         // printf("Found Solver Options.\n");
         if(opts->solverOptionDefined){
           throw cvException("ERROR: SOLVEROPTIONS already defined\n");
@@ -499,18 +502,18 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
           throw cvException(string("ERROR: Invalid SOLVEROPTIONS Format. Line " + to_string(lineCount) + "\n").c_str());
         }
         opts->solverOptionDefined = true;
-      }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("OUTPUT")){
+      }else if(upper_string(tokenizedString[0]) == std::string("OUTPUT")){
         if(tokenizedString.size() > 3){
           throw cvException(string("ERROR: Too many parameters for OUTPUT token. Line " + to_string(lineCount) + "\n").c_str());
         }else if(tokenizedString.size() < 2){
           throw cvException(string("ERROR: Not enough parameters for OUTPUT token. Line " + to_string(lineCount) + "\n").c_str());
         }
         // Output Type
-        if(boost::to_upper_copy(tokenizedString[1]) == "TEXT"){
+        if(upper_string(tokenizedString[1]) == "TEXT"){
           cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_TEXT;
-        }else if(boost::to_upper_copy(tokenizedString[1]) == "VTK"){
+        }else if(upper_string(tokenizedString[1]) == "VTK"){
           cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_VTK;
-        }else if(boost::to_upper_copy(tokenizedString[1]) == "BOTH"){
+        }else if(upper_string(tokenizedString[1]) == "BOTH"){
           cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_BOTH;
         }else{
           throw cvException("ERROR: Invalid OUTPUT Type.\n");
@@ -521,7 +524,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
             throw cvException("ERROR: Invalid OUTPUT VTK Type.\n");
           }
         }
-      }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("DATATABLE")){
+      }else if(upper_string(tokenizedString[0]) == std::string("DATATABLE")){
         // printf("Found Data Table.\n");
         try{
 
@@ -536,12 +539,12 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
             std::getline(infile,buffer);
             lineCount++;
             // Trim String
-            boost::trim(buffer);
+            buffer = trim_string(buffer);
             // Tokenize String
-            boost::split(tokenizedString, buffer, boost::is_any_of(" ,\t"), boost::token_compress_on);
+            tokenizedString = split_string(buffer, " ,\t");
             // Check for Empty buffer
             if(!buffer.empty()){
-              if(boost::to_upper_copy(tokenizedString[0]) == std::string("ENDDATATABLE")){
+              if(upper_string(tokenizedString[0]) == std::string("ENDDATATABLE")){
                 foundEnd = true;
               }else{
                 for(int loopA=0;loopA<tokenizedString.size();loopA++){
@@ -555,7 +558,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         }catch(...){
           throw cvException(string("ERROR: Invalid DATATABLE Format. Line " + to_string(lineCount) + "\n").c_str());
         }
-      }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("MATERIAL")){
+      }else if(upper_string(tokenizedString[0]) == std::string("MATERIAL")){
         // printf("Found Material.\n");
         if(tokenizedString.size() > 10){
           throw cvException(string("ERROR: Too many parameters for MATERIAL token. Line " + to_string(lineCount) + "\n").c_str());
@@ -577,11 +580,11 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
           // Material Exponent
           opts->materialExponent.push_back(atof(tokenizedString[6].c_str()));
           // Extra Material Parameters
-          if(boost::to_upper_copy(matType) == "OLUFSEN"){
+          if(upper_string(matType) == "OLUFSEN"){
             opts->materialParam1.push_back(atof(tokenizedString[7].c_str()));
             opts->materialParam2.push_back(atof(tokenizedString[8].c_str()));
             opts->materialParam3.push_back(atof(tokenizedString[9].c_str()));
-          }else if(boost::to_upper_copy(matType) == "LINEAR"){
+          }else if(upper_string(matType) == "LINEAR"){
             opts->materialParam1.push_back(atof(tokenizedString[7].c_str()));
             opts->materialParam2.push_back(0.0);
             opts->materialParam3.push_back(0.0);
@@ -591,11 +594,11 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         }catch(...){
           throw cvException("ERROR: Invalid MATERIAL Format.\n");
         }
-      }else if(boost::to_upper_copy(tokenizedString[0]) == std::string("INCLUDE")){
+      }else if(upper_string(tokenizedString[0]) == std::string("INCLUDE")){
         // Check if the file is active
-        if(boost::to_upper_copy(tokenizedString[2]) == "TRUE"){
+        if(upper_string(tokenizedString[2]) == "TRUE"){
           doInclude = true;
-        }else if(boost::to_upper_copy(tokenizedString[2]) == "FALSE"){
+        }else if(upper_string(tokenizedString[2]) == "FALSE"){
           doInclude = false;
         }else{
           throw cvException(string("ERROR: Invalid INCLUDE switch format. Line " + to_string(lineCount) + "\n").c_str());

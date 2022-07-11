@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-# include "cvOneDModelManager.h"
+#include "cvOneDModelManager.h"
 
 cvOneDModelManager::cvOneDModelManager(char *mdlName){
   // We're creating a model
@@ -291,8 +291,9 @@ int cvOneDModelManager::CreateDataTable(char* dtName,char* dtType, cvDoubleVec v
   cvOneDDataTable* table = new cvOneDDataTable();
   table->setName(string(dtName));
   table->setType(string(dtType));
+
   // Get Values based on Type
-  if(boost::to_upper_copy(string(dtType)) == "LIST"){
+  if(upper_string(string(dtType)) == "LIST") {
     // Values are expressed as couples of time and value
     if(values.size() % 2){
       throw cvException("ERROR: Values in data table are not in time value format.\n");
