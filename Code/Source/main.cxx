@@ -32,6 +32,9 @@
 #include "main.h"
 #include <strings.h>
 
+
+# include <boost/algorithm/string.hpp>
+
 using namespace std;
 
 // ====================
@@ -326,10 +329,15 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
   // Read Data From File
   std::string buffer;
   while (std::getline(infile,buffer)){
+
     // Trim String
     buffer = trim_string(buffer);
+
     // Tokenize String
     tokenizedString = split_string(buffer, " ,\t");
+    if (tokenizedString.size() == 0) { 
+      continue;
+    }
 
     // Check for Empty buffer
     if(!buffer.empty()){
@@ -542,6 +550,9 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
             buffer = trim_string(buffer);
             // Tokenize String
             tokenizedString = split_string(buffer, " ,\t");
+            if (tokenizedString.size() == 0) { 
+              break;
+            }
             // Check for Empty buffer
             if(!buffer.empty()){
               if(upper_string(tokenizedString[0]) == std::string("ENDDATATABLE")){

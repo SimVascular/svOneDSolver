@@ -43,8 +43,15 @@ std::vector<std::string> split_string(std::string& s, const std::string& delims)
   std::vector<std::string> sub_strings;
   char* sub_str;
   sub_str = strtok(&s[0], delims.c_str());
+
   while (sub_str != NULL) {
-    sub_strings.push_back(std::string(sub_str));
+    auto token = std::string(sub_str);
+    if ((token.back() == '\n') || (token.back() == '\r')) {
+      token.pop_back();
+    } 
+    if ((token != "") && (token[0] != '\n') && (token[0] != '\r')) {
+      sub_strings.push_back(token);
+    }
     sub_str = strtok(NULL, delims.c_str());
   }
   return sub_strings;
