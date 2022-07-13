@@ -39,6 +39,14 @@
 # include "cvOneDMthSegmentModel.h"
 # include "cvOneDMthBranchModel.h"
 
+#ifndef WIN32
+#define _USE_MATH_DEFINES
+#endif
+#include <math.h> 
+
+
+# define USE_SKYLINE
+
 # ifdef USE_SKYLINE
   # include "cvOneDSkylineMatrix.h"
   # include "cvOneDSkylineLinearSolver.h"
@@ -339,8 +347,8 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_ONEFILE(){
   fprintf(vtkFile,"<PolyData>\n");
 
   // DEFINE INCIDENCE
-  double segInlets[model->getNumberOfSegments()];
-  double segOutlets[model->getNumberOfSegments()];
+  std::vector<double> segInlets(model->getNumberOfSegments());
+  std::vector<double> segOutlets(model->getNumberOfSegments());
   for(int loopSegment=0;loopSegment<model->getNumberOfSegments();loopSegment++){
     segInlets[loopSegment] = -1;
     segOutlets[loopSegment] = -1;
@@ -651,8 +659,8 @@ void cvOneDBFSolver::postprocess_VTK_XML3D_MULTIPLEFILES(){
   cvOneDNode* currNode = NULL;
 
   // DEFINE INCIDENCE
-  double segInlets[model->getNumberOfSegments()];
-  double segOutlets[model->getNumberOfSegments()];
+  std::vector<double> segInlets(model->getNumberOfSegments());
+  std::vector<double> segOutlets(model->getNumberOfSegments());
   for(int loopSegment=0;loopSegment<model->getNumberOfSegments();loopSegment++){
     segInlets[loopSegment] = -1;
     segOutlets[loopSegment] = -1;
@@ -1463,7 +1471,7 @@ void cvOneDBFSolver::GenerateSolution(void){
 
       // Check Newton-Raphson Convergence
       if((currentTime != deltaTime || (currentTime == deltaTime && iter != 0)) && normf < convCriteria && norms < convCriteria){
-        cout << "    iter: " << (int)iter << " ";
+        cout << "    iter: " << std::to_string(iter) << " ";
         cout << "normf: " << normf << " ";
         cout << "norms: " << norms << " ";
         cout << "time: " << ((float)(tend_iter-tstart_iter))/CLOCKS_PER_SEC << endl;
@@ -1535,7 +1543,7 @@ void cvOneDBFSolver::GenerateSolution(void){
       mathModels[0]->SetBoundaryConditions();
       tend_iter=clock();
 
-      cout << "    iter: " << (int)iter << " ";
+      cout << "    iter: " << std::to_string(iter) << " ";
       cout << "normf: " << normf << " ";
       cout << "norms: " << norms << " ";
       cout << "time: " << ((float)(tend_iter-tstart_iter))/CLOCKS_PER_SEC << endl;
@@ -1555,7 +1563,7 @@ void cvOneDBFSolver::GenerateSolution(void){
   checkMass += mathModels[0]->CheckMassBalance() * deltaTime;
   cout << "  Time = " << currentTime << ", ";
   cout << "Mass = " << checkMass << ", ";
-  cout << "Tot iters = " << (int)iter << endl;
+  cout << "Tot iters = " << std::to_string(iter) << endl;
 
   // Save solution if needed
   if(step % stepSize == 0){

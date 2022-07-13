@@ -30,10 +30,7 @@
  */
 
 #include "main.h"
-#include <strings.h>
-
-
-# include <boost/algorithm/string.hpp>
+#include <string.h>
 
 using namespace std;
 
@@ -54,7 +51,7 @@ int getDataTableIDFromStringKey(string key){
   bool found = false;
   int count = 0;
   while((!found)&&(count<cvOneDGlobal::gDataTables.size())){
-    found = (strcasecmp(key.c_str(), cvOneDGlobal::gDataTables[count]->getName().c_str()) == 0);
+    found = upper_string(key) == upper_string(cvOneDGlobal::gDataTables[count]->getName());
     // Update Counter
     if(!found){
       count++;

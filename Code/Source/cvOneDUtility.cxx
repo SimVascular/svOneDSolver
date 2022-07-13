@@ -32,6 +32,7 @@
 # include "cvOneDUtility.h"
 #include <regex>
 #include <string.h>
+#include <cctype>
 
 //
 //  Utility.cxx - Source for Some Utility functions 
