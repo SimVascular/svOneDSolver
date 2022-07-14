@@ -2,7 +2,7 @@
 # 
 # This files defines the GitHub build actions which perform the following steps:
 # 
-#   - Building SimVascular on all supported platforms
+#   - Building svOneDSolver on all supported platforms
 #   - Creating installers for all supported platforms
 #   - Uploading the generated installers as artifacts
 #   - Uploading the generated installers as release assets (only for releases)
