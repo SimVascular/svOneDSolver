@@ -33,8 +33,6 @@
 # include <iostream>
 # include <fstream>
 
-# include <boost/algorithm/string.hpp>
-
 # include "cvOneDGlobal.h"
 # include "cvOneDUtility.h"
 # include "cvOneDModelManager.h"

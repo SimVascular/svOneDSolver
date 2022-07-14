@@ -30,11 +30,46 @@
  */
 
 # include "cvOneDUtility.h"
+#include <regex>
+#include <string.h>
+#include <cctype>
 
 //
 //  Utility.cxx - Source for Some Utility functions 
 //  ~~~~~~~~~~~   
 //
+
+std::vector<std::string> split_string(std::string& s, const std::string& delims)
+{
+  std::vector<std::string> sub_strings;
+  char* sub_str;
+  sub_str = strtok(&s[0], delims.c_str());
+
+  while (sub_str != NULL) {
+    auto token = std::string(sub_str);
+    if ((token.back() == '\n') || (token.back() == '\r')) {
+      token.pop_back();
+    } 
+    if ((token != "") && (token[0] != '\n') && (token[0] != '\r')) {
+      sub_strings.push_back(token);
+    }
+    sub_str = strtok(NULL, delims.c_str());
+  }
+  return sub_strings;
+}
+
+std::string trim_string(const std::string& s)
+{
+  return std::regex_replace(s, std::regex("^ +| +$|( ) +"), "$1");
+}
+
+std::string upper_string(const std::string& s)
+{
+  std::string upper_str(s);
+  std::transform(upper_str.begin(), upper_str.end(), upper_str.begin(), [](unsigned char c){ return std::toupper(c); });
+  return upper_str;
+}
+
 
 long min(long size, long* values){
   long m = values[0];
@@ -215,7 +250,7 @@ int getListIDWithStringKey(string key,cvStringVec list){
   bool found = false;
   size_t count = 0;
   while((!found)&&(count<list.size())){    
-    found = (boost::to_upper_copy(list[count]) == boost::to_upper_copy(key));
+    found = upper_string(list[count]) == key;
     //printf("FOUND: %s\n",found ? "True":"False");
     if(!found){
       count++;

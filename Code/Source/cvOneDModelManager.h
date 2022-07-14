@@ -35,8 +35,6 @@
 # include <string.h>
 # include <vector>
 
-# include <boost/algorithm/string.hpp>
-
 # include "cvOneDTypes.h"
 # include "cvOneDGlobal.h"
 # include "cvOneDException.h"
