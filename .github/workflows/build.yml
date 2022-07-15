@@ -139,7 +139,7 @@ jobs:
           make
           cd Release
           make
-          cp Release/sim*.msi ../../svOneDSolver-Windows.msi
+          cp sim*.msi ../../svOneDSolver-Windows.msi
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
