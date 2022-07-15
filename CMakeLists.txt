@@ -5,28 +5,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 PROJECT(OneDSolver)
 ENABLE_LANGUAGE(C CXX)
 
-# Get the SimVascular variables for libraries, includes, etc.
-if (BUILD_SV_INSTALLER) 
-    find_package(SimVascular REQUIRED)
-    # Set the path to find the SimVascular CMake modules.
-    set(CMAKE_MODULE_PATH "${SimVascular_CMAKE_DIR}" "${CMAKE_MODULE_PATH}")
-    include(SimVascularMacros)
-    include(SimVascularSystemSetup)
-ENDIF()
-
 # SET OPTIONS
 OPTION(BUILD_SV_INSTALLER "Build SimVascular Installer" OFF)
 OPTION(buildPy "Build Python Interface" OFF)
 OPTION(buildDocs "Build Documentation" OFF)
 SET(sparseSolverType "skyline" CACHE STRING "Use Sparse Solver")
 SET_PROPERTY(CACHE sparseSolverType PROPERTY STRINGS skyline superlu csparse)
-
-# FIX ERROR WITH BOOST
-FIND_PACKAGE(Boost)
-IF (Boost_FOUND)
-    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
-    ADD_DEFINITIONS( "-DHAS_BOOST" )
-ENDIF()
 
 # ADD DEFINITION SO THE C++ CODE CAN SEE IT
 IF(sparseSolverType STREQUAL "skyline")
@@ -46,6 +30,11 @@ ENDIF()
 
 # SET FOLDERS WITH CMAKE MODULES
 SET (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+if (BUILD_SV_INSTALLER) 
+    include(SimVascularMacros)
+    include(SimVascularSystemSetup)
+ENDIF()
 
 # DEFINE FOLDERS VARIABLES
 SET(SRCS_DIR "./Code/Source")
