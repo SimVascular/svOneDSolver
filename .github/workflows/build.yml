@@ -136,22 +136,23 @@ jobs:
       - name: Build
         run: |
           cd BuildWithMake
-          dos2unix ./quick-build-windows.sh
-          C:\cygwin64\bin\bash.exe -c "./build_windows_github.bat"
-          cp Release/svOneDSolver-*-Windows-64bit-bundle.exe ../svOneDSolver-Windows.exe
+          make
+          cd Release
+          make
+          cp Release/sim*.msi ../../svOneDSolver-Windows.msi
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: Windows Installer
-          path: svOneDSolver-Windows.exe
+          path: svOneDSolver-Windows.msi
           if-no-files-found: error
       - name: Upload release asset
         if: startsWith(github.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: svOneDSolver-Windows.exe
-          asset_name: svOneDSolver-${{github.ref_name}}-Windows.exe
+          file: svOneDSolver-Windows.msi
+          asset_name: svOneDSolver-${{github.ref_name}}-Windows.msi
           tag: ${{ github.ref }}
 
 
