@@ -136,10 +136,9 @@ jobs:
       - name: Build
         run: |
           cd BuildWithMake
-          make
-          cd Release
-          make
-          cp sim*.msi ../../svOneDSolver-Windows.msi
+          dos2unix ./windows-build.sh
+          C:\cygwin64\bin\bash.exe -c "./build_windows_github.bat"
+          cp Release/sim*.msi ../svOneDSolver-Windows.msi
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
