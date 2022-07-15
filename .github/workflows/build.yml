@@ -42,5 +42,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: svOneDSolver-macOS-Catalina.pkg
-          asset_name: svOneDSolve-${{github.ref_name}}-macOS-Catalina.pkg
+          asset_name: svOneDSolver-${{github.ref_name}}-macOS-Catalina.pkg
           tag: ${{ github.ref }}
