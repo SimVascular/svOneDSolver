@@ -44,9 +44,6 @@
 #endif
 #include <math.h> 
 
-
-# define USE_SKYLINE
-
 # ifdef USE_SKYLINE
   # include "cvOneDSkylineMatrix.h"
   # include "cvOneDSkylineLinearSolver.h"
