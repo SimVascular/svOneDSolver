@@ -96,7 +96,7 @@ msi-svonedsolver:	msiclean-svonedsolver
 ifeq ($(CXX_COMPILER_VERSION),mingw-gcc)
 	x86_64-w64-mingw32-gcc -o tmp/uuidgen.exe windows_msi_helpers/uuidgen.c -lole32
 else
-	CL /Fetmp/uuidgen.exe /Fotmp/uuidgen.obj windows_msi_helpers/uuidgen.c ole32.lib
+	$(CXX) /Fetmp/uuidgen.exe /Fotmp/uuidgen.obj windows_msi_helpers/uuidgen.c ole32.lib
 endif
 	-echo "Create WXS file..."
 	-tclsh windows_msi_helpers/makewxs-svonedsolver.tcl $(SV_TIMESTAMP) $(SV_TIMESTAMP_PERIOD) $(REAL_DIST_DIR_TOP) 
