@@ -1,4 +1,6 @@
 
+CLUSTER = x64_cygwin
+
 CXX=CL
 CC=CL
 
@@ -6,7 +8,7 @@ CXXDEP          = g++ -MM
 CCDEP           = gcc -MM
 AR              = lib -out:
 DEBUG_FLAGS     =
-OPT_FLAGS       = /nologo /MD /Ox /EHsc /MP /FS
+OPT_FLAGS       = /nologo /MD /Ox /EHsc /MP /FS 
 
 SHAR            = "/cygdrive/c/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.10.25017/bin/HostX64/x64/link.exe"
 #SHAR            = "/cygdrive/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.16.27023/bin/HostX64/x64/link.exe"
