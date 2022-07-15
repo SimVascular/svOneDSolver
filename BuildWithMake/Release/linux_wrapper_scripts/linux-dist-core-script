@@ -1,0 +1,18 @@
+#!/bin/bash -f
+
+export SV_HOME=/usr/local/package/REPLACE_SV_VERSION/REPLACE_TIMESTAMP
+export SV_RELEASE_BUILD=REPLACE_SV_PLATFORM
+
+################################################################
+# YOU PROBABLY DON'T NEED TO CHANGE ANYTHING BELOW THIS LINE.  #
+################################################################
+
+export SV_STATIC_BUILD=1
+export SV_RELEASED_MODE=1
+
+# SV additions (parasolid, tcltk, etc.)
+export LD_LIBRARY_PATH=$SV_HOME:$LD_LIBRARY_PATH
+
+# MPICH2 additions
+export LD_LIBRARY_PATH=$SV_HOME/mpi/lib:$LD_LIBRARY_PATH
+

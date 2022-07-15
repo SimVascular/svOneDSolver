@@ -1,0 +1,29 @@
+#!/bin/bash -f
+
+export SV_HOME=/usr/local/package/svsolver/REPLACE_TIMESTAMP
+export SV_RELEASE_BUILD=REPLACE_SV_PLATFORM
+export SV_OS=REPLACE_SV_OS
+
+################################################################
+# YOU PROBABLY DON'T NEED TO CHANGE ANYTHING BELOW THIS LINE.  #
+################################################################
+
+export SV_STATIC_BUILD=1
+export SV_RELEASED_MODE=1
+
+# SV additions (parasolid, tcltk, etc.)
+export LD_LIBRARY_PATH=$SV_HOME:$LD_LIBRARY_PATH
+
+# MPICH2 additions
+export LD_LIBRARY_PATH=$SV_HOME/mpi/lib:$LD_LIBRARY_PATH
+
+# intel additions
+export LD_LIBRARY_PATH=$SV_HOME/intel_compiler_libs:$LD_LIBRARY_PATH
+
+# need to convert to dos style paths on windows
+case "$SV_OS" in
+ "windows" )
+export SV_HOME=`cygpath --windows -t mixed "$SV_HOME"`
+export PATH=$LD_LIBRARY_PATH:$PATH
+;;
+esac
