@@ -13,11 +13,14 @@ endif
 src=../Code/Source/*.cxx
 obj = $(src:.cpp=.o)
 
+# Set option to use Skyline solver
+flags=/DUSE_SKYLINE
+
 exe = svOneDSolver
 
 $(exe): $(obj)
-	$(CXX) -o $(exe) $(obj) $(libs) 
+	$(CXX) $(OPT_FLAGS) $(flags) -o $(exe) $(obj) $(libs) 
 
-.cpp.o:
-	$(CXX) $(copt) $(flags) -c $<
+clean:
+	rm *.obj *.exe
 

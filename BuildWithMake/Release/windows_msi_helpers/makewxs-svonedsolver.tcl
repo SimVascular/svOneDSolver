@@ -67,13 +67,13 @@ proc file_find {dir wildcard args} {
     global outputRegistry
     if {!$outputRegistry} {
         set outputRegistry 1
-        set regid 11
-        puts $outfp "<Registry Id='regid$regid' Root='HKLM' Key='Software\\SimVascular\\Solvers\\svOneDSolver\\$SV_TIMESTAMP' Name='SVSOLVER_HOME' Action='write' Type='string' Value='\[INSTALLDIR\]$SV_TIMESTAMP' />"
+        set regid 21
+        puts $outfp "<Registry Id='regid$regid' Root='HKLM' Key='Software\\SimVascular\\Solvers\\svOneDSolver\\$SV_TIMESTAMP' Name='SVONEDSOLVER_HOME' Action='write' Type='string' Value='\[INSTALLDIR\]$SV_TIMESTAMP' />"
         incr regid
 	puts $outfp "<Registry Id='regid$regid' Root='HKLM' Key='Software\\SimVascular\\Solvers\\svOneDSolver\\$SV_TIMESTAMP' Name='TimeStamp' Action='write' Type='string' Value='$SV_TIMESTAMP' />"
 
         incr regid
-	puts $outfp "<Registry Id='regid$regid' Root='HKLM' Key='Software\\SimVascular\\Solvers\\svOneDSolver\\$SV_TIMESTAMP' Name='SVONDSOLVER_EXE' Action='write' Type='string' Value='\[INSTALLDIR\]$SV_TIMESTAMP\\svonedsolver.exe'  />"
+	puts $outfp "<Registry Id='regid$regid' Root='HKLM' Key='Software\\SimVascular\\Solvers\\svOneDSolver\\$SV_TIMESTAMP' Name='SVONEDSOLVER_EXE' Action='write' Type='string' Value='\[INSTALLDIR\]$SV_TIMESTAMP\\svonedsolver.exe'  />"
         incr regid
     }
     foreach i $files {
