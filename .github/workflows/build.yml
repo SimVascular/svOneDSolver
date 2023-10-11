@@ -10,11 +10,11 @@
 name: Build
 on: [push, pull_request]
 jobs:
-  build-macos-catalina:
-    runs-on: macos-10.15
+  build-macos:
+    runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build
         shell: bash
         run: |
@@ -29,35 +29,33 @@ jobs:
         run: |
           cd Build
           cpack
-          cp oneD*.pkg ../svOneDSolver-macOS-Catalina.pkg
+          cp oneD*.pkg ../svOneDSolver-macOS.pkg
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: macOS Catalina Installer
-          path: svOneDSolver-macOS-Catalina.pkg
+          name: macOS Installer
+          path: svOneDSolver-macOS.pkg
           if-no-files-found: error
       - name: Upload release asset
         if: startsWith(github.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: svOneDSolver-macOS-Catalina.pkg
-          asset_name: svOneDSolver-${{github.ref_name}}-macOS-Catalina.pkg
+          file: svOneDSolver-macOS.pkg
+          asset_name: svOneDSolver-${{github.ref_name}}-macOS.pkg
           tag: ${{ github.ref }}
 
-  build-ubuntu-20:
-     runs-on: ubuntu-20.04
+  build-ubuntu:
+     runs-on: ubuntu-latest
      steps:
        - name: Checkout
-         uses: actions/checkout@v2
+         uses: actions/checkout@v3
        - name: Install dependencies
          shell: bash
-         run: sudo apt-get install gcc-8 g++-8
+         run: sudo apt-get install gcc g++
        - name: Build
          shell: bash
          run: |
-           export CC=/usr/bin/gcc-8
-           export CXX=/usr/bin/g++-8
            mkdir Build
            cd Build
            cmake .. -DBUILD_SV_INSTALLER=ON
@@ -67,64 +65,27 @@ jobs:
          run: |
            cd Build
            cpack
-           cp oneD*.deb ../svOneDSolver-Ubuntu-20.deb
+           cp oneD*.deb ../svOneDSolver-Ubuntu.deb
        - name: Upload artifact
          uses: actions/upload-artifact@v3
          with:
-           name: Ubuntu 20 Installer
-           path: svOneDSolver-Ubuntu-20.deb
+           name: Ubuntu Installer
+           path: svOneDSolver-Ubuntu.deb
            if-no-files-found: error
        - name: Upload release asset
          if: startsWith(github.ref, 'refs/tags/')
          uses: svenstaro/upload-release-action@v2
          with:
            repo_token: ${{ secrets.GITHUB_TOKEN }}
-           file: svOneDSolver-Ubuntu-20.deb
-           asset_name: svOneDSolver-${{github.ref_name}}-Ubuntu-20.deb
+           file: svOneDSolver-Ubuntu.deb
+           asset_name: svOneDSolver-${{github.ref_name}}-Ubuntu.deb
            tag: ${{ github.ref }}
 
-  build-ubuntu-18:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install dependencies
-        shell: bash
-        run: |
-          sudo apt-get install zip
-      - name: Build
-        shell: bash
-        run: |
-          mkdir Build
-          cd Build
-          cmake .. -DBUILD_SV_INSTALLER=ON
-          make -j2
-      - name: Create installer
-        shell: bash
-        run: |
-          cd Build
-          cpack
-          cp oneD*.deb ../svOneDSolver-Ubuntu-18.deb
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: Ubuntu 18 Installer
-          path: svOneDSolver-Ubuntu-18.deb
-          if-no-files-found: error
-      - name: Upload release asset
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: svOneDSolver-Ubuntu-18.deb
-          asset_name: svOneDSolver-${{github.ref_name}}-Ubuntu-18.deb
-          tag: ${{ github.ref }}
-
   build-windows:
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Cygwin
         uses: cygwin/cygwin-install-action@master
         with:
