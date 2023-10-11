@@ -82,7 +82,7 @@ jobs:
            tag: ${{ github.ref }}
 
   build-windows:
-    runs-on: windows19
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
