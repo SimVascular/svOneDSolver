@@ -52,12 +52,10 @@ jobs:
          uses: actions/checkout@v3
        - name: Install dependencies
          shell: bash
-         run: sudo apt-get install gcc-8 g++-8
+         run: sudo apt-get install gcc g++
        - name: Build
          shell: bash
          run: |
-           export CC=/usr/bin/gcc-8
-           export CXX=/usr/bin/g++-8
            mkdir Build
            cd Build
            cmake .. -DBUILD_SV_INSTALLER=ON
