@@ -54,6 +54,9 @@ class cvOneDMaterialLinear:public cvOneDMaterial{
     void   SetStop(double S){Stop = S;}
     void   SetSbottom(double S){Sbot = S;}
     void   SetLength(double length){len = length;}
+    void   SetHydraulicConductivity(double value) {L_P = value;};
+    void   SetStarlingAmbientPressure(double value) {P_ambient = value;};
+    double GetStarlingAmbientPressure() {return P_ambient;}
     double GetProperty( char* what) const;
     double GetArea( double pressure, double z) const;
     double GetPressure( double S, double z) const;
@@ -80,6 +83,9 @@ class cvOneDMaterialLinear:public cvOneDMaterial{
     double Stop;
     double Sbot;
     double len;
+
+    double L_P;
+    double P_ambient;
 
     double ehr;
     double PP1_;

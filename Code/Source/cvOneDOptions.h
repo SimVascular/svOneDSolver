@@ -80,6 +80,8 @@ class cvOneDOptions{
     cvDoubleVec materialViscosity;
     cvDoubleVec materialPRef;
     cvDoubleVec materialExponent;
+    cvDoubleVec materialHydraulicConductivity;
+    cvDoubleVec materialAmbientPressure;
     cvDoubleVec materialParam1;
     cvDoubleVec materialParam2;
     cvDoubleVec materialParam3;

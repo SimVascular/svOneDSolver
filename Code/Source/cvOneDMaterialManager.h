@@ -45,7 +45,8 @@ class cvOneDMaterialManager{
     int AddNewMaterial(MaterialType type, cvOneDMaterial* mat);
 
     int AddNewMaterialOlufsen(double density, double dynamicViscosity,
-                              double profile_exponent, double pRef, double *params);
+                              double profile_exponent, double pRef, 
+                              double L_P, double P_ambient, double *params);
 
     int AddNewMaterialLinear(double density, double dynamicViscosity,
                              double profile_exponent, double pRef, double EHR);

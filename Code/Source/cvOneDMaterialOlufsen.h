@@ -54,6 +54,10 @@ class cvOneDMaterialOlufsen:public cvOneDMaterial{
     void   SetStop(double S){Stop = S;}
     void   SetSbottom(double S){Sbot = S;}
     void   SetLength(double length){len = length;}
+    void   SetStarlingAmbientPressure(double value);
+    double GetStarlingAmbientPressure();
+    double GetFoo() {return K1_;};
+    void   SetHydraulicConductivity(double value);
     void   SetMaterialType(double*, double);
     double GetProperty( char* what) const;
     double GetArea( double pressure, double z) const;
@@ -72,14 +76,13 @@ class cvOneDMaterialOlufsen:public cvOneDMaterial{
     double GetMette2(double area,double z) const;
  	double GetN(double S) const;
 
-
 	int IsRigid() {return rigid;}
 
 	double GetLinCompliance(double z) const;
 	double GetnonLinCompliance(double area,double z) const;
 	void SetPeriod(double period);
 
-    void GetParams(double *K1, double *K2, double *K3, double *Pref) const {*K1 = K1_; *K2 = K2_; *K3 = K3_; *Pref=PP1_;};
+    void GetParams(double *K1, double *K2, double *K3, double *Pref, double *P_amb_, double *L_P_) const {*K1 = K1_; *K2 = K2_; *K3 = K3_; *Pref=PP1_; *P_amb_ = P_ambient; *L_P_ = L_P;};
 
  private:
 
@@ -92,6 +95,9 @@ class cvOneDMaterialOlufsen:public cvOneDMaterial{
     double zstar;
     double alpha;
     double pcrit;
+
+    double L_P;
+    double P_ambient;
 
     double K1_;
     double K2_;

@@ -48,14 +48,19 @@ cvOneDModelManager::~cvOneDModelManager(){
 int cvOneDModelManager::CreateMaterial(char *matName, char *MaterialTypeString,
                                        double density, double dynamicViscosity,
                                        double profile_exponent, double pRef,
-                                       int numParams, double *params, int *matID){
+                                       double L_P, double P_ambient, int numParams, 
+                                       double *params, int *matID){
 
   if (cvOneDGlobal::gMaterialManager == NULL){
     cvOneDGlobal::gMaterialManager = new cvOneDMaterialManager();
   }
+
+  cout << L_P << endl;
+  cout << P_ambient << endl;
+
   if(!strcmp (MaterialTypeString, "MATERIAL_OLUFSEN")){
     *matID = cvOneDGlobal::gMaterialManager->AddNewMaterialOlufsen(density,dynamicViscosity,
-                             profile_exponent,pRef,params);
+                             profile_exponent,pRef,L_P,P_ambient,params);
     return CV_OK;
   }else if(!strcmp (MaterialTypeString, "MATERIAL_LINEAR")){
     double EHR = params[0];

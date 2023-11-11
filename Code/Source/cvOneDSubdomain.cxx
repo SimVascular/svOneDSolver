@@ -95,6 +95,9 @@ void cvOneDSubdomain::SetupMaterial(int matID){
   mat = cvOneDGlobal::gMaterialManager->GetNewInstance(matID);
  // printf("subdomain cpp setupMaterial matID=%i  \n", matID);
   mat->SetAreas_and_length(S_initial, S_final, fabs(z_out - z_in));
+  cout << "line 98 of cvOneDSubdomain.cxx" << endl;
+  cout << mat->GetEHR((double) 0.3) << endl;
+  // mat->GetStarlingAmbientPressure();
 }
 
 void cvOneDSubdomain::SetBoundValue(double boundV){

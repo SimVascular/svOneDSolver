@@ -1119,6 +1119,8 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       jointList.push_back(feajoint);
     }
 
+    cout << "Line 1122" << endl;
+
     // Loop on Segments
     long temp = 0;
     for (i=0; i<is; i++){
@@ -1163,7 +1165,13 @@ void cvOneDBFSolver::QuerryModelInformation(void)
       if(!seg->IsOutlet){
         subdomain->SetBoundCondition(BoundCondTypeScope::NOBOUND);
       }
+      cout << "Line 1168 of cvOneDBFSolver.cxx" << endl;
+      // cout << subdomain->GetMaterial()->GetEHR((double) 1.5);
+      // cout << " " << subdomain->GetMaterial()->GetStarlingAmbientPressure();
+      // so I guess these values haven't been set yet. It's somehow resetting those values when it called the constructor again??
+      cout << "Line 1170" << endl;
       subdomain->SetupMaterial(matID);
+      cout << "Line 1172" << endl;
       subdomain->GetMaterial()->SetPeriod(Period);
 
       // Set up Minor Loss
@@ -1224,6 +1232,8 @@ void cvOneDBFSolver::QuerryModelInformation(void)
         subdomain->SetBoundCondition(BoundCondTypeScope::NOBOUND);
       }
     }
+
+    cout << "Line 1230" << endl;
 
     // For branch use.
     temp *= 2;

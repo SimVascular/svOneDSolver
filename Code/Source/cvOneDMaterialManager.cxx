@@ -57,13 +57,16 @@ int cvOneDMaterialManager::AddNewMaterial(MaterialType type, cvOneDMaterial* mat
 }
 
 int cvOneDMaterialManager::AddNewMaterialOlufsen(double density, double dynamicViscosity,
-                                                 double profile_exponent, double pRef,
-                                                 double *params){
+                                                 double profile_exponent, double pRef, double L_P,
+                                                 double P_ambient, double *params){
   cvOneDMaterialOlufsen* olfmat = new cvOneDMaterialOlufsen();
   olfmat->SetDensity(density);
   olfmat->SetDynamicViscosity(dynamicViscosity);
   olfmat->SetProfileExponent(profile_exponent);
   olfmat->SetReferencePressure(pRef);
+  olfmat->SetHydraulicConductivity(L_P);
+  olfmat->SetStarlingAmbientPressure(P_ambient);
+  cout << "Getting the pressure: " << olfmat->GetStarlingAmbientPressure() << endl;
   olfmat->SetMaterialType(params,pRef);
   printf("new cvOneMaterialOlufsen called check pRef %f \n", olfmat->GetReferencePressure());
   return cvOneDGlobal::gMaterialManager->AddNewMaterial(MaterialType_MATERIAL_OLUFSEN,(cvOneDMaterial*)olfmat);
@@ -84,10 +87,14 @@ int cvOneDMaterialManager::AddNewMaterialLinear(double density, double dynamicVi
 // caller must deallocate material instance to avoid memory leak
 cvOneDMaterial* cvOneDMaterialManager::GetNewInstance(int matID){
   if (types[matID] == MaterialType_MATERIAL_OLUFSEN) {
+    cout << "declaration" << endl;
     cvOneDMaterialOlufsen* olfmat = new cvOneDMaterialOlufsen();
   //  printf("In GetNewInstance cvOneDMaterialOlufsen is called  matID=%i \n",matID);
+    cout << "assignment" << endl;
     *olfmat = *((cvOneDMaterialOlufsen*)(materials[matID]));
   //  printf("In GetNewInstance cvOneDMaterialOlufsen* materials is called \n");
+    cout << "line 94 of the MaterialManager.cxx function:" << endl;
+    olfmat->GetStarlingAmbientPressure();
     return (cvOneDMaterial*)olfmat;
   }else if (types[matID] == MaterialType_MATERIAL_LINEAR) {
     cvOneDMaterialLinear* linearmat = new cvOneDMaterialLinear();

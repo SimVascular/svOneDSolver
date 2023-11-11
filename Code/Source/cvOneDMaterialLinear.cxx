@@ -83,6 +83,8 @@ cvOneDMaterialLinear& cvOneDMaterialLinear::operator=(const cvOneDMaterialLinear
     ehr = that.ehr;
     p1_=that.PP1_; //impose P refrence here otherwise p1_ is not the value set in the input file.
     printf("this that set ehr =%f p1_=%f \n",ehr, p1_);
+    P_ambient = that.P_ambient;
+    L_P = that.L_P;
   }
   return *this;
 }
