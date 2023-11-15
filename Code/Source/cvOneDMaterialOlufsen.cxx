@@ -230,7 +230,7 @@ double cvOneDMaterialOlufsen::GetDpDS(double S, double z)const{
   double So_ = GetS1(z);
   double ro=Getr1(z);
   double dpds=0.5* EHR * sqrt(So_/S)/S ;
-
+  cout << EHR << " " << So_ << " " << ro << endl;
   return dpds;
 }
 
@@ -241,7 +241,6 @@ double cvOneDMaterialOlufsen::GetD2pDS2(double area, double z)const{
 }
 
 double cvOneDMaterialOlufsen::GetOutflowFunction(double pressure, double z)const{
-  cout << L_P << " ";
   return L_P*(pressure - P_ambient); // JR 10/11/23: added function for outflow term
 }
 

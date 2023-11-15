@@ -75,7 +75,7 @@ class cvOneDMaterialLinear:public cvOneDMaterial{
     double GetMette2(double area,double z) const;
     double GetLinCompliance(double z) const;
     double GetnonLinCompliance(double area,double z) const;
-    double GetN(double S) const{return 0.0;};
+    double GetN(double S) const{return N;}; // JR 15/11/23: not sure why this returned 0.0 instead of just returning N. This has now bee fixed.
     void   SetPeriod(double period){};
 
   private:

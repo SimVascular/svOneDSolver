@@ -90,7 +90,9 @@ cvOneDMaterialLinear& cvOneDMaterialLinear::operator=(const cvOneDMaterialLinear
 }
 
 void cvOneDMaterialLinear::SetEHR(double ehr_val, double pref_val){
-  ehr = ehr_val;
+  ehr = 4.0/3.0*ehr_val; // JR 15/11/23: multiplied EHR by the correct factor (since downstream analysis using EHR
+  // in the segmentModel.cxx file does not multiply this by the value, and this is not specified in the documentation that
+  // the user should pre-multiply the E/h/r value by our 4/3 constant.
   PP1_= pref_val;  // add additional commend to set P refrence otherwise p1_ is not the value set in the input file.
 }
 
@@ -165,7 +167,7 @@ double cvOneDMaterialLinear::GetArea(double pressure, double z)const{
   double EHR  = GetEHR(z);//*4/3
   
   // This is the area computation using the "pressure-strain" modulus, EHR.
-  double area = So_*pow(1.0+(pres-p1_)/EHR,2.0);
+  double area = So_/pow(1.0-(pres-p1_)/EHR,2.0);
   if(cvOneDGlobal::debugMode){
     printf("So_: %e\n",So_);
     printf("pres: %e\n",pres);
@@ -183,7 +185,7 @@ double cvOneDMaterialLinear::GetPressure(double S, double z)const{
   // Then we impliment Olufsen's constitutive law...
   double So_   = GetS1(z);
   double EHR   = GetEHR(z);  // From Olufsen's paper
-  double press = p1_ + EHR*(sqrt(S/So_)-1.0);// for linear model dynes/cm^2
+  double press = p1_ + EHR*(1.0-sqrt(So_/S));// for linear model dynes/cm^2
   return press;
 }
 
@@ -192,7 +194,8 @@ double cvOneDMaterialLinear::GetDpDS(double S, double z)const{
   double EHR = GetEHR(z);
   double So_ = GetS1(z);
   double ro  = Getr1(z);
-  double dpds=0.5* EHR/sqrt(So_*S) ;// for linear model
+  double dpds=0.5* EHR* sqrt(So_/S)/S ;// for linear model
+  cout << EHR << " " << So_ << " " << ro << endl;
   return dpds;
 }
 
@@ -203,7 +206,7 @@ double cvOneDMaterialLinear::GetD2pDS2( double area, double z) const{
 }
 
 double cvOneDMaterialLinear::GetOutflowFunction(double pressure, double z)const{
-  return 0.; // This is not used in our model
+  return L_P * (pressure - P_ambient); // JR: 13-11-23: added outflow model
 }
 
 double cvOneDMaterialLinear::GetDOutflowDp(double pressure, double z)const{
