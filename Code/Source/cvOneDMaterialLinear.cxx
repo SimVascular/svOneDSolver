@@ -80,9 +80,7 @@ double cvOneDMaterialLinear::GetIntegralpD2S (double area, double z)const{
 cvOneDMaterialLinear& cvOneDMaterialLinear::operator=(const cvOneDMaterialLinear &that){
   if (this != &that) {
     cvOneDMaterial::operator=(that);
-    ehr = 4.0/3.0*ehr_val; // JR 15/11/23: multiplied EHR by the correct factor (since downstream analysis using EHR
-  // in the segmentModel.cxx file does not multiply this by the value, and this is not specified in the documentation that
-  // the user should pre-multiply the E/h/r value by our 4/3 constant.
+    ehr = that.ehr;
     p1_=that.PP1_; //impose P refrence here otherwise p1_ is not the value set in the input file.
     printf("this that set ehr =%f p1_=%f \n",ehr, p1_);
   }
@@ -90,7 +88,9 @@ cvOneDMaterialLinear& cvOneDMaterialLinear::operator=(const cvOneDMaterialLinear
 }
 
 void cvOneDMaterialLinear::SetEHR(double ehr_val, double pref_val){
-  ehr = ehr_val;
+  ehr = 4.0/3.0*ehr_val; // JR 15/11/23: multiplied EHR by the correct factor (since downstream analysis using EHR
+  // in the segmentModel.cxx file does not multiply this by the value, and this is not specified in the documentation that
+  // the user should pre-multiply the E/h/r value by our 4/3 constant.
   PP1_= pref_val;  // add additional commend to set P refrence otherwise p1_ is not the value set in the input file.
 }
 
