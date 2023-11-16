@@ -113,10 +113,7 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
 	  N_vec[i] = 0.0;
   }
 
-  cout << "N_vec[0]: " << N_vec[0] << endl;
-
   if(minorLoss == MinorLossScope::NONE ){//|| minorLoss != MinorLossScope::STENOSIS ){
-	  cout << "left ";
 	  return;
   }
 
@@ -296,7 +293,6 @@ void cvOneDMthSegmentModel::FormElement(long element,
 
 	N_MinorLoss(ith, N_vec);
 	const double N = N_vec[0];
-	cout << "\tline 296 N: " << N <<endl;
 	dN_dS[0] = N_vec[1];
 	dN_dQ[0] = N_vec[2];
 	dN_dS[1] = N_vec[3];
@@ -374,7 +370,7 @@ void cvOneDMthSegmentModel::FormElement(long element,
 
 		// more values coming from constitutive equations
 		// IV added IntegralpS and IntegralpD2S 01-24-03
-		cout << "\tline 376 N: " << N <<endl;
+		// cout << "\tline 376 N: " << N <<endl;
 		double pressure = material->GetPressure( U[0], z);
 		double Outflow = material->GetOutflowFunction( pressure, z);
 		double DpDS = material->GetDpDS( U[0], z);
@@ -432,9 +428,9 @@ void cvOneDMthSegmentModel::FormElement(long element,
 		double modA[4];
 		double modC[4];
 
-		cout << "A21: " << A[2] << "\tA22: " << A[3] << "\taux: " << aux << "\tDpDS: " << DpDS << "\t";
-		cout << "C22: " << C[3] << "\tN: " << N << "\tU[0]: " << U[0] << "\t";
-		cout << "F: " << F1 << "\t" << F2 << endl;
+		// cout << "A21: " << A[2] << "\tA22: " << A[3] << "\taux: " << aux << "\tDpDS: " << DpDS << "\t";
+		// cout << "C22: " << C[3] << "\tN: " << N << "\tU[0]: " << U[0] << "\t";
+		// cout << "F: " << F1 << "\t" << F2 << endl;
 
 		if(STABILIZATION==1){
 			GetModulus(A, modA);

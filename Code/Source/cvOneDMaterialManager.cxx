@@ -73,14 +73,16 @@ int cvOneDMaterialManager::AddNewMaterialOlufsen(double density, double dynamicV
 }
 
 int cvOneDMaterialManager::AddNewMaterialLinear(double density, double dynamicViscosity,
-                                                double profile_exponent, double pRef,
-                                                double EHR){
+                                                double profile_exponent, double pRef, double L_P,
+                                                double P_ambient, double EHR){
   cvOneDMaterialLinear* linearmat = new cvOneDMaterialLinear();
   linearmat->SetDensity(density);
   linearmat->SetDynamicViscosity(dynamicViscosity);
   linearmat->SetProfileExponent(profile_exponent);
   linearmat->SetReferencePressure(pRef);
   linearmat->SetEHR(EHR,pRef);
+  linearmat->SetHydraulicConductivity(L_P);
+  linearmat->SetStarlingAmbientPressure(P_ambient);
   return cvOneDGlobal::gMaterialManager->AddNewMaterial(MaterialType_MATERIAL_LINEAR,(cvOneDMaterial*)linearmat);
 }
 

@@ -64,12 +64,10 @@ cvOneDMaterialOlufsen::cvOneDMaterialOlufsen(){
  // printf("call cvOneMaterialsOlufsen p1_=%f K3_=%f \n",p1_,K3_);
 }
 
-cvOneDMaterialOlufsen::~cvOneDMaterialOlufsen(){
-  cout << "~cvOneDMaterialOlufsen function: P_ambient is: " << P_ambient << endl;
-}
+cvOneDMaterialOlufsen::~cvOneDMaterialOlufsen(){}
 
 cvOneDMaterialOlufsen::cvOneDMaterialOlufsen (const cvOneDMaterialOlufsen &rhs){
-  cout << "cvOneDMaterialOlufsen function2: P_ambient is: " << P_ambient << endl;
+  // cout << "cvOneDMaterialOlufsen function2: P_ambient is: " << P_ambient << endl;
  // this seems not used
   cvOneDMaterial::operator=(rhs);
   double k1 = 0,k2 = 0,k3 = 0;
@@ -86,7 +84,7 @@ cvOneDMaterialOlufsen::cvOneDMaterialOlufsen (const cvOneDMaterialOlufsen &rhs){
 }
 
 cvOneDMaterialOlufsen& cvOneDMaterialOlufsen::operator= (const cvOneDMaterialOlufsen &that){
-  cout << "operator= function: P_ambient is: " << P_ambient << endl;
+  // cout << "operator= function: P_ambient is: " << P_ambient << endl;
   if (this != &that) {
     cvOneDMaterial::operator=(that);
     double k1 = 0,k2 = 0,k3 = 0;
@@ -105,18 +103,18 @@ cvOneDMaterialOlufsen& cvOneDMaterialOlufsen::operator= (const cvOneDMaterialOlu
 }
 
 void cvOneDMaterialOlufsen::SetMaterialType(double *mType,double Pref){
-  cout << "SetMaterialType function: P_ambient is: " << P_ambient << endl;
+  // cout << "SetMaterialType function: P_ambient is: " << P_ambient << endl;
   K1_ = mType[0];
   K2_ = mType[1];
   K3_ = mType[2];
   PP1_=Pref;
-  cout<< "Setting material K's "<< K1_ <<" "<< K2_<<" "<< K3_<< " ..." << endl;
-  cout<< "Setting reference Pressure "<< PP1_<<endl;
+  // cout<< "Setting material K's "<< K1_ <<" "<< K2_<<" "<< K3_<< " ..." << endl;
+  // cout<< "Setting reference Pressure "<< PP1_<<endl;
  //  printf("call SetMaterialType K3_ %f \n",K3_);
 }
 
 void cvOneDMaterialOlufsen::SetPeriod(double per){
-  cout << "SetPeriod function: P_ambient is: " << P_ambient << endl;
+  // cout << "SetPeriod function: P_ambient is: " << P_ambient << endl;
   Period=per;
 }
 
@@ -142,17 +140,17 @@ double cvOneDMaterialOlufsen::GetProperty(char* what)const{
 
 void cvOneDMaterialOlufsen::SetHydraulicConductivity(double value) {
   L_P = value;
-  cout << "L_P: "<< L_P << endl;
+  // cout << "L_P: "<< L_P << endl;
 }
 
 void cvOneDMaterialOlufsen::SetStarlingAmbientPressure(double value) {
-  cout << "value: " << value << endl;
+  // cout << "value: " << value << endl;
   P_ambient = value; 
-  cout << "P_ambient: "<< P_ambient << endl;
+  // cout << "P_ambient: "<< P_ambient << endl;
 }
 
 double cvOneDMaterialOlufsen::GetStarlingAmbientPressure() {
-  cout << "GetStarlingAmbientPressure function: P_ambient is: " << P_ambient << endl;
+  // cout << "GetStarlingAmbientPressure function: P_ambient is: " << P_ambient << endl;
   return P_ambient;
 }
 
@@ -230,7 +228,7 @@ double cvOneDMaterialOlufsen::GetDpDS(double S, double z)const{
   double So_ = GetS1(z);
   double ro=Getr1(z);
   double dpds=0.5* EHR * sqrt(So_/S)/S ;
-  cout << EHR << " " << So_ << " " << ro << endl;
+  // cout << EHR << " " << So_ << " " << ro << endl;
   return dpds;
 }
 

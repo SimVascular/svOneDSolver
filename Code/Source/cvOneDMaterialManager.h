@@ -49,7 +49,8 @@ class cvOneDMaterialManager{
                               double L_P, double P_ambient, double *params);
 
     int AddNewMaterialLinear(double density, double dynamicViscosity,
-                             double profile_exponent, double pRef, double EHR);
+                             double profile_exponent, double pRef,
+                             double L_P, double P_ambient, double EHR);
 
     // caller must deallocate material instance to avoid memory leak
     cvOneDMaterial* GetNewInstance(int matID);
