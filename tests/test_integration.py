@@ -126,14 +126,6 @@ def test_tube_pressure_outflow_linear(tmpdir):
     assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 90.0, rtol=1.0e-8)
     assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
     
-    
-def test_tube_pressure_outflow_linear(tmpdir):
-    results = run_test_case_by_name('tube_pressure_outflow', tmpdir)
-    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 8269.71083336, rtol=1.0e-5)
-    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
-    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 90.0, rtol=1.0e-8)
-    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
-    
 
 def test_tube_pressure_wave(tmpdir):
     results = run_test_case_by_name('tube_pressure_wave', tmpdir)
