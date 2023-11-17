@@ -35,7 +35,7 @@ build
 *.app
 
 # Build Files
-build_skyline
+build_skyline/
 
 # Eclipse
 .cproject
