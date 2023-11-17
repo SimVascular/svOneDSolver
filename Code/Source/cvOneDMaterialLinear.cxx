@@ -195,7 +195,6 @@ double cvOneDMaterialLinear::GetDpDS(double S, double z)const{
   double So_ = GetS1(z);
   double ro  = Getr1(z);
   double dpds=0.5* EHR* sqrt(So_/S)/S ;// for linear model
-  // cout << EHR << " " << So_ << " " << ro << endl;
   return dpds;
 }
 

@@ -164,7 +164,6 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
       // func= Kv/Re0 + Kt / 2. * (1/a - 1.) * (1/a - 1.)*abs(Q[0])/Q[0]+Ku*1.06*L*sub->getDQDt()/Q;  // for non-steady flow
       func = 2.0 * func*a*a/q/q;   // a^2/q^2 switch from upstream segment to stenosed segment
       N = func *  Q[1]  / (2 * L);
-	  cout << "168" << N << "\t";
 
       const double pi = 3.14159265358979323846;
       const double mult = (8.0 * pi * kinViscosity0 / Q[0] + 0.5 * Kt / L * (1.0 - a) * (1.0 - a));
@@ -202,7 +201,6 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
 	  N_vec[0] = std;
   }
 
-  // cout << " -N " << -N << " Q(1) :"<< Q[1] << endl;
 }
 
 
@@ -370,7 +368,6 @@ void cvOneDMthSegmentModel::FormElement(long element,
 
 		// more values coming from constitutive equations
 		// IV added IntegralpS and IntegralpD2S 01-24-03
-		// cout << "\tline 376 N: " << N <<endl;
 		double pressure = material->GetPressure( U[0], z);
 		double Outflow = material->GetOutflowFunction( pressure, z);
 		double DpDS = material->GetDpDS( U[0], z);
@@ -427,10 +424,6 @@ void cvOneDMthSegmentModel::FormElement(long element,
 		double C[4] = { C11, 0.0, C21, C22};
 		double modA[4];
 		double modC[4];
-
-		// cout << "A21: " << A[2] << "\tA22: " << A[3] << "\taux: " << aux << "\tDpDS: " << DpDS << "\t";
-		// cout << "C22: " << C[3] << "\tN: " << N << "\tU[0]: " << U[0] << "\t";
-		// cout << "F: " << F1 << "\t" << F2 << endl;
 
 		if(STABILIZATION==1){
 			GetModulus(A, modA);

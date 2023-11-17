@@ -169,8 +169,6 @@ void createAndRunModel(cvOneDOptions* opts){
     doubleParams[1] = opts->materialParam2[loopA];
     doubleParams[2] = opts->materialParam3[loopA];
     // CREATE MATERIAL
-    // cout << opts->materialHydraulicConductivity[loopA] << endl;
-    // cout << opts->materialAmbientPressure[loopA] << endl;
     matError = oned->CreateMaterial((char*)opts->materialName[loopA].c_str(),
                                     (char*)currMatType.c_str(),
                                     opts->materialDensity[loopA],

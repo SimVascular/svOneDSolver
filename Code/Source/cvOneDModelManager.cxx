@@ -55,9 +55,6 @@ int cvOneDModelManager::CreateMaterial(char *matName, char *MaterialTypeString,
     cvOneDGlobal::gMaterialManager = new cvOneDMaterialManager();
   }
 
-  // cout << L_P << endl;
-  // cout << P_ambient << endl;
-
   if(!strcmp (MaterialTypeString, "MATERIAL_OLUFSEN")){
     *matID = cvOneDGlobal::gMaterialManager->AddNewMaterialOlufsen(density,dynamicViscosity,
                              profile_exponent,pRef,L_P,P_ambient,params);
