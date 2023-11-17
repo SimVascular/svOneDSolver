@@ -103,6 +103,14 @@ def test_tube_pressure(tmpdir):
     assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
 
 
+def test_tube_pressure_linear(tmpdir):
+    results = run_test_case_by_name('tube_pressure_linear', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 11005.30965, rtol=1.0e-6)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
+    
+
 def test_tube_pressure_wave(tmpdir):
     results = run_test_case_by_name('tube_pressure_wave', tmpdir)
     assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 10000.0 , rtol=1.0e-8)
@@ -151,6 +159,14 @@ def test_tube_r_stab(tmpdir):
     assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
 
 
+def test_tube_r_stab_linear(tmpdir):
+    results = run_test_case_by_name('tube_r_stab_linear', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 11005.30965, rtol=1.0e-6)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 10000.0, rtol=1.0e-8)
+    assert np.isclose(get_result(results, 'flow', 0, -1, -1, 'point'), 100.0, rtol=1.0e-16)
+    assert np.isclose(get_result(results, 'area', 0, -1, -1, 'point'), 1.0, rtol=1.0e-5)
+
+
 def test_tube_stenosis_r(tmpdir):
     results = run_test_case_by_name('tube_stenosis_r', tmpdir)
     assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 10150.68211, rtol=1.0e-6)
@@ -173,6 +189,18 @@ def test_bifurcation_P(tmpdir):
 
 def test_bifurcation_R(tmpdir):
     results = run_test_case_by_name('bifurcation_R', tmpdir)
+    assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 3997.46433118937, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 3984.67700709878, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 1, 0, -1, 'point'), 3984.67700709878, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 2, 0, -1, 'point'), 3984.67700709878, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 1, -1, -1, 'point'), 3958.0048, rtol=1e-5)
+    assert np.isclose(get_result(results, 'pressure', 2, -1, -1, 'point'), 3958.0048, rtol=1e-5)
+    assert np.isclose(get_result(results, 'flow', 1, -1, -1, 'point'), 3.9925, rtol=1e-5)
+    assert np.isclose(get_result(results, 'flow', 2, -1, -1, 'point'), 3.9925, rtol=1e-5)
+
+
+def test_bifurcation_R_linear(tmpdir):
+    results = run_test_case_by_name('bifurcation_R_linear', tmpdir)
     assert np.isclose(get_result(results, 'pressure', 0, 0, -1, 'point'), 3997.46433118937, rtol=1e-5)
     assert np.isclose(get_result(results, 'pressure', 0, -1, -1, 'point'), 3984.67700709878, rtol=1e-5)
     assert np.isclose(get_result(results, 'pressure', 1, 0, -1, 'point'), 3984.67700709878, rtol=1e-5)
