@@ -23,15 +23,25 @@ OUTPUT TEXT
 # analytical solution
 
 # parameters
-# viscosity		mu	0.04
-# vessel length		L	10
-# vessel cross-section	A	1
-# vessel radius		r	0.5641895835
-# pressure outlet       Pout	10000
-# prescribed inflow	Q	100
+# density       	rho	1.06
+# viscosity             mu      0.04
+# vessel length         L       10
+# vessel cross-section  A       1
+# vessel radius         r       0.5641895835
+# pressure outlet       Pout    10000
+# prescribed inflow     Q0      100
+# prescribed outflow	psi	1
 
 # reference solution
-# vessel resistance	R1 = 8*mu*L*PI/A^2 = 10.05309649
+# analytical result for	pressure for a rigid vessel with constant outflow:
+# P = -a_2/2*z^2 + a_1*z + P_out + a_2/2*L^2 - a_1*L
+# where:
+# 	a_1 = rho/A*(8/3/A*psi*Q0 + N/S*Q0)
+#	a_2 = rho/A*(8/3/A*psi^2 + N*psi/A)
+#	N = -8*pi*mu/rho
+# Q = Q0 - psi*z
 
 # results to be checked
-# pressure inlet	Pin = Pout + Q*R1 = 11005.30965
+# pressure inlet        Pin = 8269.71083336
+# flow outlet		Qout = 90
+
