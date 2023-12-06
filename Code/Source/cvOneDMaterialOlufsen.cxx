@@ -229,7 +229,8 @@ double cvOneDMaterialOlufsen::GetD2pDS2(double area, double z)const{
 }
 
 double cvOneDMaterialOlufsen::GetOutflowFunction(double pressure, double z)const{
-  return L_P*(pressure - P_ambient); // JR 10/11/23: added function for outflow term
+  // cout << "L_P: " << L_P << " pressure: " << pressure << " P_ambient: " << P_ambient << " total: " << L_P*(pressure - P_ambient) << endl;
+  return 1e-4 * (pressure - 0.0);
 }
 
 double cvOneDMaterialOlufsen::GetDOutflowDp(double pressure, double z)const{

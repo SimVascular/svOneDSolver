@@ -1226,7 +1226,7 @@ void cvOneDBFSolver::QuerryModelInformation(void)
         subdomain->SetBoundCondition(BoundCondTypeScope::NOBOUND);
       }
     }
-    
+
     // For branch use.
     temp *= 2;
     for(i=0; i<ij; i++){
@@ -1470,10 +1470,11 @@ void cvOneDBFSolver::GenerateSolution(void){
 
       // Check Newton-Raphson Convergence
       if((currentTime != deltaTime || (currentTime == deltaTime && iter != 0)) && normf < convCriteria && norms < convCriteria){
-        cout << "    iter: " << std::to_string(iter) << " ";
-        cout << "normf: " << normf << " ";
-        cout << "norms: " << norms << " ";
-        cout << "time: " << ((float)(tend_iter-tstart_iter))/CLOCKS_PER_SEC << endl;
+        // !!!!! REMEMBER TO UNCOMMENT THIS !!!!!
+        // cout << "    iter: " << std::to_string(iter) << " ";
+        // cout << "normf: " << normf << " ";
+        // cout << "norms: " << norms << " ";
+        // cout << "time: " << ((float)(tend_iter-tstart_iter))/CLOCKS_PER_SEC << endl;
         break;
       }
 
@@ -1514,10 +1515,10 @@ void cvOneDBFSolver::GenerateSolution(void){
          }
         }
 
-        if(negArea==1) {
+      if(negArea==1) {
         postprocess_Text();
         assert(0);
-        }
+      }
 
       if(cvOneDGlobal::debugMode){
         printf("(Debug) Printing Solution...\n");
