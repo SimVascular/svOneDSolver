@@ -51,7 +51,8 @@ class cvOneDModelManager{
     int CreateMaterial(char *matName, char *MaterialTypeString,
                        double density, double dynamicViscosity,
                        double profile_exponent, double pRef,
-                       int numParams, double *params, int *matID);
+                       double L_P, double P_ambient, int numParams, 
+                       double *params, int *matID);
 
     // CREATE SEGMENT
     int CreateSegment(char* segName,long segID, double  segLen,

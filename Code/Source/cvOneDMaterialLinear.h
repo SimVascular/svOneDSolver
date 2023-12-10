@@ -54,6 +54,9 @@ class cvOneDMaterialLinear:public cvOneDMaterial{
     void   SetStop(double S){Stop = S;}
     void   SetSbottom(double S){Sbot = S;}
     void   SetLength(double length){len = length;}
+    void   SetHydraulicConductivity(double value) {L_P = value;};
+    void   SetStarlingAmbientPressure(double value) {P_ambient = value;};
+    double GetStarlingAmbientPressure() {return P_ambient;}
     double GetProperty( char* what) const;
     double GetArea( double pressure, double z) const;
     double GetPressure( double S, double z) const;
@@ -72,7 +75,7 @@ class cvOneDMaterialLinear:public cvOneDMaterial{
     double GetMette2(double area,double z) const;
     double GetLinCompliance(double z) const;
     double GetnonLinCompliance(double area,double z) const;
-    double GetN(double S) const{return 0.0;};
+    double GetN(double S) const{return N;}; // JR 15/11/23: not sure why this returned 0.0 instead of just returning N. This has now bee fixed.
     void   SetPeriod(double period){};
 
   private:
@@ -80,6 +83,9 @@ class cvOneDMaterialLinear:public cvOneDMaterial{
     double Stop;
     double Sbot;
     double len;
+
+    double L_P;
+    double P_ambient;
 
     double ehr;
     double PP1_;

@@ -109,8 +109,9 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
 
   // set defaults
   N_vec[0] = sub->GetMaterial()->GetN(S[1]);
-  for (int i=1; i<5; i++)
+  for (int i=1; i<5; i++) {
 	  N_vec[i] = 0.0;
+  }
 
   if(minorLoss == MinorLossScope::NONE ){//|| minorLoss != MinorLossScope::STENOSIS ){
 	  return;
@@ -200,7 +201,6 @@ void cvOneDMthSegmentModel::N_MinorLoss(long ith, double* N_vec){
 	  N_vec[0] = std;
   }
 
-  // cout << " -N " << -N << " Q(1) :"<< Q[1] << endl;
 }
 
 

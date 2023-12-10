@@ -1,0 +1,47 @@
+MODEL results_tube_pressure_outflow_linear_
+
+NODE 0 0.0 0.0 0.0
+NODE 1 0.0 0.0 10.0
+
+SEGMENT seg0 0 10.0 50 0 1 1.0 1.0 0.0 MAT1 NONE 0.0 0 0 PRESSURE OUTLETDATA
+
+DATATABLE INLETDATA LIST
+0.0 100.0
+10.0 100.0
+ENDDATATABLE
+
+DATATABLE OUTLETDATA LIST
+0.0 10000.0
+ENDDATATABLE
+
+SOLVEROPTIONS 0.001 1000 1000 2 INLETDATA FLOW 1.0e-8 1 1
+
+MATERIAL MAT1 LINEAR 1.06 0.04 0 2.0 1.8e10 1e-15 -1e15 
+
+OUTPUT TEXT
+
+# analytical solution
+
+# parameters
+# density       	rho	1.06
+# viscosity             mu      0.04
+# vessel length         L       10
+# vessel cross-section  A       1
+# vessel radius         r       0.5641895835
+# pressure outlet       Pout    10000
+# prescribed inflow     Q0      100
+# prescribed outflow	psi	1
+
+# reference solution
+# analytical result for	pressure for a rigid vessel with constant outflow:
+# P = -a_2/2*z^2 + a_1*z + P_out + a_2/2*L^2 - a_1*L
+# where:
+# 	a_1 = rho/A*(8/3/A*psi*Q0 + N/S*Q0)
+#	a_2 = rho/A*(8/3/A*psi^2 + N*psi/A)
+#	N = -8*pi*mu/rho
+# Q = Q0 - psi*z
+
+# results to be checked
+# pressure inlet        Pin = 8269.71083336
+# flow outlet		Qout = 90
+

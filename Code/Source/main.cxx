@@ -175,6 +175,8 @@ void createAndRunModel(cvOneDOptions* opts){
                                     opts->materialViscosity[loopA],
                                     opts->materialExponent[loopA],
                                     opts->materialPRef[loopA],
+                                    opts->materialHydraulicConductivity[loopA],
+                                    opts->materialAmbientPressure[loopA],
                                     numParams, doubleParams,
                                     &matID);
     if(matError == CV_ERROR){
@@ -568,13 +570,13 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
         }
       }else if(upper_string(tokenizedString[0]) == std::string("MATERIAL")){
         // printf("Found Material.\n");
-        if(tokenizedString.size() > 10){
+        if(tokenizedString.size() > 12){
           throw cvException(string("ERROR: Too many parameters for MATERIAL token. Line " + to_string(lineCount) + "\n").c_str());
         }else if(tokenizedString.size() < 8){
           throw cvException(string("ERROR: Not enough parameters for MATERIAL token. Line " + to_string(lineCount) + "\n").c_str());
         }
         try{
-          // Material Name
+          // Material Name7
           opts->materialName.push_back(tokenizedString[1]);
           // Material Type
           matType = tokenizedString[2];
@@ -583,7 +585,7 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
           opts->materialDensity.push_back(atof(tokenizedString[3].c_str()));
           // Dynamic Viscosity
           opts->materialViscosity.push_back(atof(tokenizedString[4].c_str()));
-          // Reference Pressure
+          // Reference Pressureopts
           opts->materialPRef.push_back(atof(tokenizedString[5].c_str()));
           // Material Exponent
           opts->materialExponent.push_back(atof(tokenizedString[6].c_str()));
@@ -592,10 +594,28 @@ void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFi
             opts->materialParam1.push_back(atof(tokenizedString[7].c_str()));
             opts->materialParam2.push_back(atof(tokenizedString[8].c_str()));
             opts->materialParam3.push_back(atof(tokenizedString[9].c_str()));
+            if (tokenizedString.size() == 12) { // if the user has specified outflow parameters, we will read them in here
+              opts->materialHydraulicConductivity.push_back(atof(tokenizedString[10].c_str()));
+              // Material Outflow Hydraulic Conductivity
+              opts->materialAmbientPressure.push_back(atof(tokenizedString[11].c_str()));
+              // Material Outflow Ambient Pressure
+            } else { // if the user has not specified outflow parameters, we will fill it with 0.0
+              opts->materialHydraulicConductivity.push_back(0.0);
+              opts->materialAmbientPressure.push_back(0.0);
+            }
           }else if(upper_string(matType) == "LINEAR"){
             opts->materialParam1.push_back(atof(tokenizedString[7].c_str()));
             opts->materialParam2.push_back(0.0);
             opts->materialParam3.push_back(0.0);
+            if (tokenizedString.size() == 10) { // if the user has specified outflow parameters, we will read them in here
+              opts->materialHydraulicConductivity.push_back(atof(tokenizedString[8].c_str()));
+              // Material Outflow Hydraulic Conductivity
+              opts->materialAmbientPressure.push_back(atof(tokenizedString[9].c_str()));
+              // Material Outflow Ambient Pressure
+            } else { // if the user has not specified outflow parameters, we will fill it with 0.0
+              opts->materialHydraulicConductivity.push_back(0.0);
+              opts->materialAmbientPressure.push_back(0.0);
+            }
           }else{
             throw cvException(string("ERROR: Invalid MATERIAL Type. Line " + to_string(lineCount) + "\n").c_str());
           }

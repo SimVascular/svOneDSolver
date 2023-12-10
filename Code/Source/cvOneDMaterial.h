@@ -82,7 +82,6 @@ class cvOneDMaterial{
     virtual double GetProperty(char* what) const = 0;
     virtual double GetIntegralpS (double area, double z) const = 0;
 
-
     virtual double GetN(double S) const = 0;//not really dependent on S actually IV 080703
     virtual double GetEHR(double z) const = 0;
 

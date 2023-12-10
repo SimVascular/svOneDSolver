@@ -57,27 +57,31 @@ int cvOneDMaterialManager::AddNewMaterial(MaterialType type, cvOneDMaterial* mat
 }
 
 int cvOneDMaterialManager::AddNewMaterialOlufsen(double density, double dynamicViscosity,
-                                                 double profile_exponent, double pRef,
-                                                 double *params){
+                                                 double profile_exponent, double pRef, double L_P,
+                                                 double P_ambient, double *params){
   cvOneDMaterialOlufsen* olfmat = new cvOneDMaterialOlufsen();
   olfmat->SetDensity(density);
   olfmat->SetDynamicViscosity(dynamicViscosity);
   olfmat->SetProfileExponent(profile_exponent);
   olfmat->SetReferencePressure(pRef);
+  olfmat->SetHydraulicConductivity(L_P);
+  olfmat->SetStarlingAmbientPressure(P_ambient);
   olfmat->SetMaterialType(params,pRef);
   printf("new cvOneMaterialOlufsen called check pRef %f \n", olfmat->GetReferencePressure());
   return cvOneDGlobal::gMaterialManager->AddNewMaterial(MaterialType_MATERIAL_OLUFSEN,(cvOneDMaterial*)olfmat);
 }
 
 int cvOneDMaterialManager::AddNewMaterialLinear(double density, double dynamicViscosity,
-                                                double profile_exponent, double pRef,
-                                                double EHR){
+                                                double profile_exponent, double pRef, double L_P,
+                                                double P_ambient, double EHR){
   cvOneDMaterialLinear* linearmat = new cvOneDMaterialLinear();
   linearmat->SetDensity(density);
   linearmat->SetDynamicViscosity(dynamicViscosity);
   linearmat->SetProfileExponent(profile_exponent);
   linearmat->SetReferencePressure(pRef);
   linearmat->SetEHR(EHR,pRef);
+  linearmat->SetHydraulicConductivity(L_P);
+  linearmat->SetStarlingAmbientPressure(P_ambient);
   return cvOneDGlobal::gMaterialManager->AddNewMaterial(MaterialType_MATERIAL_LINEAR,(cvOneDMaterial*)linearmat);
 }
 
@@ -88,6 +92,7 @@ cvOneDMaterial* cvOneDMaterialManager::GetNewInstance(int matID){
   //  printf("In GetNewInstance cvOneDMaterialOlufsen is called  matID=%i \n",matID);
     *olfmat = *((cvOneDMaterialOlufsen*)(materials[matID]));
   //  printf("In GetNewInstance cvOneDMaterialOlufsen* materials is called \n");
+    olfmat->GetStarlingAmbientPressure();
     return (cvOneDMaterial*)olfmat;
   }else if (types[matID] == MaterialType_MATERIAL_LINEAR) {
     cvOneDMaterialLinear* linearmat = new cvOneDMaterialLinear();

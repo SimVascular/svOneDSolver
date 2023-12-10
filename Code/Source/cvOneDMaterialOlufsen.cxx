@@ -63,35 +63,37 @@ cvOneDMaterialOlufsen::cvOneDMaterialOlufsen(){
  // printf("call cvOneMaterialsOlufsen p1_=%f K3_=%f \n",p1_,K3_);
 }
 
-cvOneDMaterialOlufsen::~cvOneDMaterialOlufsen(){
-}
+cvOneDMaterialOlufsen::~cvOneDMaterialOlufsen(){}
 
 cvOneDMaterialOlufsen::cvOneDMaterialOlufsen (const cvOneDMaterialOlufsen &rhs){
  // this seems not used
   cvOneDMaterial::operator=(rhs);
   double k1 = 0,k2 = 0,k3 = 0;
-  double pref=0;
-  rhs.GetParams( &k1, &k2, &k3, &pref);
+  double pref=0; double P_amb_ref=0; double L_P_ref = 0;
+  rhs.GetParams( &k1, &k2, &k3, &pref, &P_amb_ref, &L_P_ref);
   K1_ = k1;
   K2_ = k2;
   K3_ = k3;
   p1_= pref;
+  P_ambient = P_amb_ref;
+  L_P = L_P_ref;
  // printf("call cvOneDmaterialOlufsen &rhs\n");
 
 }
-
 
 cvOneDMaterialOlufsen& cvOneDMaterialOlufsen::operator= (const cvOneDMaterialOlufsen &that){
   if (this != &that) {
     cvOneDMaterial::operator=(that);
     double k1 = 0,k2 = 0,k3 = 0;
 
-    double pref=0;
-    that.GetParams( &k1, &k2, &k3, &pref);
+    double pref=0; double P_amb_ref=0; double L_P_ref = 0;
+    that.GetParams( &k1, &k2, &k3, &pref, &P_amb_ref, &L_P_ref);
     K1_ = k1;
     K2_ = k2;
     K3_ = k3;
     p1_= pref;
+    P_ambient = P_amb_ref;
+    L_P = L_P_ref;
   //  printf("call cvOneDMaterialOlufsen that this K3_=%f p1_=%f \n",K3_,p1_ );
   }
   return *this;
@@ -102,8 +104,8 @@ void cvOneDMaterialOlufsen::SetMaterialType(double *mType,double Pref){
   K2_ = mType[1];
   K3_ = mType[2];
   PP1_=Pref;
-  cout<< "Setting material K's "<< K1_ <<" "<< K2_<<" "<< K3_<< " ..." << endl;
-  cout<< "Setting reference Pressure "<< PP1_<<endl;
+  // cout<< "Setting material K's "<< K1_ <<" "<< K2_<<" "<< K3_<< " ..." << endl;
+  // cout<< "Setting reference Pressure "<< PP1_<<endl;
  //  printf("call SetMaterialType K3_ %f \n",K3_);
 }
 
@@ -112,7 +114,6 @@ void cvOneDMaterialOlufsen::SetPeriod(double per){
 }
 
 double cvOneDMaterialOlufsen::GetProperty(char* what)const{
-
   // Nothing to change here...
   if( strcmp( what, "density") == 0)
     return density;
@@ -130,6 +131,18 @@ double cvOneDMaterialOlufsen::GetProperty(char* what)const{
     abort();
     return 0.0;
   }
+}
+
+void cvOneDMaterialOlufsen::SetHydraulicConductivity(double value) {
+  L_P = value;
+}
+
+void cvOneDMaterialOlufsen::SetStarlingAmbientPressure(double value) {
+  P_ambient = value; 
+}
+
+double cvOneDMaterialOlufsen::GetStarlingAmbientPressure() {
+  return P_ambient;
 }
 
 double cvOneDMaterialOlufsen::GetEHR(double z)const{
@@ -184,7 +197,6 @@ double cvOneDMaterialOlufsen::GetArea(double pressure, double z)const{
   //         This property comes from the subdomain
   //
   //       o Po is the the zero transmural pressure
-
   double pres = pressure;
   double So_  = GetS1(z);
   double EHR  = GetEHR(z);
@@ -207,7 +219,6 @@ double cvOneDMaterialOlufsen::GetDpDS(double S, double z)const{
   double So_ = GetS1(z);
   double ro=Getr1(z);
   double dpds=0.5* EHR * sqrt(So_/S)/S ;
-
   return dpds;
 }
 
@@ -218,7 +229,7 @@ double cvOneDMaterialOlufsen::GetD2pDS2(double area, double z)const{
 }
 
 double cvOneDMaterialOlufsen::GetOutflowFunction(double pressure, double z)const{
-  return 0.0; // This is not used in our model
+  return L_P * (pressure - P_ambient);
 }
 
 double cvOneDMaterialOlufsen::GetDOutflowDp(double pressure, double z)const{
