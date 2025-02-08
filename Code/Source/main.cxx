@@ -299,30 +299,14 @@ void createAndRunModel(cvOneDOptions* opts){
   delete [] inletCurveValue;
 }
 
-// ======================
-// READ SINGLE MODEL FILE
-// ======================
-void readModelFile(string inputFile, cvOneDOptions* opts, cvStringVec includedFiles){
-  cvOneD::readSingleOptionsLegacyFormat(inputFile,opts,includedFiles);
-}
-
-// ====================
-// READ MODEL FROM FILE
-// ====================
-void readModel(string inputFile, cvOneDOptions* opts){
-  cvOneD::readNestedOptionsLegacyFormat(inputFile,opts);
-}
-
 // ==============
 // RUN ONEDSOLVER
 // ==============
 void runOneDSolver(string inputFile){
 
-  // Create Options
+  // Create options from legacy format file
   cvOneDOptions* opts = new cvOneDOptions();
-
-  // Read Model From File
-  readModel(inputFile,opts);
+  cvOneD::readOptionsLegacyFormat(inputFile,opts);
 
   // Model Checking
   opts->check();

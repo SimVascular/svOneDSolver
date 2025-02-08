@@ -38,9 +38,7 @@ using namespace std;
 
 namespace cvOneD{
 
-void readSingleOptionsLegacyFormat(string inputFile, cvOneDOptions* opts, cvStringVec includedFiles);
-
-void readNestedOptionsLegacyFormat(string inputFile, cvOneDOptions* opts);
+void readOptionsLegacyFormat(string inputFile, cvOneDOptions* opts);
 
 } // namespace cvOneD
 

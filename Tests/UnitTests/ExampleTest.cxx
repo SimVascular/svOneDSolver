@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 
+// This test verifies that the unit test framework is available and
+// that we can access files in the "TestFiles" directory.
 TEST(ExampleTest, ExampleTest) {
     const std::string filePath = "TestFiles/ExampleFile.txt"; 
     std::ifstream file(filePath);

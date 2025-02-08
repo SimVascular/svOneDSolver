@@ -130,7 +130,6 @@ if(ENABLE_UNIT_TEST)
   include(GoogleTest)
 
   set(TESTBIN_DIRECTORY ${CMAKE_BINARY_DIR}/testbin)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${TESTBIN_DIRECTORY})
 
   # Copy test files into the build directory so tests can access them
   file(GLOB TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Tests/UnitTests/TestFiles/*")
@@ -169,6 +168,11 @@ if(ENABLE_UNIT_TEST)
   # versions of the unit tests. That can be updated when/if we update
   # the general strategy.
   target_include_directories(UnitTestsExecutable PRIVATE ${SRCS_DIR})
+
+  # Set the output directory for the executable
+  set_target_properties(UnitTestsExecutable PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${TESTBIN_DIRECTORY}
+  )
 
   # Add the test to CTest, we're setting the working directory to testbin
   # because we're copying the input files there for now
