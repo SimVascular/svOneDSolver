@@ -31,7 +31,7 @@ jobs:
           cpack
           cp oneD*.pkg ../svOneDSolver-macOS.pkg
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macOS Installer
           path: svOneDSolver-macOS.pkg
@@ -67,7 +67,7 @@ jobs:
            cpack
            cp oneD*.deb ../svOneDSolver-Ubuntu.deb
        - name: Upload artifact
-         uses: actions/upload-artifact@v3
+         uses: actions/upload-artifact@v4
          with:
            name: Ubuntu Installer
            path: svOneDSolver-Ubuntu.deb
@@ -104,7 +104,7 @@ jobs:
 #         C:\cygwin64\bin\bash.exe -c "./build_windows_github.bat"
 #         cp Release/sim*.msi ../svOneDSolver-Windows.msi
 #     - name: Upload artifact
-#       uses: actions/upload-artifact@v3
+#       uses: actions/upload-artifact@v4
 #       with:
 #         name: Windows Installer
 #         path: svOneDSolver-Windows.msi
