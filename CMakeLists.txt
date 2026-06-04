@@ -10,6 +10,7 @@ OPTION(BUILD_SV_INSTALLER "Build SimVascular Installer" OFF)
 OPTION(buildPy "Build Python Interface" OFF)
 OPTION(buildDocs "Build Documentation" OFF)
 OPTION(ENABLE_UNIT_TEST "Enable unit tests" ON)
+OPTION(ENABLE_INTERFACE_LIBRARY "Build 1D interface library for 3D-1D coupling" ON)
 SET(sparseSolverType "skyline" CACHE STRING "Use Sparse Solver")
 SET_PROPERTY(CACHE sparseSolverType PROPERTY STRINGS skyline superlu csparse)
 
@@ -76,7 +77,7 @@ include(FetchContent)
 FetchContent_Declare(
     nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.2  # You can specify a version or use the latest tag
+    GIT_TAG v3.12.0  # You can specify a version or use the latest tag
 )
 FetchContent_MakeAvailable(nlohmann_json)
 # Global include for nlohmann headers
@@ -190,3 +191,9 @@ if(ENABLE_UNIT_TEST)
   add_test(NAME UnitTests COMMAND UnitTestsExecutable WORKING_DIRECTORY ${TESTBIN_DIRECTORY})
 
 endif()
+
+# BUILD INTERFACE LIBRARY FOR 3D-1D COUPLING
+IF(ENABLE_INTERFACE_LIBRARY)
+  ADD_SUBDIRECTORY("${CMAKE_SOURCE_DIR}/Code/Source/interface")
+  message(STATUS "Building interface library for 3D-1D coupling")
+ENDIF()

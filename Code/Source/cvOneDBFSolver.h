@@ -74,6 +74,21 @@ class cvOneDBFSolver{
     // Solve the blood flow problem
     static void Solve(void);
 
+    // for 3D-1D coupling
+    static void Solve_initi(int& systemsize_, char* coupling_types_);
+    static void InitializeAllEquations();
+    static void InitializeSolutionFromVector(const double* solution_data, int size);
+    static void GetCurrentSolution(double* solution_data, int size);
+    static cvOneDFEAVector* SolveSingleTimeStep(double currentTimeInput, double interpolated_bc_val);
+    static void ConvertSolutionToFlowPressure(cvOneDFEAVector* solution_ptr, 
+                                          double* solution_vector);
+    static void postprocess_VTK_XML3D_SingleTimeStep(int timeStep, 
+                                                    cvOneDFEAVector* solution_ptr);
+    static void postprocess_Text_SingleTimeStep(int timeStep,
+                                               cvOneDFEAVector* solution_ptr);
+    static void extractCplBC(double* solution_data, double& CplValue, char* coupling_types);
+    static void extractCplDOF(int& cpldof, char* coupling_types);
+
     // Get the solution;
     static double GetSolution(int i, int j){return TotalSolution[i][j];}//IV 082103
 
@@ -97,6 +112,19 @@ class cvOneDBFSolver{
     // Find Segment index given the ID
     static int getSegmentIndex(int segID);
 
+    // for debugging
+    static double GetPreviousSolution(int index) { 
+        return (previousSolution != nullptr) ? previousSolution->Get(index) : 0.0; 
+    }
+    static double GetCurrentSolution(int index) { 
+        return (currentSolution != nullptr) ? currentSolution->Get(index) : 0.0; 
+    }
+    static int GetSubdomainListSize() { return static_cast<int>(subdomainList.size()); }
+    static int GetMathModelsSize() { return static_cast<int>(mathModels.size()); }
+    static double* GetFlowTime() { return flowTime; }
+    static double* GetFlowRate() { return flowRate; }
+    static long GetNumFlowPts() { return numFlowPts; }
+
  private:
 
     // Query Model, Allocate Memory, Set Initial Conditions
@@ -108,6 +136,7 @@ class cvOneDBFSolver{
     static void GenerateSolution(void);
     //create MthSegmentModel and MthBranchModel if exists. Also specify inflow profile
     static void DefineMthModels(void);
+    static void DefineMthModels_cpl_neu(void);
     static void AddOneModel(cvOneDMthModelBase* model);
 
     static bool wasSet;

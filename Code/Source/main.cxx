@@ -292,12 +292,13 @@ void createAndRunModel(const cvOneD::options& opts) {
     curveValue = nullptr;
   }
 
-  double* vals;
-  int tot;
+  double* vals;// not used
+  int tot;// not used
 
   // SOLVE MODEL
   printf("Solving Model ... \n");
   int solveError = CV_OK;
+  // Get Inlet BC data
   string inletCurveName = opts.inletDataTableName;
   int inletCurveIDX = getDataTableIDFromStringKey(inletCurveName);
   int inletCurveTotals = cvOneDGlobal::gDataTables[inletCurveIDX]->getSize();
@@ -460,10 +461,11 @@ cvOneD::options readLegacyOptions(std::string const& inputFile){
 //
 std::optional<cvOneD::options> parseArgsAndHandleOptions(int argc, char** argv){
   
-  // Legacy behavior
+  // Legacy behavior. right now, argc==2.
+  // Legacy input file: "xxx.in" stored in argv[1].
   if(argc == 2){
     string inputFile{removeQuotesIfPresent(argv[1])};
-    return readLegacyOptions(inputFile);
+    return readLegacyOptions(inputFile); //ends at here
   }
 
   // Default behavior
@@ -493,7 +495,7 @@ int main(int argc, char** argv){
 
   try{
 
-    auto const simulationOptions = parseArgsAndHandleOptions(argc,argv);
+    auto const simulationOptions = parseArgsAndHandleOptions(argc,argv); // read file
     if(simulationOptions){
       // The simulation options were defined so we can run the simulation
       runOneDSolver(*simulationOptions);
