@@ -4,37 +4,11 @@ set(lib svoned_interface)
 set(CXXSRCS interface.cpp)
 set(HDRS interface.h)
 
+set(MAIN_SRC_C ${SRC_C})
+set(MAIN_SRC_H ${SRC_H})
 
-if(${sparseSolverType} STREQUAL "skyline")
-  file(GLOB MAIN_SRC_C "${CMAKE_SOURCE_DIR}/Code/Source/*.c"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/*.cxx")
-  file(GLOB MAIN_SRC_H "${CMAKE_SOURCE_DIR}/Code/Source/*.h")
-
-elseif(${sparseSolverType} STREQUAL "superlu")
-  file(GLOB MAIN_SRC_C "${CMAKE_SOURCE_DIR}/Code/Source/*.c"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/*.cxx"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/*.cxx"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/superlu/*.c"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/superlu/*.cxx")
-  file(GLOB MAIN_SRC_H "${CMAKE_SOURCE_DIR}/Code/Source/*.h"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/*.h"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/superlu/*.h")
-
-elseif(${sparseSolverType} STREQUAL "csparse")
-  file(GLOB MAIN_SRC_C "${CMAKE_SOURCE_DIR}/Code/Source/*.c"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/*.cxx"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/*.cxx"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/csparse/*.c"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/csparse/*.cxx")
-  file(GLOB MAIN_SRC_H "${CMAKE_SOURCE_DIR}/Code/Source/*.h"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/*.h"
-                       "${CMAKE_SOURCE_DIR}/Code/Source/sparse/csparse/*.h")
-endif()
-
-list(FILTER MAIN_SRC_C EXCLUDE REGEX "main.cxx")
+list(FILTER MAIN_SRC_C EXCLUDE REGEX "/main\\.cxx$")
 list(FILTER MAIN_SRC_C EXCLUDE REGEX "interface.cpp")
-
-list(APPEND MAIN_SRC_C "${CMAKE_SOURCE_DIR}/Code/Source/cvOneDSubdomain.cxx")
 
 # Create shared library
 add_library(${lib} SHARED ${CXXSRCS} ${MAIN_SRC_C} ${MAIN_SRC_H})

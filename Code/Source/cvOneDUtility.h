@@ -37,6 +37,9 @@
 //  ~~~~~~~~~~~   
 //  
 
+#include <algorithm>
+#include <cstddef>
+#include <optional>
 # include <cmath>
 # include <iostream>
 # include <cstdarg>
@@ -45,12 +48,38 @@
 
 # include "cvOneDTypes.h"
 # include "cvOneDException.h"
+#include "cvOneDOptions.h"
 
 const int MaxChar = 128;
 
 std::vector<std::string> split_string(std::string& s, const std::string& delims);
 std::string trim_string(const std::string& s);
 std::string upper_string(const std::string& s);
+
+void setOutputGlobals(const cvOneD::options& opts);
+
+std::optional<cvOneD::options> parseArgsAndHandleOptions(
+    int argc, char** argv);
+
+int getDataTableIDFromStringKey(std::string key);
+
+inline std::size_t findJointNodeIndexOrThrow(
+    const auto& jointNodeName,
+    const auto& nodeNames,
+    const auto& jointName) {
+  const auto iter =
+      std::find(nodeNames.begin(), nodeNames.end(), jointNodeName);
+
+  if (iter == nodeNames.end()) {
+    const std::string errMsg =
+        "ERROR: The node '" + jointNodeName +
+        "' required by joint '" + jointName +
+        "' was not found in the list of nodes.";
+    throw cvException(errMsg.c_str());
+  }
+
+  return std::distance(nodeNames.begin(), iter);
+}
 
 long min(long a, long b);
 long max( long a, long b);	

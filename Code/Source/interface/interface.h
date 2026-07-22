@@ -24,6 +24,12 @@ class OneDSolverInterface {
   ~OneDSolverInterface();
 
   /**
+  * @brief Return the interface associated with a problem ID.
+  * @throws cvException if the problem ID does not exist.
+  */
+  static OneDSolverInterface* get_interface(int problem_id);
+
+  /**
    * @brief Counter for the number of interfaces
    */
   static int problem_id_count_;

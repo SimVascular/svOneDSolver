@@ -2041,7 +2041,7 @@ void cvOneDBFSolver::ConvertSolutionToFlowPressure(
   int num_nodes = num_sol / 2;
   double* tmp = solution_ptr->GetEntries();
   
-  cout << "Converting solution from [Area, Flow] to [Flow, Pressure]..." << endl;
+  //cout << "Converting solution from [Area, Flow] to [Flow, Pressure]..." << endl;
   
   // Loop over segments to handle each material properly
   long nodeOffset = 0;
@@ -2133,7 +2133,7 @@ void cvOneDBFSolver::InitializeSolutionFromVector(const double* solution_data, i
         (*currentSolution)[i] = solution_data[i];
     }
     
-    cout << "[InitializeSolutionFromVector] Solution vectors reset successfully" << endl;
+    //cout << "[InitializeSolutionFromVector] Solution vectors reset successfully" << endl;
 }
 
 

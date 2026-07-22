@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 #include <cmath>
-#include <stdexcept>
 #include <optional>
 #include <algorithm>
 
@@ -18,99 +17,15 @@
 #include "cvOneDOptionsJsonParser.h"
 #include "cvOneDOptionsJsonSerializer.h"
 #include "cvOneDOptionsLegacySerializer.h"
+#include "cvOneDUtility.h"
 
-// ===== Resolve operator<< ambiguity =====
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::string;
-
-//////////////////////////////////////////////////////////
-//      Helper functions from main.cxx                  //
-//////////////////////////////////////////////////////////
-
-std::string removeQuotesIfPresent(const std::string& str) {
-    std::string result = str;
-    if (!result.empty() && result.front() == '"' && result.back() == '"') {
-        result = result.substr(1, result.length() - 2); 
-    }
-    return result;
-}
-
-struct ArgOptions {
-  std::optional<std::string> jsonInput = std::nullopt;
-  std::optional<std::string> legacyConversionInput = std::nullopt;
-  std::optional<std::string> jsonConversionOutput = std::nullopt;
-};
-
-
-cvOneD::options readLegacyOptions(std::string const& inputFile) {
-  cvOneD::options opts{};
-  cvOneD::readOptionsLegacyFormat(inputFile, &opts);
-  return opts;
-}
-
-std::optional<cvOneD::options> parseArgsAndHandleOptions(int argc, char** argv) {
-  // Legacy behavior: single input file
-  if(argc == 2) {
-    string inputFile{removeQuotesIfPresent(argv[1])};
-    return readLegacyOptions(inputFile);
-  }
-  
-  return std::nullopt;
-}
-
-void setOutputGlobals(const cvOneD::options& opts){  
-
-  if(upper_string(opts.outputType) == "TEXT"){
-    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_TEXT;
-  }else if(upper_string(opts.outputType) == "VTK"){
-    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_VTK;
-  }else if(upper_string(opts.outputType) == "BOTH"){
-    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_BOTH;
-  }else{
-    throw cvException("ERROR: Invalid OUTPUT Type.\n");
-  }
-
-  if(opts.vtkOutputType){
-    cvOneDGlobal::vtkOutputType = *opts.vtkOutputType;
-    if(cvOneDGlobal::vtkOutputType > 1){
-      throw cvException("ERROR: Invalid OUTPUT VTK Type.\n");
-    }
-  }
-  
-}
-
-size_t findJointNodeIndexOrThrow(const auto& jointNodeName, const auto& nodeNames, const auto& jointName){
-  // Return the index of "nodeNames" that corresponds to the "jointNodeName"
-  // or throw a context-specific error.
-
-  auto const iter = std::find(nodeNames.begin(), nodeNames.end(), jointNodeName);
-  if (iter == nodeNames.end()) {
-    std::string const errMsg = "ERROR: The node '" + jointNodeName + "' required by joint '" 
-      + jointName + "' was not found in the list of nodes.";
-    throw cvException(errMsg.c_str());
-  }
-  return std::distance(nodeNames.begin(), iter); 
-}
-
-int getDataTableIDFromStringKey(string key){
-  bool found = false;
-  int count = 0;
-  while((!found)&&(count<cvOneDGlobal::gDataTables.size())){
-    found = upper_string(key) == upper_string(cvOneDGlobal::gDataTables[count]->getName());
-    // Update Counter
-    if(!found){
-      count++;
-    }
-  }
-  if(!found){
-    throw cvException(string("ERROR: Cannot find data table entry from string key: " + key + ".\n").c_str());
-    return -1;
-  }else{
-    return count;
-  }
-}
+#ifndef NDEBUG
+#define SVONED_DEBUG_LOG(message) \
+  do { std::cout << message << '\n'; } while (false)
+#else
+#define SVONED_DEBUG_LOG(message) \
+  do { } while (false)
+#endif
 
 //////////////////////////////////////////////////////////
 //      Static member data initialization               //
@@ -124,7 +39,7 @@ std::map<int, OneDSolverInterface*> OneDSolverInterface::interface_list_;
 //-----------------------
 /**
  * @brief Constructor for OneDSolverInterface.
- * 
+ *
  * @param input_file_name The 1D input file name
  */
 OneDSolverInterface::OneDSolverInterface(const std::string& input_file_name)
@@ -137,6 +52,396 @@ OneDSolverInterface::OneDSolverInterface(const std::string& input_file_name)
  * @brief Destructor for OneDSolverInterface.
  */
 OneDSolverInterface::~OneDSolverInterface() {}
+
+namespace {
+
+void createModelNodes(
+    const cvOneD::options& opts,
+    cvOneDModelManager* modelManager) {
+  SVONED_DEBUG_LOG("Creating Nodes ... ");
+
+  const int totalNodes = static_cast<int>(opts.nodeName.size());
+
+  for (int nodeIndex = 0; nodeIndex < totalNodes; ++nodeIndex) {
+    const int errorCode = modelManager->CreateNode(
+        const_cast<char*>(opts.nodeName[nodeIndex].c_str()),
+        opts.nodeXcoord[nodeIndex],
+        opts.nodeYcoord[nodeIndex],
+        opts.nodeZcoord[nodeIndex]);
+
+    if (errorCode == CV_ERROR) {
+      const std::string errMsg =
+          "ERROR: Error Creating NODE " +
+          std::to_string(nodeIndex) + "\n";
+      throw cvException(errMsg.c_str());
+    }
+  }
+}
+
+void createModelJoints(
+    const cvOneD::options& opts,
+    cvOneDModelManager* modelManager) {
+  SVONED_DEBUG_LOG("Creating Joints ... ");
+
+  const int totalJoints = static_cast<int>(opts.jointName.size());
+
+  for (int jointIndex = 0; jointIndex < totalJoints; ++jointIndex) {
+    const std::string& inletName = opts.jointInletName[jointIndex];
+    const std::string& outletName = opts.jointOutletName[jointIndex];
+
+    const int inletID =
+        getListIDWithStringKey(inletName, opts.jointInletListNames);
+    if (inletID < 0) {
+      const std::string errMsg =
+          "ERROR: Cannot Find JOINTINLET for key " + inletName;
+      throw cvException(errMsg.c_str());
+    }
+
+    const int outletID =
+        getListIDWithStringKey(outletName, opts.jointOutletListNames);
+    if (outletID < 0) {
+      const std::string errMsg =
+          "ERROR: Cannot Find JOINTOUTLET for key " + outletName;
+      throw cvException(errMsg.c_str());
+    }
+
+    const int totalInlets = opts.jointInletListNumber[inletID];
+    const int totalOutlets = opts.jointOutletListNumber[outletID];
+
+    std::vector<int> inletSegments;
+    inletSegments.reserve(totalInlets);
+    for (int i = 0; i < totalInlets; ++i) {
+      inletSegments.push_back(opts.jointInletList[inletID][i]);
+    }
+
+    std::vector<int> outletSegments;
+    outletSegments.reserve(totalOutlets);
+    for (int i = 0; i < totalOutlets; ++i) {
+      outletSegments.push_back(opts.jointOutletList[outletID][i]);
+    }
+
+    const std::string& jointName = opts.jointName.at(jointIndex);
+    const std::size_t nodeIndex = findJointNodeIndexOrThrow(
+        opts.jointNode.at(jointIndex),
+        opts.nodeName,
+        jointName);
+
+    const int errorCode = modelManager->CreateJoint(
+        jointName.c_str(),
+        opts.nodeXcoord[nodeIndex],
+        opts.nodeYcoord[nodeIndex],
+        opts.nodeZcoord[nodeIndex],
+        totalInlets,
+        totalOutlets,
+        inletSegments.empty() ? nullptr : inletSegments.data(),
+        outletSegments.empty() ? nullptr : outletSegments.data());
+
+    if (errorCode == CV_ERROR) {
+      const std::string errMsg =
+          "ERROR: Error Creating JOINT " +
+          std::to_string(jointIndex) + "\n";
+      throw cvException(errMsg.c_str());
+    }
+  }
+}
+
+void createModelMaterials(
+    const cvOneD::options& opts,
+    cvOneDModelManager* modelManager) {
+  SVONED_DEBUG_LOG("Creating Materials ... ");
+
+  const int totalMaterials =
+      static_cast<int>(opts.materialName.size());
+
+  for (int materialIndex = 0;
+       materialIndex < totalMaterials;
+       ++materialIndex) {
+    const bool isOlufsen =
+        upper_string(opts.materialType[materialIndex]) == "OLUFSEN";
+
+    const std::string materialType =
+        isOlufsen ? "MATERIAL_OLUFSEN" : "MATERIAL_LINEAR";
+    const int numberOfParameters = isOlufsen ? 3 : 1;
+
+    double parameters[3] = {
+        opts.materialParam1[materialIndex],
+        opts.materialParam2[materialIndex],
+        opts.materialParam3[materialIndex]
+    };
+
+    int materialID = 0;
+    const int errorCode = modelManager->CreateMaterial(
+        const_cast<char*>(opts.materialName[materialIndex].c_str()),
+        const_cast<char*>(materialType.c_str()),
+        opts.materialDensity[materialIndex],
+        opts.materialViscosity[materialIndex],
+        opts.materialExponent[materialIndex],
+        opts.materialPRef[materialIndex],
+        numberOfParameters,
+        parameters,
+        &materialID);
+
+    if (errorCode == CV_ERROR) {
+      const std::string errMsg =
+          "ERROR: Error Creating MATERIAL " +
+          std::to_string(materialIndex) + "\n";
+      throw cvException(errMsg.c_str());
+    }
+  }
+}
+
+void createModelDataTables(
+    const cvOneD::options& opts,
+    cvOneDModelManager* modelManager) {
+  SVONED_DEBUG_LOG("Creating Data Tables ... ");
+
+  const int totalDataTables =
+      static_cast<int>(opts.dataTableName.size());
+
+  for (int tableIndex = 0;
+       tableIndex < totalDataTables;
+       ++tableIndex) {
+    const int errorCode = modelManager->CreateDataTable(
+        const_cast<char*>(opts.dataTableName[tableIndex].c_str()),
+        const_cast<char*>(opts.dataTableType[tableIndex].c_str()),
+        opts.dataTableVals[tableIndex]);
+
+    if (errorCode == CV_ERROR) {
+      const std::string errMsg =
+          "ERROR: Error Creating DATATABLE " +
+          std::to_string(tableIndex) + "\n";
+      throw cvException(errMsg.c_str());
+    }
+  }
+}
+
+void createModelSegments(
+    const cvOneD::options& opts,
+    cvOneDModelManager* modelManager) {
+  SVONED_DEBUG_LOG("Creating Segments ... ");
+
+  const int totalSegments =
+      static_cast<int>(opts.segmentName.size());
+
+  for (int segmentIndex = 0;
+       segmentIndex < totalSegments;
+       ++segmentIndex) {
+    const std::string& materialName =
+        opts.segmentMatName[segmentIndex];
+    const int materialID =
+        getListIDWithStringKey(materialName, opts.materialName);
+
+    if (materialID < 0) {
+      const std::string errMsg =
+          "ERROR: Cannot Find Material for key " + materialName;
+      throw cvException(errMsg.c_str());
+    }
+
+    std::vector<double> curveTimes;
+    std::vector<double> curveValues;
+
+    const std::string& curveName =
+        opts.segmentDataTableName[segmentIndex];
+
+    if (upper_string(curveName) != "NONE") {
+      const int dataTableID =
+          getDataTableIDFromStringKey(curveName);
+      const int curveSize =
+          cvOneDGlobal::gDataTables[dataTableID]->getSize();
+
+      curveTimes.reserve(curveSize);
+      curveValues.reserve(curveSize);
+
+      for (int curveIndex = 0;
+           curveIndex < curveSize;
+           ++curveIndex) {
+        curveTimes.push_back(
+            cvOneDGlobal::gDataTables[dataTableID]->getTime(curveIndex));
+        curveValues.push_back(
+            cvOneDGlobal::gDataTables[dataTableID]->getValues(curveIndex));
+      }
+    } else {
+      curveTimes.push_back(0.0);
+      curveValues.push_back(0.0);
+    }
+
+    const int errorCode = modelManager->CreateSegment(
+        const_cast<char*>(opts.segmentName[segmentIndex].c_str()),
+        static_cast<long>(opts.segmentID[segmentIndex]),
+        opts.segmentLength[segmentIndex],
+        static_cast<long>(opts.segmentTotEls[segmentIndex]),
+        static_cast<long>(opts.segmentInNode[segmentIndex]),
+        static_cast<long>(opts.segmentOutNode[segmentIndex]),
+        opts.segmentInInletArea[segmentIndex],
+        opts.segmentInOutletArea[segmentIndex],
+        opts.segmentInFlow[segmentIndex],
+        materialID,
+        const_cast<char*>(opts.segmentLossType[segmentIndex].c_str()),
+        opts.segmentBranchAngle[segmentIndex],
+        opts.segmentUpstreamSegment[segmentIndex],
+        opts.segmentBranchSegment[segmentIndex],
+        const_cast<char*>(opts.segmentBoundType[segmentIndex].c_str()),
+        curveValues.data(),
+        curveTimes.data(),
+        static_cast<int>(curveTimes.size()));
+
+    if (errorCode == CV_ERROR) {
+      const std::string errMsg =
+          "ERROR: Error Creating SEGMENT " +
+          std::to_string(segmentIndex) + "\n";
+      throw cvException(errMsg.c_str());
+    }
+  }
+}
+
+struct InletCurveData {
+  std::vector<double> times;
+  std::vector<double> values;
+};
+
+InletCurveData createInletCurveData(
+    const cvOneD::options& opts,
+    const std::string& couplingType) {
+  InletCurveData curveData;
+  const std::string& curveName = opts.inletDataTableName;
+
+  if (upper_string(curveName) == "NONE") {
+    curveData.times.push_back(0.0);
+    curveData.values.push_back(0.0);
+    return curveData;
+  }
+
+  const int dataTableID =
+      getDataTableIDFromStringKey(curveName);
+  const int curveSize =
+      cvOneDGlobal::gDataTables[dataTableID]->getSize();
+
+  curveData.times.resize(curveSize);
+  curveData.values.resize(curveSize);
+
+  if (couplingType == "DIR") {
+    SVONED_DEBUG_LOG(
+        "Dirichlet coupling. Get inlet flow data");
+
+    for (int curveIndex = 0;
+         curveIndex < curveSize;
+         ++curveIndex) {
+      curveData.times[curveIndex] =
+          cvOneDGlobal::gDataTables[dataTableID]->getTime(curveIndex);
+      curveData.values[curveIndex] =
+          cvOneDGlobal::gDataTables[dataTableID]->getValues(curveIndex);
+    }
+  }
+
+  return curveData;
+}
+
+BoundCondTypeScope::BoundCondType getBoundaryConditionType(
+    const std::string& boundaryType) {
+  const std::string normalizedType = upper_string(boundaryType);
+
+  SVONED_DEBUG_LOG(
+      "Inlet Condition Type: " << normalizedType);
+
+  if (normalizedType == "NOBOUND") {
+    return BoundCondTypeScope::NOBOUND;
+  }
+  if (normalizedType == "PRESSURE") {
+    return BoundCondTypeScope::PRESSURE;
+  }
+  if (normalizedType == "PRESSURE_WAVE") {
+    return BoundCondTypeScope::PRESSURE_WAVE;
+  }
+  if (normalizedType == "FLOW") {
+    return BoundCondTypeScope::FLOW;
+  }
+  if (normalizedType == "RESISTANCE") {
+    return BoundCondTypeScope::RESISTANCE;
+  }
+  if (normalizedType == "RESISTANCE_TIME") {
+    return BoundCondTypeScope::RESISTANCE_TIME;
+  }
+  if (normalizedType == "RCR") {
+    return BoundCondTypeScope::RCR;
+  }
+  if (normalizedType == "CORONARY") {
+    return BoundCondTypeScope::CORONARY;
+  }
+  if (normalizedType == "COUPLED") {
+    return BoundCondTypeScope::COUPLED;
+  }
+
+  const std::string errMsg =
+      "ERROR: Invalid inlet boundary condition type: " +
+      boundaryType;
+  throw cvException(errMsg.c_str());
+}
+
+void initializeSolver(
+    const cvOneD::options& opts,
+    char* couplingTypes,
+    int& systemSize) {
+  const std::string couplingType(couplingTypes);
+  InletCurveData inletCurveData =
+      createInletCurveData(opts, couplingType);
+
+  cvOneDGlobal::isCreating = false;
+  const auto boundaryType =
+      getBoundaryConditionType(opts.boundaryType);
+
+  cvOneDMthSegmentModel::STABILIZATION = opts.useStab;
+  cvOneDGlobal::CONSERVATION_FORM = opts.useIV;
+  cvOneDBFSolver::ASCII = 1;
+
+  cvOneDBFSolver::SetModelPtr(
+      cvOneDGlobal::gModelList[cvOneDGlobal::currentModel]);
+
+  cvOneDBFSolver::SetDeltaTime(opts.timeStep);
+  cvOneDBFSolver::SetStepSize(opts.stepSize);
+  cvOneDBFSolver::SetMaxStep(opts.maxStep);
+  cvOneDBFSolver::SetQuadPoints(opts.quadPoints);
+  cvOneDBFSolver::SetInletBCType(boundaryType);
+
+  if (couplingType == "DIR") {
+    cvOneDBFSolver::DefineInletFlow(
+        inletCurveData.times.data(),
+        inletCurveData.values.data(),
+        static_cast<int>(inletCurveData.times.size()));
+  }
+
+  cvOneDBFSolver::SetConvergenceCriteria(
+      opts.convergenceTolerance);
+
+  cvOneDGlobal::isSolving = true;
+
+  cvOneDBFSolver::Solve_initi(systemSize, couplingTypes);
+
+  SVONED_DEBUG_LOG(
+      "[initialize_1d] Model initialized, "
+      "preparing for time-stepping...");
+
+  cvOneDBFSolver::InitializeAllEquations();
+
+  SVONED_DEBUG_LOG(
+      "[initialize_1d] Equations initialized successfully");
+}
+
+}  // namespace
+
+OneDSolverInterface* OneDSolverInterface::get_interface(
+    int problem_id) {
+  const auto iter = interface_list_.find(problem_id);
+
+  if (iter == interface_list_.end()) {
+    const std::string errMsg =
+        "ERROR: 1D interface problem_id " +
+        std::to_string(problem_id) +
+        " was not found.";
+    throw cvException(errMsg.c_str());
+  }
+
+  return iter->second;
+}
 
 //////////////////////////////////////////////////////////
 //          Callable C interface functions              //
@@ -165,28 +470,24 @@ extern "C" void extract_coupled_dof(int problem_id, int& coupled_dof, char* coup
  */
 void initialize_1d(const char* input_file, int& problem_id, int& systemSize,
                    char* coupling_types) {
-  cout << "========== svOneD initialize ==========" << endl;
-  
+  SVONED_DEBUG_LOG("========== svOneD initialize ==========");
   try {
     std::string input_file_str(input_file);
-    cout << "[initialize] input_file: " << input_file_str << endl;
-
+    SVONED_DEBUG_LOG("[initialize] input_file: " << input_file_str);
     // Create interface object
     auto interface = new OneDSolverInterface(input_file_str);
     problem_id = interface->problem_id_;
-    cout << "[initialize] problem_id: " << (int)problem_id << endl;
-
+    SVONED_DEBUG_LOG("[initialize] problem_id: " << (int)problem_id);
     // Parse input file and read 1D configuration
     char* argv[] = { (char*)"svOneDSolver", const_cast<char*>(input_file) };
     auto const simulationOptions = parseArgsAndHandleOptions(2, argv);
 
     if (simulationOptions) {
-        cout << "[initialize] Simulation options loaded successfully" << endl;
-        cout << "[initialize] Model name: " << simulationOptions->modelName << endl;
-        cout << "[initialize] Time step: " << simulationOptions->timeStep << endl;
-        cout << "[initialize] Step size: " << simulationOptions->stepSize << endl;
-        cout << "[initialize] Max steps: " << simulationOptions->maxStep << endl;
-        
+        SVONED_DEBUG_LOG("[initialize] Simulation options loaded successfully");
+        SVONED_DEBUG_LOG("[initialize] Model name: " << simulationOptions->modelName);
+        SVONED_DEBUG_LOG("[initialize] Time step: " << simulationOptions->timeStep);
+        SVONED_DEBUG_LOG("[initialize] Step size: " << simulationOptions->stepSize);
+        SVONED_DEBUG_LOG("[initialize] Max steps: " << simulationOptions->maxStep);
         // Store options in interface for later use
         interface->model_name_ = simulationOptions->modelName;
         interface->time_step_size_ = simulationOptions->stepSize;
@@ -197,346 +498,53 @@ void initialize_1d(const char* input_file, int& problem_id, int& systemSize,
         interface->coupling_type_ = simulationOptions->couplingType;
         interface->coupling_substeps_ = simulationOptions->couplingSubsteps;
 
-        cout << "[initialize] Coupling status: " << interface->coupling_status_ << endl;
-        cout << "[initialize] Coupling type: " << interface->coupling_type_ << endl;
-        cout << "[initialize] Coupling substeps: " << static_cast<int>(interface->coupling_substeps_) << endl;
-
+        SVONED_DEBUG_LOG("[initialize] Coupling status: " << interface->coupling_status_);
+        SVONED_DEBUG_LOG("[initialize] Coupling type: " << interface->coupling_type_);
+        SVONED_DEBUG_LOG("[initialize] Coupling substeps: " << static_cast<int>(interface->coupling_substeps_));
         //// use functions inside runOneDSolver
         // Model checking
         const cvOneD::options& opts = *simulationOptions;
         cvOneD::validateOptions(opts);
-        cout << "[initialize] validationOptions completed" << endl;
-
+        SVONED_DEBUG_LOG("[initialize] validationOptions completed");
         // Not sure what this function do right now
         setOutputGlobals(opts);
-        cout << "[initialize] setOutputGlobals completed" << endl;
-
+        SVONED_DEBUG_LOG("[initialize] setOutputGlobals completed");
         // Use functions inside createAndRunModel
         // only use functions for creating model
-        cout << "[initialize] creating model: " << opts.modelName << endl;
+        SVONED_DEBUG_LOG("[initialize] creating model: " << opts.modelName);
         // Create model manager
         cvOneDModelManager* oned = new cvOneDModelManager((char*)opts.modelName.c_str());
 
         // Create nodes
-        printf("Creating Nodes ... \n");
-        int totNodes = opts.nodeName.size();
-        int nodeError = CV_OK;
-        for(int loopA = 0; loopA < totNodes; loopA++) {
-            // Finally Create Joint
-            nodeError = oned->CreateNode((char*)opts.nodeName[loopA].c_str(),
-                                        opts.nodeXcoord[loopA], opts.nodeYcoord[loopA], opts.nodeZcoord[loopA]);
-            if(nodeError == CV_ERROR) {
-            throw cvException(string("ERROR: Error Creating NODE " + to_string(loopA) + "\n").c_str());
-            }
-        }
-
+        createModelNodes(opts, oned);
         // Create joints
-        printf("Creating Joints ... \n");
-        int totJoints = opts.jointName.size();
-        int jointError = CV_OK;
-        int* asInlets = nullptr;
-        int* asOutlets = nullptr;
-        string currInletName;
-        string currOutletName;
-        int jointInletID = 0;
-        int jointOutletID = 0;
-        int totJointInlets = 0;
-        int totJointOutlets = 0;
-        for(int loopA = 0; loopA < totJoints; loopA++) {
-            // GET NAMES FOR INLET AND OUTLET
-            currInletName = opts.jointInletName[loopA];
-            currOutletName = opts.jointOutletName[loopA];
-            // FIND JOINTINLET INDEX
-            jointInletID = getListIDWithStringKey(currInletName, opts.jointInletListNames);
-            if(jointInletID < 0) {
-            throw cvException(string("ERROR: Cannot Find JOINTINLET for key " + currInletName).c_str());
-            }
-            totJointInlets = opts.jointInletListNumber[jointInletID];
-            // FIND JOINTOUTLET INDEX
-            jointOutletID = getListIDWithStringKey(currOutletName, opts.jointOutletListNames);
-            if(jointInletID < 0) {
-            throw cvException(string("ERROR: Cannot Find JOINTOUTLET for key " + currOutletName).c_str());
-            }
-            // GET TOTALS
-            totJointInlets = opts.jointInletListNumber[jointInletID];
-            totJointOutlets = opts.jointOutletListNumber[jointOutletID];
-            // ALLOCATE INLETS AND OUTLET LIST
-            asInlets = nullptr;
-            asOutlets = nullptr;
-            if(totJointInlets > 0) {
-            asInlets = new int[totJointInlets];
-            for(int loopB = 0; loopB < totJointInlets; loopB++) {
-                asInlets[loopB] = opts.jointInletList[jointInletID][loopB];
-            }
-            }
-            if(totJointOutlets > 0) {
-            asOutlets = new int[totJointOutlets];
-            for(int loopB = 0; loopB < totJointOutlets; loopB++) {
-                asOutlets[loopB] = opts.jointOutletList[jointOutletID][loopB];
-            }
-            }
-
-            // Find the index of the indicated node.
-            auto const jointName = opts.jointName.at(loopA);
-            auto const nodeIndex = findJointNodeIndexOrThrow( 
-            opts.jointNode.at(loopA), opts.nodeName, jointName);
-
-            // Finally Create Joint
-            jointError = oned->CreateJoint(jointName.c_str(),
-                                        opts.nodeXcoord[nodeIndex], opts.nodeYcoord[nodeIndex], opts.nodeZcoord[nodeIndex],
-                                        totJointInlets, totJointOutlets, asInlets, asOutlets);
-            if(jointError == CV_ERROR) {
-            throw cvException(string("ERROR: Error Creating JOINT " + to_string(loopA) + "\n").c_str());
-            }
-            // Deallocate
-            delete[] asInlets;
-            delete[] asOutlets;
-            asInlets = nullptr;
-            asOutlets = nullptr;
-        }
-
+        createModelJoints(opts, oned);
         // Create materials
-        printf("Creating Materials ... \n");
-        int totMaterials = opts.materialName.size();
-        int matError = CV_OK;
-        double doubleParams[3];
-        int matID = 0;
-        string currMatType = "MATERIAL_OLUFSEN";
-        int numParams = 0;
-        for(int loopA = 0; loopA < totMaterials; loopA++) {
-            if(upper_string(opts.materialType[loopA]) == "OLUFSEN") {
-            currMatType = "MATERIAL_OLUFSEN";
-            numParams = 3;
-            } else {
-            currMatType = "MATERIAL_LINEAR";
-            numParams = 1;
-            }
-            doubleParams[0] = opts.materialParam1[loopA];
-            doubleParams[1] = opts.materialParam2[loopA];
-            doubleParams[2] = opts.materialParam3[loopA];
-            // CREATE MATERIAL
-            matError = oned->CreateMaterial((char*)opts.materialName[loopA].c_str(),
-                                            (char*)currMatType.c_str(),
-                                            opts.materialDensity[loopA],
-                                            opts.materialViscosity[loopA],
-                                            opts.materialExponent[loopA],
-                                            opts.materialPRef[loopA],
-                                            numParams, doubleParams,
-                                            &matID);
-            if(matError == CV_ERROR) {
-            throw cvException(string("ERROR: Error Creating MATERIAL " + to_string(loopA) + "\n").c_str());
-            }
-        }
-
+        createModelMaterials(opts, oned);
         // Create datatables
-        printf("Creating Data Tables ... \n");
-        int totCurves = opts.dataTableName.size();
-        int curveError = CV_OK;
-        for(int loopA = 0; loopA < totCurves; loopA++) {
-            curveError = oned->CreateDataTable((char*)opts.dataTableName[loopA].c_str(),(char*)opts.dataTableType[loopA].c_str(), opts.dataTableVals[loopA]);
-            if(curveError == CV_ERROR) {
-            throw cvException(string("ERROR: Error Creating DATATABLE " + to_string(loopA) + "\n").c_str());
-            }
-        }
-
+        createModelDataTables(opts, oned);
         // Create segments
-        printf("Creating Segments ... \n");
-        int segmentError = CV_OK;
-        int totalSegments = opts.segmentName.size();
-        int curveTotals = 0;
-        double* curveTime = nullptr;
-        double* curveValue = nullptr;
-        string matName;
-        string curveName;
-        int currMatID = 0;
-        int dtIDX = 0;
-        for(int loopA = 0; loopA < totalSegments; loopA++) {
-
-            // GET MATERIAL
-            matName = opts.segmentMatName[loopA];
-            currMatID = getListIDWithStringKey(matName, opts.materialName);
-            if(currMatID < 0) {
-            throw cvException(string("ERROR: Cannot Find Material for key " + matName).c_str());
-            }
-
-            // GET CURVE DATA
-            curveName = opts.segmentDataTableName[loopA];
-
-            if(upper_string(curveName) != "NONE") {
-            dtIDX = getDataTableIDFromStringKey(curveName);
-            curveTotals = cvOneDGlobal::gDataTables[dtIDX]->getSize();
-            curveTime = new double[curveTotals];
-            curveValue = new double[curveTotals];
-            for(int loopA = 0; loopA < curveTotals; loopA++) {
-                curveTime[loopA] = cvOneDGlobal::gDataTables[dtIDX]->getTime(loopA);
-                curveValue[loopA] = cvOneDGlobal::gDataTables[dtIDX]->getValues(loopA);
-            }
-            } else {
-            curveTotals = 1;
-            curveTime = new double[curveTotals];
-            curveValue = new double[curveTotals];
-            curveTime[0] = 0.0;
-            curveValue[0] = 0.0;
-            }
-            segmentError = oned->CreateSegment((char*)opts.segmentName[loopA].c_str(),
-                                            (long)opts.segmentID[loopA],
-                                            opts.segmentLength[loopA],
-                                            (long)opts.segmentTotEls[loopA],
-                                            (long)opts.segmentInNode[loopA],
-                                            (long)opts.segmentOutNode[loopA],
-                                            opts.segmentInInletArea[loopA],
-                                            opts.segmentInOutletArea[loopA],
-                                            opts.segmentInFlow[loopA],
-                                            currMatID,
-                                            (char*)opts.segmentLossType[loopA].c_str(),
-                                            opts.segmentBranchAngle[loopA],
-                                            opts.segmentUpstreamSegment[loopA],
-                                            opts.segmentBranchSegment[loopA],
-                                            (char*)opts.segmentBoundType[loopA].c_str(),
-                                            curveValue,
-                                            curveTime,
-                                            curveTotals);
-            if(segmentError == CV_ERROR) {
-            throw cvException(string("ERROR: Error Creating SEGMENT " + to_string(loopA) + "\n").c_str());
-            }
-            // Deallocate
-            delete[] curveTime;
-            curveTime = nullptr;
-            delete[] curveValue;
-            curveValue = nullptr;
-        }// until this part of the code is the part of the code of createAndUnModel before SOLVE MODEL
-
-
-        string inletCurveName = opts.inletDataTableName;
-        int inletCurveTotals;
-        double* inletCurveTime;
-        double* inletCurveValue;
-
-        if (upper_string(inletCurveName) != "NONE") { // Dirichlet coupling
-
-            int inletCurveIDX = getDataTableIDFromStringKey(inletCurveName);
-            inletCurveTotals = cvOneDGlobal::gDataTables[inletCurveIDX]->getSize();
-
-            inletCurveTime = new double[inletCurveTotals];
-            inletCurveValue = new double[inletCurveTotals];
-
-            if (std::string(coupling_types) == "DIR") {
-                printf("Dirichlet coupling. Get inlet flow data\n");
-
-                for (int loopB = 0; loopB < inletCurveTotals; loopB++) {
-                    inletCurveTime[loopB] =
-                        cvOneDGlobal::gDataTables[inletCurveIDX]->getTime(loopB);
-                    inletCurveValue[loopB] =
-                        cvOneDGlobal::gDataTables[inletCurveIDX]->getValues(loopB);
-                }
-            }
-        } else { // Neumann coupling
-            inletCurveTotals = 1;
-            inletCurveTime = new double[1];
-            inletCurveValue = new double[1];
-
-            inletCurveTime[0] = 0.0;
-            inletCurveValue[0] = 0.0;
-        }
-
-
-        // 여기부터는 SolveModel중 초기화에 해당되는 부분을 추가
-        int solveError = CV_OK;
-        // inlet boundary type이 opts.boundaryType에 저장되어있는데 (.in 파일에서 SOLVEROPTIONS에서 읽은것)
-        // 아래 코드는 SolveModel에서 그대로 가지고 온건데 왜 여러 다른 boundary type이 있는지 아직 잘 모르겠음.
-        // TODO: 나중에 Neumann coupling의 경우 이 inlet BC이 coupled 같은게 될것이므로 수정 필요
-        // 일딴은 그냥 넣어보자
-        BoundCondTypeScope::BoundCondType boundT;
-
-        // set the creation flag to off.
-        cvOneDGlobal::isCreating = false;
-        char* boundType_tmp = (char*)opts.boundaryType.c_str();
-        // convert char string to boundary condition type
-        if(!strcmp( boundType_tmp, "NOBOUND")){
-            boundT = BoundCondTypeScope::NOBOUND;
-            printf("Inlet Condition Type: NOBOUND\n");
-        }else if(!strcmp( boundType_tmp, "PRESSURE")){
-            boundT = BoundCondTypeScope::PRESSURE;
-            printf("Inlet Condition Type: PRESSURE\n");
-        }else if(!strcmp( boundType_tmp, "PRESSURE_WAVE")){
-            boundT = BoundCondTypeScope::PRESSURE_WAVE;
-            printf("Inlet Condition Type: PRESSURE_WAVE\n");
-        }else if(!strcmp( boundType_tmp, "FLOW")){
-            boundT = BoundCondTypeScope::FLOW;
-            printf("Inlet Condition Type: FLOW\n");
-        }else if(!strcmp( boundType_tmp, "RESISTANCE")){
-            boundT = BoundCondTypeScope::RESISTANCE;
-            printf("Inlet Condition Type: RESISTANCE\n");
-        }else if(!strcmp( boundType_tmp, "RESISTANCE_TIME")){
-            boundT = BoundCondTypeScope::RESISTANCE_TIME;
-            printf("Inlet Condition Type: RESISTANCE_TIME\n");
-        }else if(!strcmp( boundType_tmp, "RCR")){
-            boundT = BoundCondTypeScope::RCR;
-            printf("Inlet Condition Type: RCR\n");
-        }else if(!strcmp( boundType_tmp, "CORONARY")){
-            boundT = BoundCondTypeScope::CORONARY;
-            printf("Inlet Condition Type: CORONARY\n");
-        }else if(!strcmp(boundType_tmp, "COUPLED")){
-            boundT = BoundCondTypeScope::COUPLED;
-            printf("Inlet Condition Type: COUPLED\n");
-        }else{
-            solveError = CV_ERROR;
-        }
-
-        // Set Solver Options
-        cvOneDMthSegmentModel::STABILIZATION = opts.useStab; // 1=stabilization, 0=none
-        cvOneDGlobal::CONSERVATION_FORM = opts.useIV;
-        cvOneDBFSolver::ASCII = 1;
-
-        // enroll model inside solver of cvOneDBFSolver file
-        cvOneDBFSolver::SetModelPtr(cvOneDGlobal::gModelList[cvOneDGlobal::currentModel]);
-
-        // We need to get these from the solver
-        cvOneDBFSolver::SetDeltaTime(opts.timeStep);
-        cvOneDBFSolver::SetStepSize(opts.stepSize);
-        cvOneDBFSolver::SetMaxStep(opts.maxStep);
-        cvOneDBFSolver::SetQuadPoints(opts.quadPoints);
-        cvOneDBFSolver::SetInletBCType(boundT);
-        if(std::string(coupling_types) == "DIR"){// Inflow only need for Dirichlet coupling
-            cvOneDBFSolver::DefineInletFlow(inletCurveTime, inletCurveValue, inletCurveTotals);
-        }
-        cvOneDBFSolver::SetConvergenceCriteria(opts.convergenceTolerance);
-
-        cvOneDGlobal::isSolving = true;
-        // 여기까지가 SolveModel에서 Solve() 함수 이전까지의 부분
-
-        // 여기부터는 Solve() 함수 부분 중에서도 GenerateSolution 이전부분
-        cvOneDBFSolver::Solve_initi(systemSize, coupling_types); // TODO: 지금 이 안에도 커플링위해서 바꿔야하는 함수들 많음
-        // output: systemSize, which is the total number of unknowns in the system. #NODE x 2 (flow&area)
-        // cout << "system size: " << static_cast<int>(systemSize) << endl; // total number of unknows in the system. #NODE x 2 (flow&area) 
-
-        // time loop 시작 전에 필요한 초기화 작업들
-        // 여기부터는 Solve() 함수 부분 중에서도 GenerateSolution 이전부분
-        cout << "[initialize_1d] Model initialized, preparing for time-stepping..." << endl;
-
-        //EquationInitialize() 호출
-        try {
-            cvOneDBFSolver::InitializeAllEquations();
-            cout << "[initialize_1d] Equations initialized successfully" << endl;
-        } catch (const std::exception& e) {
-            cerr << "[initialize_1d] Error initializing equations: " << e.what() << endl;
-            throw;
-        }
+        createModelSegments(opts, oned);
+        // Initialize solver
+        initializeSolver(opts, coupling_types, systemSize);
 
         // Time loop initialization
         interface->time_step_ = 0;
 
-        cout << "[initialize_1d] 1D model is ready for time-stepping" << endl;
-
+        SVONED_DEBUG_LOG("[initialize_1d] 1D model is ready for time-stepping");
     }else {
-        cout << "[initialize_1d] WARNING: No simulation options found" << endl;
+        SVONED_DEBUG_LOG("[initialize_1d] WARNING: No simulation options found");
     }
-    cout << "[initialize_1d] 1D model initialized successfully" << endl;
-    
-  } catch (const std::exception& e) {
-    cerr << "Error in initialize_1d: " << e.what() << endl;
-    problem_id = -1;
-  }
+    SVONED_DEBUG_LOG("[initialize_1d] 1D model initialized successfully");
+    } catch (const std::exception& e) {
+        problem_id = -1;
+
+        const std::string errMsg =
+            "ERROR: Failed to initialize the 1D solver: " +
+            std::string(e.what());
+
+        throw cvException(errMsg.c_str());
+    }
 }
 
 /**
@@ -546,17 +554,10 @@ void initialize_1d(const char* input_file, int& problem_id, int& systemSize,
  * @param external_step_size The time step size of the external program.
  */
 void set_external_step_size_1d(int problem_id, double external_step_size) {
-  auto it = OneDSolverInterface::interface_list_.find(problem_id);
-  if (it == OneDSolverInterface::interface_list_.end()) {
-    cerr << "Error: problem_id " << (int)problem_id << " not found" << endl;
-    return;
-  }
-  
-  
-  auto interface = it->second;
+  auto* interface = OneDSolverInterface::get_interface(problem_id);
 
   double oned_step_size = external_step_size/ (double(interface->coupling_substeps_));
-  // interface->coupling_substeps_ : number of sub steps that 1D solver will take within one external step. 
+  // interface->coupling_substeps_ : number of sub steps that 1D solver will take within one external step.
   // For example, if coupling_substeps_ = 2, then 1D solver will take 2 steps within one external step
   // so each 1D step size will be external_step_size/2.
 
@@ -565,7 +566,7 @@ void set_external_step_size_1d(int problem_id, double external_step_size) {
   cvOneDBFSolver::SetDeltaTime(oned_step_size);// set deltaTime in solver as oned_step_size
 
 
-  cout << "[set_external_step_size_1d] Step size: " << oned_step_size << " s" << endl;
+  SVONED_DEBUG_LOG("[set_external_step_size_1d] Step size: " << oned_step_size << " s");
 }
 
 /**
@@ -575,28 +576,21 @@ void set_external_step_size_1d(int problem_id, double external_step_size) {
  * @param solution_1d 1D solution of 3D solver
  */
 void return_1d_solution(int problem_id, double* solution_1d, int solution_size){
-    auto it = OneDSolverInterface::interface_list_.find(problem_id);
-    if (it == OneDSolverInterface::interface_list_.end()) {
-        cerr << "[return_1d_solution] Error: problem_id " 
-             << static_cast<int>(problem_id) << " not found" << endl;
-        return;
-    }
+    auto* interface = OneDSolverInterface::get_interface(problem_id);
 
-    auto interface = it->second;
-    
     try {
-        cout << "[return_1d_solution] ========================================" << endl;
-        cout << "[return_1d_solution] Extracting solution for problem_id: " 
-             << static_cast<int>(problem_id) << endl;
-        
-        // cvOneDBFSolver의 getter 함수 호출
+        SVONED_DEBUG_LOG(
+            "[return_1d_solution] Extracting solution for problem_id: "
+            << static_cast<int>(problem_id));
+
         cvOneDBFSolver::GetCurrentSolution(solution_1d, solution_size);
-        
-        cout << "[return_1d_solution] Solution extracted successfully" << endl;
-        
+
+        SVONED_DEBUG_LOG("[return_1d_solution] Solution extracted successfully");
     } catch (const std::exception& e) {
-        cerr << "[return_1d_solution] Exception caught: " << e.what() << endl;
-        throw;
+    const std::string errMsg =
+        "ERROR: Failed to return the 1D solution: " +
+        std::string(e.what());
+    throw cvException(errMsg.c_str());
     }
 }
 
@@ -612,34 +606,27 @@ void return_1d_solution(int problem_id, double* solution_1d, int solution_size){
  * @param solution_size The size of the solution array
  */
 void update_1d_solution(int problem_id, const double* previous_solution_data, int solution_size) {
-    auto it = OneDSolverInterface::interface_list_.find(problem_id);
-    if (it == OneDSolverInterface::interface_list_.end()) {
-        cerr << "[reset_1d_solution] Error: problem_id " 
-             << static_cast<int>(problem_id) << " not found" << endl;
-        return;
-    }
+    auto* interface = OneDSolverInterface::get_interface(problem_id);
 
-    auto interface = it->second;
-    
     try {
-        cout << "[update_1d_solution] ========================================" << endl;
-        
-        // call function from cvOneDBFSolver 
+        SVONED_DEBUG_LOG("[update_1d_solution] ========================================");
+        // call function from cvOneDBFSolver
         cvOneDBFSolver::InitializeSolutionFromVector(previous_solution_data, solution_size);
-        
-        cout << "[update_1d_solution] Solution vectors reset successfully" << endl;
-        
+
+        SVONED_DEBUG_LOG("[update_1d_solution] Solution vectors reset successfully");
     } catch (const std::exception& e) {
-        cerr << "[update_1d_solution] Exception caught: " << e.what() << endl;
-        throw;
+        const std::string errMsg =
+            "ERROR: Failed to update the 1D solution: " +
+            std::string(e.what());
+        throw cvException(errMsg.c_str());
     }
 }
 
 
 /**
  * @brief Run one time step of the 1D simulation.
- * 
- * Performs a single time step of 1D blood flow simulation by calling the 
+ *
+ * Performs a single time step of 1D blood flow simulation by calling the
  * underlying solver's SolveSingleTimeStep function. Returns the solution
  * vector (pressure and flow) after the time step.
  *
@@ -654,30 +641,23 @@ void update_1d_solution(int problem_id, const double* previous_solution_data, in
  */
 void run_1d_simulation_step_1d(int problem_id, double current_time, int save_time, char* coupling_types, double* params,
                                 double* solution_vector, double& cplBCvalue, char* last_flag,int& error_code) {
-  auto it = OneDSolverInterface::interface_list_.find(problem_id); //problem_id에 해당되는 interface 객체를 찾음
-  if (it == OneDSolverInterface::interface_list_.end()) {
-    cerr << "[run_1d_simulation_step_1d] Error: problem_id " 
-         << static_cast<int>(problem_id) << " not found" << endl;
-    error_code = -1;
-    return;
-  }
+  auto* interface = OneDSolverInterface::get_interface(problem_id);
 
-  auto interface = it->second; // map에서 problem_id에 해당하는 interface 객체를 가져옴(second: value)
   error_code = 0;
-  auto oned_substeps = interface->coupling_substeps_; 
-  
+  auto oned_substeps = interface->coupling_substeps_;
+
   try {
-    cout << "[run_1d_simulation_step_1d] ========================================" << endl;
-    cout << "[run_1d_simulation_step_1d] Time step " 
-         << static_cast<int>(interface->time_step_)
-         << ", current_time = " << current_time << " s" << endl;
+    SVONED_DEBUG_LOG(
+    "[run_1d_simulation_step_1d] Time step "
+    << static_cast<int>(interface->time_step_)
+    << ", current_time = " << current_time << " s");
 
 
     // Update current time in solver
     cvOneDBFSolver::currentTime = current_time;
-    
+
     // now params[0] is always 2. not used here
-    cvOneDFEAVector* solution_ptr = nullptr;
+    cvOneDFEAVector* final_solution = nullptr;
     double t1 = params[1];
     double t2 = params[2];
     double val1 = params[3];
@@ -685,37 +665,34 @@ void run_1d_simulation_step_1d(int problem_id, double current_time, int save_tim
     double alpha = 0.0;
     double interpolated_value = 0.0;
 
-    for(int i = 0; i < oned_substeps; i++) {
-        // get coupled data from 3D solver and do interpolation for current time
-        // this is same for Dir or Neu coupling
-        if (current_time <= t1) {
+    for (int i = 0; i < oned_substeps; i++) {
+        // Evaluate the 3D-coupled BC value at the end of this 1D substep.
+        // If dt_1D == dt_3D, eval_time becomes t_new and params[4] is used.
+        const double eval_time = current_time + interface->external_step_size_;
+
+        if (eval_time <= t1) {
             interpolated_value = val1;
-        } else if (current_time >= t2) {
+        } else if (eval_time >= t2) {
             interpolated_value = val2;
         } else {
-            alpha = (current_time - t1) / (t2 - t1);
+            alpha = (eval_time - t1) / (t2 - t1);
             interpolated_value = val1 + alpha * (val2 - val1);
         }
-        // cout << "[run_1d_simulation_step_1d] Substep " << (i+1) << "/" << static_cast<int>(oned_substeps) 
-        //      << ", interpolated_value = " << interpolated_value << endl;
 
-        // Call the underlying 1D solver to compute one time step
-        // SolveSingleTimeStep returns a pointer to the solution vector
-        solution_ptr = cvOneDBFSolver::SolveSingleTimeStep(current_time, interpolated_value);
-        
-        current_time += interface->external_step_size_; // update current_time for next 1D substep
-        // external step size is 1D solver time step size 
+        final_solution = cvOneDBFSolver::SolveSingleTimeStep(eval_time, interpolated_value);
+
+        current_time = eval_time;
     }
-
 
     // Check if the solver returned a valid solution
-    if (solution_ptr == nullptr) {
-      throw std::runtime_error("SolveSingleTimeStep returned null pointer");
+    if (final_solution == nullptr) {
+    throw cvException(
+        "ERROR: SolveSingleTimeStep returned a null solution.");
     }
 
-    // Step 1: Copy solution_ptr directly to solution_vector [area1][flow1][area2][flow2]...
-    int solution_size = solution_ptr->GetDimension();
-    double* solution_data_tmp = solution_ptr->GetEntries();
+    // Step 1: Copy final_solution directly to solution_vector [area1][flow1][area2][flow2]...
+    int solution_size = final_solution->GetDimension();
+    double* solution_data_tmp = final_solution->GetEntries();
     for(int i = 0; i < solution_size; i++) {
         solution_vector[i] = solution_data_tmp[i];
     }
@@ -724,17 +701,16 @@ void run_1d_simulation_step_1d(int problem_id, double current_time, int save_tim
     // Create a separate vector for converted solution
     // Make solution vector to transfer to 3D solver
     // converted_solution format: [flow1][pressure1][flow2][pressure2]... for each nodes
-    // currnet solution_ptr: [area1][flow1][area2][flow2]... for each nodes
-    double* converted_solution = new double[solution_size];
-    cvOneDBFSolver::ConvertSolutionToFlowPressure(solution_ptr, converted_solution);
-    // converted_solution now contains [flow1][pressure1][flow2][pressure2]...
-    // You can use this for other purposes if needed
+    // current final_solution: [area1][flow1][area2][flow2]... for each nodes
+    std::vector<double> convertedSolution(solution_size);
 
-    // extract coupled BC value for 3D solver from converted_solution
-    cvOneDBFSolver::extractCplBC(converted_solution, cplBCvalue, coupling_types);
+    cvOneDBFSolver::ConvertSolutionToFlowPressure(
+        final_solution, convertedSolution.data());
 
-    delete[] converted_solution;
-
+    cvOneDBFSolver::extractCplBC(
+        convertedSolution.data(),
+        cplBCvalue,
+        coupling_types);
 
     // last_flag is "L" when it is at the last iteration
     // last_flag is "D: when it is at the middel of 3D newton iteration
@@ -743,47 +719,42 @@ void run_1d_simulation_step_1d(int problem_id, double current_time, int save_tim
         interface->time_step_++; // this is for 1D internal use only. substep is not inlcuded.
         // this is same time_step with 3D solver
 
-        // print solution as vtk file and txt files
+        // Write the accepted 1D solution at the requested output interval.
+        // This is executed only after the final 3D Newton iteration.
         if (interface->time_step_ % save_time == 0) {
-            cout << "generate vtk file at time step: "<< static_cast<int>(interface->time_step_) << endl;
-            cvOneDBFSolver::postprocess_VTK_XML3D_SingleTimeStep(interface->time_step_, solution_ptr);
-            cout << "generate txt files at time step: "<< static_cast<int>(interface->time_step_) << endl;
-            cvOneDBFSolver::postprocess_Text_SingleTimeStep(interface->time_step_, solution_ptr);
+            SVONED_DEBUG_LOG("generate vtk file at time step: "<< static_cast<int>(interface->time_step_));
+            cvOneDBFSolver::postprocess_VTK_XML3D_SingleTimeStep(interface->time_step_, final_solution);
+            SVONED_DEBUG_LOG("generate txt files at time step: "<< static_cast<int>(interface->time_step_));
+            cvOneDBFSolver::postprocess_Text_SingleTimeStep(interface->time_step_, final_solution);
         }
-        
+
     }
-    
 
-
-    cout << "[run_1d_simulation_step_1d] Time step completed" << endl;
-
-  } catch (const std::exception& e) {
-    cerr << "[run_1d_simulation_step_1d] Error: " << e.what() << endl;
+    SVONED_DEBUG_LOG("[run_1d_simulation_step_1d] Time step completed");
+    } catch (const std::exception& e) {
     error_code = -1;
-  }
+
+    const std::string errMsg =
+        "ERROR: Failed to run a 1D simulation step: " +
+        std::string(e.what());
+    throw cvException(errMsg.c_str());
+    }
 }
 
 void extract_coupled_dof(int problem_id, int& coupled_dof, char* coupling_types){
-    auto it = OneDSolverInterface::interface_list_.find(problem_id);
-    if (it == OneDSolverInterface::interface_list_.end()) {
-        cerr << "[extract_coupled_dof] Error: problem_id " 
-             << static_cast<int>(problem_id) << " not found" << endl;
-        return;
+    auto* interface = OneDSolverInterface::get_interface(problem_id);
+
+    try {
+        SVONED_DEBUG_LOG("[extract_coupled_dof] ========================================");
+        // call function from cvOneDBFSolver
+        cvOneDBFSolver::extractCplDOF(coupled_dof, coupling_types);
+
+        SVONED_DEBUG_LOG("[extract_coupled_dof] Coupled DOF extracted successfully");
+    } catch (const std::exception& e) {
+    const std::string errMsg =
+        "ERROR: Failed to extract the coupled 1D DOF: " +
+        std::string(e.what());
+    throw cvException(errMsg.c_str());
     }
 
-    auto interface = it->second;
-    
-    try {
-        cout << "[extract_coupled_dof] ========================================" << endl;
-        
-        // call function from cvOneDBFSolver 
-        cvOneDBFSolver::extractCplDOF(coupled_dof, coupling_types);
-        
-        cout << "[extract_coupled_dof] Coupled DOF extracted successfully" << endl;
-        
-    } catch (const std::exception& e) {
-        cerr << "[extract_coupled_dof] Exception caught: " << e.what() << endl;
-        throw;
-    }
-    
 }

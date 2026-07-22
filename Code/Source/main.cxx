@@ -39,6 +39,7 @@
 #include "cvOneDOptionsJsonParser.h"
 #include "cvOneDOptionsJsonSerializer.h"
 #include "cvOneDOptionsLegacySerializer.h"
+#include "cvOneDUtility.h"
 
 using namespace std;
 
@@ -51,47 +52,6 @@ void WriteHeader(){
   printf(" 1D Finite Element Hemodynamics  \n");
   printf("---------------------------------\n");
 }
-
-// ====================================
-// GET DATA TABLE ENTRY FROM STRING KEY
-// ====================================
-int getDataTableIDFromStringKey(string key){
-  bool found = false;
-  int count = 0;
-  while((!found)&&(count<cvOneDGlobal::gDataTables.size())){
-    found = upper_string(key) == upper_string(cvOneDGlobal::gDataTables[count]->getName());
-    // Update Counter
-    if(!found){
-      count++;
-    }
-  }
-  if(!found){
-    throw cvException(string("ERROR: Cannot find data table entry from string key: " + key + ".\n").c_str());
-    return -1;
-  }else{
-    return count;
-  }
-}
-
-// ===============================
-// CREATE MODEL AND RUN SIMULATION
-// ===============================
-namespace{
-
-size_t findJointNodeIndexOrThrow(const auto& jointNodeName, const auto& nodeNames, const auto& jointName){
-  // Return the index of "nodeNames" that corresponds to the "jointNodeName"
-  // or throw a context-specific error.
-
-  auto const iter = std::find(nodeNames.begin(), nodeNames.end(), jointNodeName);
-  if (iter == nodeNames.end()) {
-    std::string const errMsg = "ERROR: The node '" + jointNodeName + "' required by joint '" 
-      + jointName + "' was not found in the list of nodes.";
-    throw cvException(errMsg.c_str());
-  }
-  return std::distance(nodeNames.begin(), iter); 
-}
-
-} // namespace
 
 void createAndRunModel(const cvOneD::options& opts) {
 
@@ -332,32 +292,6 @@ void createAndRunModel(const cvOneD::options& opts) {
 // ==============
 // RUN ONEDSOLVER
 // ==============
-
-namespace {
-
-void setOutputGlobals(const cvOneD::options& opts){  
-
-  if(upper_string(opts.outputType) == "TEXT"){
-    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_TEXT;
-  }else if(upper_string(opts.outputType) == "VTK"){
-    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_VTK;
-  }else if(upper_string(opts.outputType) == "BOTH"){
-    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_BOTH;
-  }else{
-    throw cvException("ERROR: Invalid OUTPUT Type.\n");
-  }
-
-  if(opts.vtkOutputType){
-    cvOneDGlobal::vtkOutputType = *opts.vtkOutputType;
-    if(cvOneDGlobal::vtkOutputType > 1){
-      throw cvException("ERROR: Invalid OUTPUT VTK Type.\n");
-    }
-  }
-  
-}
-
-} // namespace
-
 void runOneDSolver(const cvOneD::options& opts){
 
   // Model Checking
@@ -383,106 +317,6 @@ void runOneDSolver(const cvOneD::options& opts){
   // Create Model and Run Simulation
   createAndRunModel(opts);
 
-}
-
-void convertLegacyToJsonOptions(const std::string& legacyFilename, const std::string& jsonFilename){
-  // Convert legacy format to JSON and print it to file
-  cvOneD::options opts{};
-  cvOneD::readOptionsLegacyFormat(legacyFilename,&opts);
-
-  cvOneD::writeJsonOptions(opts, jsonFilename);
-
-  std::cout << "Converted legacy file " << legacyFilename <<
-               "to json file " << jsonFilename << std::endl;
-}
-
-struct ArgOptions{
-  std::optional<std::string> jsonInput = std::nullopt;
-
-  std::optional<std::string> legacyConversionInput = std::nullopt;
-  std::optional<std::string> jsonConversionOutput = std::nullopt;
-};
-
-std::string removeQuotesIfPresent(const std::string& str) {
-    std::string result = str;
-    if (result.front() == '"' && result.back() == '"') {
-        result = result.substr(1, result.length() - 2); 
-    }
-    return result;
-}
-
-ArgOptions parseInputArgs(int argc, char** argv) {
-    // Right now, we don't check for bad arguments but we could
-    // do that in here if we want more coherent behavior.
-    ArgOptions options; 
-
-    for (int i = 1; i < argc; i++) {
-        std::string arg = argv[i];
-
-        if (arg == "-jsonInput" && i + 1 < argc) {
-            options.jsonInput = removeQuotesIfPresent(argv[i + 1]);
-            i++;
-        }
-
-        if (arg == "-legacyToJson" && i + 2 < argc) {
-            options.legacyConversionInput = removeQuotesIfPresent(argv[i + 1]);
-            options.jsonConversionOutput = removeQuotesIfPresent(argv[i + 2]);
-            i++;
-        }
-
-    }
-
-    return options;
-}
-
-cvOneD::options readLegacyOptions(std::string const& inputFile){
-  cvOneD::options opts{};
-  cvOneD::readOptionsLegacyFormat(inputFile,&opts);
-  return opts;
-}
-
-// Parse the incoming arguments and read the options file.
-// Also performs option file conversions if requested by user.
-//
-// Updated behavior: 
-//  parse input arg pairs as
-//    "-argName argValue -anotherArg anotherValue"
-//  Current options:
-//    * Run simulation with JSON input file:
-//       -jsonInput inputFilename
-//    * Convert legacy input to JSON input:
-//       -legacyToJson legacyInput.in jsonInput.json
-//
-// Preserved legacy behavior: 
-//   Single input that is a legacy input file, e.g.:
-//     ./svOneDSolver inputFilename.in
-//
-// Legacy behavior is used only if exactly one input is provided. 
-//
-std::optional<cvOneD::options> parseArgsAndHandleOptions(int argc, char** argv){
-  
-  // Legacy behavior. right now, argc==2.
-  // Legacy input file: "xxx.in" stored in argv[1].
-  if(argc == 2){
-    string inputFile{removeQuotesIfPresent(argv[1])};
-    return readLegacyOptions(inputFile); //ends at here
-  }
-
-  // Default behavior
-  auto const argOptions = parseInputArgs(argc,argv);
-
-  // Conversion
-  if(argOptions.legacyConversionInput && argOptions.jsonConversionOutput){
-    convertLegacyToJsonOptions(*argOptions.legacyConversionInput, 
-                   *argOptions.jsonConversionOutput);
-  }
-
-  // Only return the input args if the user provided them
-  if(argOptions.jsonInput){
-    return cvOneD::readJsonOptions(*argOptions.jsonInput);
-  }
-
-  return std::nullopt;
 }
 
 // =============
