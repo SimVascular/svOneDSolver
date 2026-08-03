@@ -61,7 +61,7 @@ void setOutputGlobals(const cvOneD::options& opts);
 std::optional<cvOneD::options> parseArgsAndHandleOptions(
     int argc, char** argv);
 
-int getDataTableIDFromStringKey(std::string key);
+int getDataTableID(const std::string& key);
 
 inline std::size_t findJointNodeIndexOrThrow(
     const auto& jointNodeName,

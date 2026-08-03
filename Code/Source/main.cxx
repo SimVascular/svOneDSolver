@@ -65,20 +65,17 @@ void createAndRunModel(const cvOneD::options& opts) {
   // CREATE NODES
   printf("Creating Nodes ... \n");
   int totNodes = opts.nodeName.size();
-  int nodeError = CV_OK;
-  for(int loopA = 0; loopA < totNodes; loopA++) {
-    // Finally Create Joint
-    nodeError = oned->CreateNode((char*)opts.nodeName[loopA].c_str(),
-                                 opts.nodeXcoord[loopA], opts.nodeYcoord[loopA], opts.nodeZcoord[loopA]);
-    if(nodeError == CV_ERROR) {
-      throw cvException(string("ERROR: Error Creating NODE " + to_string(loopA) + "\n").c_str());
-    }
+  for (int loopA = 0; loopA < totNodes; loopA++) {
+    oned->CreateNode(
+        opts.nodeName[loopA].c_str(),
+        opts.nodeXcoord[loopA],
+        opts.nodeYcoord[loopA],
+        opts.nodeZcoord[loopA]);
   }
 
   // CREATE JOINTS
   printf("Creating Joints ... \n");
   int totJoints = opts.jointName.size();
-  int jointError = CV_OK;
   int* asInlets = nullptr;
   int* asOutlets = nullptr;
   string currInletName;
@@ -123,22 +120,25 @@ void createAndRunModel(const cvOneD::options& opts) {
 
     // Find the index of the indicated node.
     auto const jointName = opts.jointName.at(loopA);
-    auto const nodeIndex = findJointNodeIndexOrThrow( 
+    auto const nodeIndex = findJointNodeIndexOrThrow(
       opts.jointNode.at(loopA), opts.nodeName, jointName);
 
     // Finally Create Joint
-    jointError = oned->CreateJoint(jointName.c_str(),
-                                   opts.nodeXcoord[nodeIndex], opts.nodeYcoord[nodeIndex], opts.nodeZcoord[nodeIndex],
-                                   totJointInlets, totJointOutlets, asInlets, asOutlets);
-    if(jointError == CV_ERROR) {
-      throw cvException(string("ERROR: Error Creating JOINT " + to_string(loopA) + "\n").c_str());
-    }
-    // Deallocate
-    delete[] asInlets;
-    delete[] asOutlets;
-    asInlets = nullptr;
-    asOutlets = nullptr;
-  }
+    oned->CreateJoint(
+        jointName.c_str(),
+        opts.nodeXcoord[nodeIndex],
+        opts.nodeYcoord[nodeIndex],
+        opts.nodeZcoord[nodeIndex],
+        totJointInlets,
+        totJointOutlets,
+        asInlets,
+        asOutlets);
+        // Deallocate
+        delete[] asInlets;
+        delete[] asOutlets;
+        asInlets = nullptr;
+        asOutlets = nullptr;
+      }
 
   // CREATE MATERIAL
   printf("Creating Materials ... \n");
@@ -187,7 +187,6 @@ void createAndRunModel(const cvOneD::options& opts) {
 
   // SEGMENT DATA
   printf("Creating Segments ... \n");
-  int segmentError = CV_OK;
   int totalSegments = opts.segmentName.size();
   int curveTotals = 0;
   double* curveTime = nullptr;
@@ -209,7 +208,7 @@ void createAndRunModel(const cvOneD::options& opts) {
     curveName = opts.segmentDataTableName[loopA];
 
     if(upper_string(curveName) != "NONE") {
-      dtIDX = getDataTableIDFromStringKey(curveName);
+      dtIDX = getDataTableID(curveName);
       curveTotals = cvOneDGlobal::gDataTables[dtIDX]->getSize();
       curveTime = new double[curveTotals];
       curveValue = new double[curveTotals];
@@ -224,7 +223,7 @@ void createAndRunModel(const cvOneD::options& opts) {
       curveTime[0] = 0.0;
       curveValue[0] = 0.0;
     }
-    segmentError = oned->CreateSegment((char*)opts.segmentName[loopA].c_str(),
+    oned->CreateSegment((char*)opts.segmentName[loopA].c_str(),
                                        (long)opts.segmentID[loopA],
                                        opts.segmentLength[loopA],
                                        (long)opts.segmentTotEls[loopA],
@@ -242,9 +241,7 @@ void createAndRunModel(const cvOneD::options& opts) {
                                        curveValue,
                                        curveTime,
                                        curveTotals);
-    if(segmentError == CV_ERROR) {
-      throw cvException(string("ERROR: Error Creating SEGMENT " + to_string(loopA) + "\n").c_str());
-    }
+
     // Deallocate
     delete[] curveTime;
     curveTime = nullptr;
@@ -260,7 +257,7 @@ void createAndRunModel(const cvOneD::options& opts) {
   int solveError = CV_OK;
   // Get Inlet BC data
   string inletCurveName = opts.inletDataTableName;
-  int inletCurveIDX = getDataTableIDFromStringKey(inletCurveName);
+  int inletCurveIDX = getDataTableID(inletCurveName);
   int inletCurveTotals = cvOneDGlobal::gDataTables[inletCurveIDX]->getSize();
   double* inletCurveTime = new double[inletCurveTotals];
   double* inletCurveValue = new double[inletCurveTotals];
@@ -306,7 +303,7 @@ void runOneDSolver(const cvOneD::options& opts){
   string jsonFilename("echo.json");
   cvOneD::writeJsonOptions(opts, jsonFilename);
 
-  // Per the existing behavior, we'll set output globals 
+  // Per the existing behavior, we'll set output globals
   // from the options. TODO: we should really just
   // consume option data from the options rather
   // than setting it in a global variable. Besides that,
@@ -334,10 +331,10 @@ int main(int argc, char** argv){
       // The simulation options were defined so we can run the simulation
       runOneDSolver(*simulationOptions);
     } else{
-      // The user could just want to convert legacy input *.in -> *.json 
+      // The user could just want to convert legacy input *.in -> *.json
       // so we don't error but we notify the user that no simulation
       // is run.
-      std::cout << "The simulation was not run because" 
+      std::cout << "The simulation was not run because"
                    " no input file was provided." << std::endl;
     }
 

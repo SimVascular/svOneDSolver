@@ -85,33 +85,43 @@ void setOutputGlobals(const cvOneD::options& opts) {
   } else if (outputType == "BOTH") {
     cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_BOTH;
   } else {
-    throw cvException("ERROR: Invalid OUTPUT Type.\n");
+    const auto errMsg =
+        "ERROR: Invalid OUTPUT type '" + opts.outputType +
+        "'. Expected TEXT, VTK, or BOTH.\n";
+    throw cvException(errMsg.c_str());
   }
 
   if (opts.vtkOutputType) {
-    cvOneDGlobal::vtkOutputType = *opts.vtkOutputType;
+    const int vtkOutputType = *opts.vtkOutputType;
 
-    if (cvOneDGlobal::vtkOutputType > 1) {
-      throw cvException("ERROR: Invalid OUTPUT VTK Type.\n");
+    // 0 writes one VTK file per time step; 1 writes all results
+    // to a single VTK file.
+    if (vtkOutputType != 0 && vtkOutputType != 1) {
+      const auto errMsg =
+          "ERROR: Invalid VTK output type '" +
+          std::to_string(vtkOutputType) +
+          "'. Expected 0 (multiple VTK files) or 1 (single VTK file).\n";
+      throw cvException(errMsg.c_str());
     }
+
+    cvOneDGlobal::vtkOutputType = vtkOutputType;
   }
 }
 
-int getDataTableIDFromStringKey(std::string key) {
-  std::size_t count = 0;
+int getDataTableID(const std::string& key) {
+  const auto upper_key = upper_string(key);
+  int data_table_index = 0;
 
-  while (count < cvOneDGlobal::gDataTables.size()) {
-    if (upper_string(key) ==
-        upper_string(cvOneDGlobal::gDataTables[count]->getName())) {
-      return static_cast<int>(count);
+  for (const auto& entry : cvOneDGlobal::gDataTables) {
+    if (upper_key == upper_string(entry->getName())) {
+      return data_table_index;
     }
 
-    ++count;
+    ++data_table_index;
   }
 
-  const std::string errMsg =
-      "ERROR: Cannot find data table entry from string key: " +
-      key + ".\n";
+  const auto errMsg =
+      "ERROR: Cannot find data table entry '" + key + "'.\n";
   throw cvException(errMsg.c_str());
 }
 
@@ -123,11 +133,11 @@ struct ArgOptions {
 };
 
 std::string removeQuotesIfPresent(const std::string& str) {
-  if (str.size() >= 2 && str.front() == '"' && str.back() == '"') {
-    return str.substr(1, str.size() - 2);
-  }
-
-  return str;
+  auto result = str;
+  result.erase(
+      std::remove(result.begin(), result.end(), '"'),
+      result.end());
+  return result;
 }
 
 ArgOptions parseInputArgs(int argc, char** argv) {
