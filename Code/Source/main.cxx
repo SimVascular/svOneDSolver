@@ -39,6 +39,7 @@
 #include "cvOneDOptionsJsonParser.h"
 #include "cvOneDOptionsJsonSerializer.h"
 #include "cvOneDOptionsLegacySerializer.h"
+#include "cvOneDUtility.h"
 
 using namespace std;
 
@@ -52,47 +53,6 @@ void WriteHeader(){
   printf("---------------------------------\n");
 }
 
-// ====================================
-// GET DATA TABLE ENTRY FROM STRING KEY
-// ====================================
-int getDataTableIDFromStringKey(string key){
-  bool found = false;
-  int count = 0;
-  while((!found)&&(count<cvOneDGlobal::gDataTables.size())){
-    found = upper_string(key) == upper_string(cvOneDGlobal::gDataTables[count]->getName());
-    // Update Counter
-    if(!found){
-      count++;
-    }
-  }
-  if(!found){
-    throw cvException(string("ERROR: Cannot find data table entry from string key: " + key + ".\n").c_str());
-    return -1;
-  }else{
-    return count;
-  }
-}
-
-// ===============================
-// CREATE MODEL AND RUN SIMULATION
-// ===============================
-namespace{
-
-size_t findJointNodeIndexOrThrow(const auto& jointNodeName, const auto& nodeNames, const auto& jointName){
-  // Return the index of "nodeNames" that corresponds to the "jointNodeName"
-  // or throw a context-specific error.
-
-  auto const iter = std::find(nodeNames.begin(), nodeNames.end(), jointNodeName);
-  if (iter == nodeNames.end()) {
-    std::string const errMsg = "ERROR: The node '" + jointNodeName + "' required by joint '" 
-      + jointName + "' was not found in the list of nodes.";
-    throw cvException(errMsg.c_str());
-  }
-  return std::distance(nodeNames.begin(), iter); 
-}
-
-} // namespace
-
 void createAndRunModel(const cvOneD::options& opts) {
 
   // MESSAGE
@@ -105,20 +65,17 @@ void createAndRunModel(const cvOneD::options& opts) {
   // CREATE NODES
   printf("Creating Nodes ... \n");
   int totNodes = opts.nodeName.size();
-  int nodeError = CV_OK;
-  for(int loopA = 0; loopA < totNodes; loopA++) {
-    // Finally Create Joint
-    nodeError = oned->CreateNode((char*)opts.nodeName[loopA].c_str(),
-                                 opts.nodeXcoord[loopA], opts.nodeYcoord[loopA], opts.nodeZcoord[loopA]);
-    if(nodeError == CV_ERROR) {
-      throw cvException(string("ERROR: Error Creating NODE " + to_string(loopA) + "\n").c_str());
-    }
+  for (int loopA = 0; loopA < totNodes; loopA++) {
+    oned->CreateNode(
+        opts.nodeName[loopA].c_str(),
+        opts.nodeXcoord[loopA],
+        opts.nodeYcoord[loopA],
+        opts.nodeZcoord[loopA]);
   }
 
   // CREATE JOINTS
   printf("Creating Joints ... \n");
   int totJoints = opts.jointName.size();
-  int jointError = CV_OK;
   int* asInlets = nullptr;
   int* asOutlets = nullptr;
   string currInletName;
@@ -163,22 +120,25 @@ void createAndRunModel(const cvOneD::options& opts) {
 
     // Find the index of the indicated node.
     auto const jointName = opts.jointName.at(loopA);
-    auto const nodeIndex = findJointNodeIndexOrThrow( 
+    auto const nodeIndex = findJointNodeIndexOrThrow(
       opts.jointNode.at(loopA), opts.nodeName, jointName);
 
     // Finally Create Joint
-    jointError = oned->CreateJoint(jointName.c_str(),
-                                   opts.nodeXcoord[nodeIndex], opts.nodeYcoord[nodeIndex], opts.nodeZcoord[nodeIndex],
-                                   totJointInlets, totJointOutlets, asInlets, asOutlets);
-    if(jointError == CV_ERROR) {
-      throw cvException(string("ERROR: Error Creating JOINT " + to_string(loopA) + "\n").c_str());
-    }
-    // Deallocate
-    delete[] asInlets;
-    delete[] asOutlets;
-    asInlets = nullptr;
-    asOutlets = nullptr;
-  }
+    oned->CreateJoint(
+        jointName.c_str(),
+        opts.nodeXcoord[nodeIndex],
+        opts.nodeYcoord[nodeIndex],
+        opts.nodeZcoord[nodeIndex],
+        totJointInlets,
+        totJointOutlets,
+        asInlets,
+        asOutlets);
+        // Deallocate
+        delete[] asInlets;
+        delete[] asOutlets;
+        asInlets = nullptr;
+        asOutlets = nullptr;
+      }
 
   // CREATE MATERIAL
   printf("Creating Materials ... \n");
@@ -227,7 +187,6 @@ void createAndRunModel(const cvOneD::options& opts) {
 
   // SEGMENT DATA
   printf("Creating Segments ... \n");
-  int segmentError = CV_OK;
   int totalSegments = opts.segmentName.size();
   int curveTotals = 0;
   double* curveTime = nullptr;
@@ -249,7 +208,7 @@ void createAndRunModel(const cvOneD::options& opts) {
     curveName = opts.segmentDataTableName[loopA];
 
     if(upper_string(curveName) != "NONE") {
-      dtIDX = getDataTableIDFromStringKey(curveName);
+      dtIDX = getDataTableID(curveName);
       curveTotals = cvOneDGlobal::gDataTables[dtIDX]->getSize();
       curveTime = new double[curveTotals];
       curveValue = new double[curveTotals];
@@ -264,7 +223,7 @@ void createAndRunModel(const cvOneD::options& opts) {
       curveTime[0] = 0.0;
       curveValue[0] = 0.0;
     }
-    segmentError = oned->CreateSegment((char*)opts.segmentName[loopA].c_str(),
+    oned->CreateSegment((char*)opts.segmentName[loopA].c_str(),
                                        (long)opts.segmentID[loopA],
                                        opts.segmentLength[loopA],
                                        (long)opts.segmentTotEls[loopA],
@@ -282,9 +241,7 @@ void createAndRunModel(const cvOneD::options& opts) {
                                        curveValue,
                                        curveTime,
                                        curveTotals);
-    if(segmentError == CV_ERROR) {
-      throw cvException(string("ERROR: Error Creating SEGMENT " + to_string(loopA) + "\n").c_str());
-    }
+
     // Deallocate
     delete[] curveTime;
     curveTime = nullptr;
@@ -292,14 +249,15 @@ void createAndRunModel(const cvOneD::options& opts) {
     curveValue = nullptr;
   }
 
-  double* vals;
-  int tot;
+  double* vals;// not used
+  int tot;// not used
 
   // SOLVE MODEL
   printf("Solving Model ... \n");
   int solveError = CV_OK;
+  // Get Inlet BC data
   string inletCurveName = opts.inletDataTableName;
-  int inletCurveIDX = getDataTableIDFromStringKey(inletCurveName);
+  int inletCurveIDX = getDataTableID(inletCurveName);
   int inletCurveTotals = cvOneDGlobal::gDataTables[inletCurveIDX]->getSize();
   double* inletCurveTime = new double[inletCurveTotals];
   double* inletCurveValue = new double[inletCurveTotals];
@@ -331,32 +289,6 @@ void createAndRunModel(const cvOneD::options& opts) {
 // ==============
 // RUN ONEDSOLVER
 // ==============
-
-namespace {
-
-void setOutputGlobals(const cvOneD::options& opts){  
-
-  if(upper_string(opts.outputType) == "TEXT"){
-    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_TEXT;
-  }else if(upper_string(opts.outputType) == "VTK"){
-    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_VTK;
-  }else if(upper_string(opts.outputType) == "BOTH"){
-    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_BOTH;
-  }else{
-    throw cvException("ERROR: Invalid OUTPUT Type.\n");
-  }
-
-  if(opts.vtkOutputType){
-    cvOneDGlobal::vtkOutputType = *opts.vtkOutputType;
-    if(cvOneDGlobal::vtkOutputType > 1){
-      throw cvException("ERROR: Invalid OUTPUT VTK Type.\n");
-    }
-  }
-  
-}
-
-} // namespace
-
 void runOneDSolver(const cvOneD::options& opts){
 
   // Model Checking
@@ -371,7 +303,7 @@ void runOneDSolver(const cvOneD::options& opts){
   string jsonFilename("echo.json");
   cvOneD::writeJsonOptions(opts, jsonFilename);
 
-  // Per the existing behavior, we'll set output globals 
+  // Per the existing behavior, we'll set output globals
   // from the options. TODO: we should really just
   // consume option data from the options rather
   // than setting it in a global variable. Besides that,
@@ -384,105 +316,6 @@ void runOneDSolver(const cvOneD::options& opts){
 
 }
 
-void convertLegacyToJsonOptions(const std::string& legacyFilename, const std::string& jsonFilename){
-  // Convert legacy format to JSON and print it to file
-  cvOneD::options opts{};
-  cvOneD::readOptionsLegacyFormat(legacyFilename,&opts);
-
-  cvOneD::writeJsonOptions(opts, jsonFilename);
-
-  std::cout << "Converted legacy file " << legacyFilename <<
-               "to json file " << jsonFilename << std::endl;
-}
-
-struct ArgOptions{
-  std::optional<std::string> jsonInput = std::nullopt;
-
-  std::optional<std::string> legacyConversionInput = std::nullopt;
-  std::optional<std::string> jsonConversionOutput = std::nullopt;
-};
-
-std::string removeQuotesIfPresent(const std::string& str) {
-    std::string result = str;
-    if (result.front() == '"' && result.back() == '"') {
-        result = result.substr(1, result.length() - 2); 
-    }
-    return result;
-}
-
-ArgOptions parseInputArgs(int argc, char** argv) {
-    // Right now, we don't check for bad arguments but we could
-    // do that in here if we want more coherent behavior.
-    ArgOptions options; 
-
-    for (int i = 1; i < argc; i++) {
-        std::string arg = argv[i];
-
-        if (arg == "-jsonInput" && i + 1 < argc) {
-            options.jsonInput = removeQuotesIfPresent(argv[i + 1]);
-            i++;
-        }
-
-        if (arg == "-legacyToJson" && i + 2 < argc) {
-            options.legacyConversionInput = removeQuotesIfPresent(argv[i + 1]);
-            options.jsonConversionOutput = removeQuotesIfPresent(argv[i + 2]);
-            i++;
-        }
-
-    }
-
-    return options;
-}
-
-cvOneD::options readLegacyOptions(std::string const& inputFile){
-  cvOneD::options opts{};
-  cvOneD::readOptionsLegacyFormat(inputFile,&opts);
-  return opts;
-}
-
-// Parse the incoming arguments and read the options file.
-// Also performs option file conversions if requested by user.
-//
-// Updated behavior: 
-//  parse input arg pairs as
-//    "-argName argValue -anotherArg anotherValue"
-//  Current options:
-//    * Run simulation with JSON input file:
-//       -jsonInput inputFilename
-//    * Convert legacy input to JSON input:
-//       -legacyToJson legacyInput.in jsonInput.json
-//
-// Preserved legacy behavior: 
-//   Single input that is a legacy input file, e.g.:
-//     ./svOneDSolver inputFilename.in
-//
-// Legacy behavior is used only if exactly one input is provided. 
-//
-std::optional<cvOneD::options> parseArgsAndHandleOptions(int argc, char** argv){
-  
-  // Legacy behavior
-  if(argc == 2){
-    string inputFile{removeQuotesIfPresent(argv[1])};
-    return readLegacyOptions(inputFile);
-  }
-
-  // Default behavior
-  auto const argOptions = parseInputArgs(argc,argv);
-
-  // Conversion
-  if(argOptions.legacyConversionInput && argOptions.jsonConversionOutput){
-    convertLegacyToJsonOptions(*argOptions.legacyConversionInput, 
-                   *argOptions.jsonConversionOutput);
-  }
-
-  // Only return the input args if the user provided them
-  if(argOptions.jsonInput){
-    return cvOneD::readJsonOptions(*argOptions.jsonInput);
-  }
-
-  return std::nullopt;
-}
-
 // =============
 // MAIN FUNCTION
 // =============
@@ -493,15 +326,15 @@ int main(int argc, char** argv){
 
   try{
 
-    auto const simulationOptions = parseArgsAndHandleOptions(argc,argv);
+    auto const simulationOptions = parseArgsAndHandleOptions(argc,argv); // read file
     if(simulationOptions){
       // The simulation options were defined so we can run the simulation
       runOneDSolver(*simulationOptions);
     } else{
-      // The user could just want to convert legacy input *.in -> *.json 
+      // The user could just want to convert legacy input *.in -> *.json
       // so we don't error but we notify the user that no simulation
       // is run.
-      std::cout << "The simulation was not run because" 
+      std::cout << "The simulation was not run because"
                    " no input file was provided." << std::endl;
     }
 

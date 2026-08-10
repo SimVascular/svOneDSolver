@@ -266,6 +266,23 @@ void readOptionsLegacyFormat(string inputFile, options* opts){
           throw cvException(string("ERROR: Invalid SOLVEROPTIONS Format. Line " + to_string(lineCount) + "\n").c_str());
         }
         solverOptionsDefined = true;
+      }else if(upper_string(tokenizedString[0]) == std::string("COUPLING")){
+        // printf("Found Coupling Options.\n");
+        if(tokenizedString.size() > 4){
+          throw cvException(string("ERROR: Too many parameters for COUPLING token. Line " + to_string(lineCount) + "\n").c_str());
+        }else if(tokenizedString.size() < 4){
+          throw cvException(string("ERROR: Not enough parameters for COUPLING token. Line " + to_string(lineCount) + "\n").c_str());
+        }
+        try{
+          // string couplingStatus (ON/OFF)
+          opts->couplingStatus = tokenizedString[1];
+          // string couplingType (DIR/NEU)
+          opts->couplingType = tokenizedString[2];
+          // int couplingSubsteps
+          opts->couplingSubsteps = atoi(tokenizedString[3].c_str());
+        }catch(...){
+          throw cvException(string("ERROR: Invalid COUPLING Format. Line " + to_string(lineCount) + "\n").c_str());
+        }
       }else if(upper_string(tokenizedString[0]) == std::string("OUTPUT")){
         if(tokenizedString.size() > 3){
           throw cvException(string("ERROR: Too many parameters for OUTPUT token. Line " + to_string(lineCount) + "\n").c_str());

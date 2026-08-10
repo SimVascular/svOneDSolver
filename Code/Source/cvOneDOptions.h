@@ -116,6 +116,11 @@ struct options{
     int    useIV;
     int    useStab;
 
+    // COUPLING OPTIONS
+    string couplingStatus;      // "ON" or "OFF"
+    string couplingType;        // "DIR" or "NEU"
+    int couplingSubsteps;       // integer value (e.g., 100)
+
     // These are to preserve legacy behavior and are 
     // expected to be eventually migrated into a 
     // post-processing step.

@@ -67,7 +67,7 @@ int cvOneDModelManager::CreateMaterial(char *matName, char *MaterialTypeString,
   }
 }
 
-int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen,
+void cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen,
                                       long    numEls,long    inNode,long    outNode,
                                       double  InitialInletArea,double  InitialOutletArea,
                                       double  InitialFlow,int matID,char* lossType,
@@ -88,10 +88,17 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
     boundT = BoundCondTypeScope::PRESSURE_WAVE;
   }else if(!strcmp(boundType, "RCR")){
     boundT = BoundCondTypeScope::RCR;
-  }else if(!strcmp(boundType, "CORONARY")){
-    boundT = BoundCondTypeScope::CORONARY;
-  }else{
-    return CV_ERROR;
+  } else if (!strcmp(boundType, "CORONARY")) {
+  boundT = BoundCondTypeScope::CORONARY;
+  } else if (!strcmp(boundType, "RESISTANCE_TIME")) {
+    boundT = BoundCondTypeScope::RESISTANCE_TIME;
+  } else if (!strcmp(boundType, "COUPLED")) {
+    boundT = BoundCondTypeScope::COUPLED;
+  } else {
+    const auto errMsg =
+        std::string("ERROR: Cannot create segment '") + segName +
+        "': unsupported boundary condition type '" + boundType + "'.";
+    throw cvException(errMsg.c_str());
   }
 
   // convert char string to boundary condition type
@@ -107,10 +114,13 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
     loss = MinorLossScope::BRANCH_THROUGH_CONVERGING;
   }else if(!strcmp(lossType, "BRANCH_SIDE_CONVERGING")){
     loss = MinorLossScope::BRANCH_SIDE_CONVERGING;
-  }else if(!strcmp(lossType, "BIFURCATION_BRANCH")){
+  } else if (!strcmp(lossType, "BIFURCATION_BRANCH")) {
     loss = MinorLossScope::BIFURCATION_BRANCH;
-  }else{
-    return CV_ERROR;
+  } else {
+    const auto errMsg =
+        std::string("ERROR: Cannot create segment '") + segName +
+        "': unsupported minor-loss type '" + lossType + "'.";
+    throw cvException(errMsg.c_str());
   }
 
   // Create a new Segment
@@ -152,16 +162,14 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
   case BoundCondTypeScope::RCR:
       seg->setBoundRCRValue(value,num);
       break;
-
   case BoundCondTypeScope::RESISTANCE:
      seg->setBoundRCRValue(value,num);//using setBoundRCRValue to set resistance and Pd.
      break;
-
   case BoundCondTypeScope::CORONARY:
      seg->SetBoundCoronaryValues(value,time,num);
      break;
 
-  default:
+  default: // NOBOUND or PRESSURE or FLOW. Now COUPLED is also here
       seg -> setBoundValue(value[0]);
       break;
   }
@@ -169,26 +177,23 @@ int cvOneDModelManager::CreateSegment(char   *segName,long segID, double  segLen
   seg -> setMeshType(MeshTypeScope::UNIFORM);
 
   cvOneDGlobal::gModelList[cvOneDGlobal::currentModel]->addSegment(seg);
-
-  return CV_OK;
 }
 
-int cvOneDModelManager::CreateNode(char * nodeName,double x,double y,double z){
+void cvOneDModelManager::CreateNode(
+    const char* nodeName, double x, double y, double z) {
 
-  cvOneDNode *node = new cvOneDNode();
-  (node ->Name)[0] = '\0';
-  strcpy(node -> Name,nodeName);
-  node -> x = x;
-  node -> y = y;
-  node -> z = z;
+  cvOneDNode* node = new cvOneDNode();
+  (node->Name)[0] = '\0';
+  strcpy(node->Name, nodeName);
+  node->x = x;
+  node->y = y;
+  node->z = z;
 
   cvOneDGlobal::gModelList[cvOneDGlobal::currentModel]->addNode(node);
-
-  return CV_OK;
 }
 
 
-int cvOneDModelManager::CreateJoint(const char * jointName,double x,double y,double z,
+void cvOneDModelManager::CreateJoint(const char * jointName,double x,double y,double z,
                                     int numInSegs,int numOutSegs,
                                     int *InSegs,int *OutSegs){
 
@@ -209,8 +214,6 @@ int cvOneDModelManager::CreateJoint(const char * jointName,double x,double y,dou
   }
 
   cvOneDGlobal::gModelList[cvOneDGlobal::currentModel]->addJoint(joint);
-
-  return CV_OK;
 }
 
 // ===========

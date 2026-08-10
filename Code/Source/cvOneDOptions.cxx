@@ -155,6 +155,22 @@ namespace{
     }
   }
 
+  void checkSegmentHasMaterials(options const& opts) {
+    for (int segmentIndex = 0;
+        segmentIndex < opts.segmentName.size();
+        ++segmentIndex) {
+      const auto& materialName = opts.segmentMatName[segmentIndex];
+
+      if (!checkContains(materialName, opts.materialName)) {
+        const auto errMsg =
+            "ERROR: Segment '" + opts.segmentName[segmentIndex] +
+            "' references material '" + materialName +
+            "', but that material is not defined in the 1D input file.";
+        throw cvException(errMsg.c_str());
+      }
+    }
+  }
+
   void checkJointHasNodes(options const& opts){
     string currNodeName;
     for(int loopA=0;loopA<opts.jointName.size();loopA++){
@@ -182,6 +198,9 @@ void validateOptions(options const& opts){
 
   // Check if the segments refer to a node that is not there
   checkSegmentHasNodes(opts);
+
+  // Check if the segments refer to a material that is not defined
+  checkSegmentHasMaterials(opts);
 
   // Check if the joints refer to a node that is not there
   checkJointHasNodes(opts);

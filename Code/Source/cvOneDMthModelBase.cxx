@@ -190,6 +190,149 @@ void cvOneDMthModelBase::SetBoundaryConditions(){
   }// end for loop
 }
 
+void cvOneDMthModelBase::SetBoundaryConditions_coupled(double interpolated_value){
+  // This is to be called after the solution has been updated in the nonlinear
+  // loop. It overwrites the components of the current solution so that
+  // Dirichlet boundary conditions are always satisfied.
+
+  long eqNumbers[2];  // two degress of freedom per node
+  cvOneDSubdomain* sub;
+  double InitialPressure;
+  double currP, currS, resistance;
+
+  // Set up Inlet Dirichlet boundary condition (the default is flow rate)
+  GetNodalEquationNumbers( 0, eqNumbers, 0);
+  sub= subdomainList[0];
+  switch(cvOneDBFSolver::inletBCtype){
+    case BoundCondTypeScope::FLOW:
+      (*currSolution)[eqNumbers[1]] = GetFlowRate();
+      break;
+    
+    case BoundCondTypeScope::COUPLED:// Neumann coupling
+      (*currSolution)[eqNumbers[1]] = interpolated_value;
+      break;
+
+    case BoundCondTypeScope::PRESSURE_WAVE:
+      (*currSolution)[eqNumbers[0]] = sub->GetMaterial()->GetArea(GetFlowRate(),0);
+       InitialPressure = flrt[0];
+      break;
+    default:
+
+      break;
+  }
+
+  for (vector<int>::iterator it=outletList.begin(); it!=outletList.end(); it++){
+    GetNodalEquationNumbers(subdomainList[*it]->GetNumberOfNodes() - 1, eqNumbers, *it);
+    sub = subdomainList[*it];
+
+    // Speciafically for RCR BC if treated as essential BC // added IV 051303
+  /*    double alphaRCR, Rp, Rd, Cap, prevP;
+      //double InitialQ;
+      //double MemoI, MemoK, dMemoIdP, dMemoKdP;
+      //double lhs_QQ, lhs_QS, rhs_Q;
+      double MemoC;
+      double z = sub->GetOutletZ();
+  */
+    switch(sub->GetBoundCondition()){
+    case BoundCondTypeScope::PRESSURE:
+      (*currSolution)[eqNumbers[0]] = sub->GetBoundFlowRate();
+      break;
+
+    case BoundCondTypeScope::COUPLED: //Dirichlet coupling
+      // convert pressure value to area
+      (*currSolution)[eqNumbers[0]] = sub->GetMaterial()->GetArea(interpolated_value, sub->GetLength());
+      break;
+
+    case BoundCondTypeScope::FLOW:
+      (*currSolution)[eqNumbers[1]] = sub->GetBoundFlowRate();
+      break;
+    case BoundCondTypeScope::RESISTANCE:
+            if(cvOneDGlobal::CONSERVATION_FORM==0){
+        currS = (*currSolution)[eqNumbers[0]];
+          currP = sub->GetMaterial()->GetPressure(currS, sub->GetLength());
+        resistance = sub->GetBoundResistance();
+        (*currSolution)[eqNumbers[1]] = currP/resistance;
+        }
+      break;
+    case BoundCondTypeScope::RESISTANCE_TIME:
+            if(cvOneDGlobal::CONSERVATION_FORM == 0){
+        currS = (*currSolution)[eqNumbers[0]];
+          currP = sub->GetMaterial()->GetPressure(currS, sub->GetLength());
+        resistance = sub->GetBoundResistance(currentTime);
+        (*currSolution)[eqNumbers[1]] = currP/resistance;
+        }
+      break;
+    case BoundCondTypeScope::RCR:
+      break;
+    default:
+     break;
+    }// end switch
+
+  }// end for loop
+}
+
+void cvOneDMthModelBase::extractCplBC_model(double* solution_data, double& CplValue, char* coupling_types){
+  // solution_data format: [flow1][pressure1][flow2][pressure2]... for each nodes
+  long eqNumbers[2];  // two degress of freedom per node
+  cvOneDSubdomain* sub;
+
+  if(std::string(coupling_types) == "NEU"){
+    
+    if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::COUPLED) {
+      GetNodalEquationNumbers( 0, eqNumbers, 0);
+      CplValue = solution_data[eqNumbers[1]]; // pressure dof for inlet node
+
+      //cout << "CplValue: " << CplValue << endl;
+
+    }else{
+      cout << "[ExtractCoupledBCValue] WARNING: NEU coupling but inlet BC is not COUPLED" << endl;
+    }
+
+  }else if(std::string(coupling_types) == "DIR"){
+    for(auto it = outletList.begin(); it != outletList.end(); it++) {
+        GetNodalEquationNumbers(subdomainList[*it]->GetNumberOfNodes() - 1, eqNumbers, *it);
+        sub = subdomainList[*it];
+        // Check if outlet is coupled
+        if(sub->GetBoundCondition() == BoundCondTypeScope::COUPLED) {
+            // Extract flow from solution vector
+            CplValue = solution_data[eqNumbers[0]]; // flow dof for outlet node
+            break;  // Only extract from first coupled outlet
+        }
+    }
+  }
+}
+
+void cvOneDMthModelBase::extractCpldof(int& Cpldof, char* coupling_types){
+  // solution_data format: [flow1][pressure1][flow2][pressure2]... for each nodes
+  long eqNumbers[2];  // two degress of freedom per node
+  cvOneDSubdomain* sub;
+
+  if(std::string(coupling_types) == "NEU"){
+    
+    if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::COUPLED) {
+      GetNodalEquationNumbers( 0, eqNumbers, 0);
+      Cpldof = eqNumbers[1]; // pressure dof for inlet node
+
+      //cout << "CplValue: " << CplValue << endl;
+
+    }else{
+      cout << "[ExtractCoupledBCValue] WARNING: NEU coupling but inlet BC is not COUPLED" << endl;
+    }
+
+  }else if(std::string(coupling_types) == "DIR"){
+    for(auto it = outletList.begin(); it != outletList.end(); it++) {
+        GetNodalEquationNumbers(subdomainList[*it]->GetNumberOfNodes() - 1, eqNumbers, *it);
+        sub = subdomainList[*it];
+        // Check if outlet is coupled
+        if(sub->GetBoundCondition() == BoundCondTypeScope::COUPLED) {
+            // Extract flow from solution vector
+            Cpldof = eqNumbers[0]; // flow dof for outlet node
+            break;  // Only extract from first coupled outlet
+        }
+    }
+  }
+}
+
 // Eval Mass Balance
 double cvOneDMthModelBase::CheckMassBalance(){
 
@@ -236,6 +379,9 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
     if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::FLOW){
       GetNodalEquationNumbers(0, eqNumbers, 0);
       cvOneDGlobal::solver->SetSolution(eqNumbers[1], value);
+    }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::COUPLED){// Neumann coupling for inlet flow BC
+      GetNodalEquationNumbers(0, eqNumbers, 0);
+      cvOneDGlobal::solver->SetSolution(eqNumbers[1], value);
     }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::PRESSURE_WAVE){
       GetNodalEquationNumbers(0, eqNumbers, 0);
       cvOneDGlobal::solver->SetSolution(eqNumbers[0], value);
@@ -260,6 +406,7 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
       switch(sub->GetBoundCondition()){
         case BoundCondTypeScope::PRESSURE:
         case BoundCondTypeScope::PRESSURE_WAVE:
+        case BoundCondTypeScope::COUPLED: // Dirichlet coupling for outlet pressure BC
           cvOneDGlobal::solver->SetSolution( eqNumbers[0], value);
           break;
         case BoundCondTypeScope::FLOW:
@@ -319,6 +466,9 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
       if(cvOneDBFSolver::inletBCtype == BoundCondTypeScope::FLOW){
         GetNodalEquationNumbers( 0, eqNumbers, 0);
         cvOneDGlobal::solver->SetSolution( eqNumbers[1], value);
+      }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::COUPLED){ // Neumann coupling for inlet flow BC
+        GetNodalEquationNumbers(0, eqNumbers, 0);
+        cvOneDGlobal::solver->SetSolution(eqNumbers[1], value);
       }else if (cvOneDBFSolver::inletBCtype == BoundCondTypeScope::PRESSURE_WAVE){
         GetNodalEquationNumbers( 0, eqNumbers, 0);
         cvOneDGlobal::solver->SetSolution( eqNumbers[0], value);
@@ -388,6 +538,7 @@ void cvOneDMthModelBase::ApplyBoundaryConditions(){
           // so same treatment as regular Essential BC like in Brooke's
           case BoundCondTypeScope::PRESSURE:
           case BoundCondTypeScope::PRESSURE_WAVE:
+          case BoundCondTypeScope::COUPLED: // Dirichlet coupling for outlet BC
             cvOneDGlobal::solver->SetSolution( eqNumbers[0], value);
             break;
           case BoundCondTypeScope::FLOW:
@@ -626,5 +777,44 @@ double cvOneDMthModelBase::GetFlowRate(){
   //printf("Result Flow: %e\n",result);
   return result;
 
+}
+
+// for Neumann coupled BC, the inlet flow rate is given by the 3D solver as a function of time 
+double cvOneDMthModelBase::GetCoupledInletFlowRate(const std::vector<double>& params) {
+  // Expected format:
+  // params = [2, t1, t2, Q1, Q2]
+
+  if (params.size() != 5) {
+    throw std::runtime_error(
+        "GetCoupledInletFlowRate: params size must be 5: [2, t1, t2, Q1, Q2]");
+  }
+
+  int num_time_pts = static_cast<int>(params[0]);
+  if (num_time_pts != 2) {
+    throw std::runtime_error(
+        "GetCoupledInletFlowRate: params[0] must be 2");
+  }
+
+  double t1 = params[1];
+  double t2 = params[2];
+  double q1 = params[3];
+  double q2 = params[4];
+
+  if (t2 == t1) {
+    throw std::runtime_error(
+        "GetCoupledInletFlowRate: t1 and t2 must be different");
+  }
+
+  // Clamp outside the interval
+  if (currentTime <= t1) {
+    return q1;
+  }
+  if (currentTime >= t2) {
+    return q2;
+  }
+
+  // Linear interpolation
+  double xi = (currentTime - t1) / (t2 - t1);
+  return q1 + xi * (q2 - q1);
 }
 

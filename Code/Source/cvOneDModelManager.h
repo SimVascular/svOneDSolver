@@ -54,7 +54,7 @@ class cvOneDModelManager{
                        int numParams, double *params, int *matID);
 
     // CREATE SEGMENT
-    int CreateSegment(char* segName,long segID, double  segLen,
+    void CreateSegment(char* segName, long segID, double segLen,
                       long numEls,long inNode,long outNode,
                       double InitialInletArea,double InitialOutletArea,
                       double InitialFlow,int matID,char* lossType,
@@ -65,13 +65,13 @@ class cvOneDModelManager{
     int CreateDataTable(char* dtName,char* dtType, cvDoubleVec values);
 
     // CREATE NODE
-    int CreateNode(char* nodeName,double x,double y,double z);
+    void CreateNode(const char* nodeName, double x, double y, double z);
 
 
     // CREATE JOINT
-    int CreateJoint(const char* jointName,double x,double y,double z,
-                    int numInSegs,int numOutSegs,
-                    int *InSegs,int *OutSegs);
+    void CreateJoint(const char* jointName, double x, double y, double z,
+                    int numInSegs, int numOutSegs,
+                    int* InSegs, int* OutSegs);
 
     // SOLVE MODEL
     int SolveModel(double dt,long stepSize,

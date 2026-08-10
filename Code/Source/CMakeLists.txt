@@ -86,3 +86,8 @@ install( TARGETS ${PROJECT_NAME}
          DESTINATION bin 
          COMPONENT executable )
 
+# BUILD INTERFACE LIBRARY FOR 3D-1D COUPLING
+IF(ENABLE_INTERFACE_LIBRARY)
+  ADD_SUBDIRECTORY(interface)
+  MESSAGE(STATUS "Building interface library for 3D-1D coupling")
+ENDIF()

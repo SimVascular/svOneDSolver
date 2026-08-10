@@ -3,6 +3,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.18)
 
 # COMMON SETTINGS
 PROJECT(OneDSolver)
+
+SET(CMAKE_CXX_STANDARD 20)
+SET(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
 ENABLE_LANGUAGE(C CXX)
 
 # SET OPTIONS
@@ -10,6 +14,7 @@ OPTION(BUILD_SV_INSTALLER "Build SimVascular Installer" OFF)
 OPTION(buildPy "Build Python Interface" OFF)
 OPTION(buildDocs "Build Documentation" OFF)
 OPTION(ENABLE_UNIT_TEST "Enable unit tests" ON)
+OPTION(ENABLE_INTERFACE_LIBRARY "Build 1D interface library for 3D-1D coupling" ON)
 SET(sparseSolverType "skyline" CACHE STRING "Use Sparse Solver")
 SET_PROPERTY(CACHE sparseSolverType PROPERTY STRINGS skyline superlu csparse)
 
@@ -76,7 +81,7 @@ include(FetchContent)
 FetchContent_Declare(
     nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.2  # You can specify a version or use the latest tag
+    GIT_TAG v3.12.0  # You can specify a version or use the latest tag
 )
 FetchContent_MakeAvailable(nlohmann_json)
 # Global include for nlohmann headers

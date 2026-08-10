@@ -34,6 +34,11 @@
 #include <string.h>
 #include <cctype>
 
+#include "cvOneDGlobal.h"
+#include "cvOneDOptionsJsonParser.h"
+#include "cvOneDOptionsJsonSerializer.h"
+#include "cvOneDOptionsLegacySerializer.h"
+
 //
 //  Utility.cxx - Source for Some Utility functions 
 //  ~~~~~~~~~~~   
@@ -70,6 +75,126 @@ std::string upper_string(const std::string& s)
   return upper_str;
 }
 
+void setOutputGlobals(const cvOneD::options& opts) {
+  const std::string outputType = upper_string(opts.outputType);
+
+  if (outputType == "TEXT") {
+    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_TEXT;
+  } else if (outputType == "VTK") {
+    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_VTK;
+  } else if (outputType == "BOTH") {
+    cvOneDGlobal::outputType = OutputTypeScope::OUTPUT_BOTH;
+  } else {
+    const auto errMsg =
+        "ERROR: Invalid OUTPUT type '" + opts.outputType +
+        "'. Expected TEXT, VTK, or BOTH.\n";
+    throw cvException(errMsg.c_str());
+  }
+
+  if (opts.vtkOutputType) {
+    const int vtkOutputType = *opts.vtkOutputType;
+
+    // 0 writes one VTK file per time step; 1 writes all results
+    // to a single VTK file.
+    if (vtkOutputType != 0 && vtkOutputType != 1) {
+      const auto errMsg =
+          "ERROR: Invalid VTK output type '" +
+          std::to_string(vtkOutputType) +
+          "'. Expected 0 (multiple VTK files) or 1 (single VTK file).\n";
+      throw cvException(errMsg.c_str());
+    }
+
+    cvOneDGlobal::vtkOutputType = vtkOutputType;
+  }
+}
+
+int getDataTableID(const std::string& key) {
+  const auto upper_key = upper_string(key);
+  int data_table_index = 0;
+
+  for (const auto& entry : cvOneDGlobal::gDataTables) {
+    if (upper_key == upper_string(entry->getName())) {
+      return data_table_index;
+    }
+
+    ++data_table_index;
+  }
+
+  const auto errMsg =
+      "ERROR: Cannot find data table entry '" + key + "'.\n";
+  throw cvException(errMsg.c_str());
+}
+
+namespace {
+struct ArgOptions {
+  std::optional<std::string> jsonInput = std::nullopt;
+  std::optional<std::string> legacyConversionInput = std::nullopt;
+  std::optional<std::string> jsonConversionOutput = std::nullopt;
+};
+
+std::string removeQuotesIfPresent(const std::string& str) {
+  auto result = str;
+  result.erase(
+      std::remove(result.begin(), result.end(), '"'),
+      result.end());
+  return result;
+}
+
+ArgOptions parseInputArgs(int argc, char** argv) {
+  ArgOptions options;
+
+  for (int i = 1; i < argc; ++i) {
+    const std::string arg = argv[i];
+
+    if (arg == "-jsonInput" && i + 1 < argc) {
+      options.jsonInput = removeQuotesIfPresent(argv[++i]);
+    } else if (arg == "-legacyToJson" && i + 2 < argc) {
+      options.legacyConversionInput = removeQuotesIfPresent(argv[++i]);
+      options.jsonConversionOutput = removeQuotesIfPresent(argv[++i]);
+    }
+  }
+
+  return options;
+}
+
+cvOneD::options readLegacyOptions(const std::string& inputFile) {
+  cvOneD::options opts{};
+  cvOneD::readOptionsLegacyFormat(inputFile, &opts);
+  return opts;
+}
+
+void convertLegacyToJsonOptions(
+    const std::string& legacyFilename,
+    const std::string& jsonFilename) {
+  const cvOneD::options opts = readLegacyOptions(legacyFilename);
+  cvOneD::writeJsonOptions(opts, jsonFilename);
+}
+
+}  // namespace
+
+std::optional<cvOneD::options> parseArgsAndHandleOptions(
+    int argc, char** argv) {
+  // Preserve legacy behavior for a single input file.
+  if (argc == 2) {
+    const std::string inputFile = removeQuotesIfPresent(argv[1]);
+    return readLegacyOptions(inputFile);
+  }
+
+  const ArgOptions argOptions = parseInputArgs(argc, argv);
+
+  if (argOptions.legacyConversionInput &&
+      argOptions.jsonConversionOutput) {
+    convertLegacyToJsonOptions(
+        *argOptions.legacyConversionInput,
+        *argOptions.jsonConversionOutput);
+  }
+
+  if (argOptions.jsonInput) {
+    return cvOneD::readJsonOptions(*argOptions.jsonInput);
+  }
+
+  return std::nullopt;
+}
 
 long min(long size, long* values){
   long m = values[0];

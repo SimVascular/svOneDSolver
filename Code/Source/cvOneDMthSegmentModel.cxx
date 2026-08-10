@@ -80,6 +80,26 @@ void cvOneDMthSegmentModel::FormNewton(cvOneDFEAMatrix* lhsMatrix, cvOneDFEAVect
 			FormElement_FD(element, i, &elementVector, &elementMatrix);
 			rhsVector->Add(elementVector);
 			lhsMatrix->Add(elementMatrix);
+
+			// sanity check
+			// std::cout << "[FormNewton] Subdomain=" << (int)i 
+			// 	 << " Element=" << (long)element << std::endl;
+			
+			// std::cout << "  elementVector: ";
+			// for(int j = 0; j < 4; j++) {
+			// 	std::cout << elementVector[j] << " ";
+			// }
+			// std::cout << std::endl;
+			
+			// double* entries = elementMatrix.GetPointerToEntries();  // ✓ 포인터 얻기
+			// std::cout << "  elementMatrix (4x4):" << std::endl;
+			// for(int row = 0; row < 4; row++) {
+			// 	std::cout << "    ";
+			// 	for(int col = 0; col < 4; col++) {
+			// 		std::cout << entries[row * 4 + col] << " ";  // ✓ 포인터로 접근
+			// 	}
+			// 	std::cout << std::endl;
+			// }
 		}
 	}
 }
@@ -606,7 +626,7 @@ void cvOneDMthSegmentModel::FormElement(long element,
 			}
 
 			if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
-					||bound==BoundCondTypeScope::FLOW){
+					||bound==BoundCondTypeScope::FLOW||bound==BoundCondTypeScope::COUPLED){
 				//Outlet flux term (at z=z_outlet) which is the linearized F-KU
 				if (element == (sub->GetNumberOfElements())-1){
 					double z = sub->GetOutletZ();
@@ -654,7 +674,7 @@ void cvOneDMthSegmentModel::FormElement(long element,
 			}// end inlet flux
 
 			if(bound==BoundCondTypeScope::NOBOUND||bound==BoundCondTypeScope::PRESSURE
-					||bound==BoundCondTypeScope::FLOW){
+					||bound==BoundCondTypeScope::FLOW||bound==BoundCondTypeScope::COUPLED){
 				//If no outlet BC or Dirichlet outlet BC, compute the Outlet full flux term (at z=z_outlet) which is the linearized F-KU IV 02-03-03
 				if (element == (sub->GetNumberOfElements())-1){
 					double z = sub->GetOutletZ();//checked IV 02-03-03
