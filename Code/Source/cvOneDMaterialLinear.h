@@ -72,7 +72,7 @@ class cvOneDMaterialLinear:public cvOneDMaterial{
     double GetMette2(double area,double z) const;
     double GetLinCompliance(double z) const;
     double GetnonLinCompliance(double area,double z) const;
-    double GetN(double S) const{return 0.0;};
+    double GetN(double S) const{return N;};
     void   SetPeriod(double period){};
 
   private:
